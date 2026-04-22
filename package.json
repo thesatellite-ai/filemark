@@ -1,0 +1,13 @@
+{
+  "name": "filemark-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r --filter=\"./packages/*\" build && pnpm --filter chrome-ext build",
+    "build:packages": "pnpm -r --filter=\"./packages/*\" build",
+    "dev": "pnpm --filter chrome-ext dev",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r exec rm -rf dist && rm -rf node_modules"
+  },
+  "packageManager": "pnpm@9.15.4"
+}
