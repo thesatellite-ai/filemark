@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { ChevronRight, FileText, RotateCw, Search, Star, Trash2, X } from "lucide-react";
+import { ChevronRight, ChevronsDownUp, FileText, RotateCw, Search, Star, Trash2, X } from "lucide-react";
 import { useLibrary, type LibraryFile } from "../store";
 import { restoreFolder } from "../fs";
 import { sessionHandles } from "../sessionHandles";
@@ -27,7 +27,11 @@ export function Sidebar() {
   const clearAll = useLibrary((s) => s.clearAll);
   const clearRecent = useLibrary((s) => s.clearRecent);
   const clearDropped = useLibrary((s) => s.clearDropped);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const collapsed = useLibrary((s) => s.sidebarTreeCollapsed);
+  const setTreeCollapsed = useLibrary((s) => s.setSidebarTreeCollapsed);
+  const sectionOpen = useLibrary((s) => s.sidebarSections);
+  const setSectionOpen = useLibrary((s) => s.setSidebarSection);
+  const setSidebarCollapseState = useLibrary((s) => s.setSidebarCollapseState);
   const [needsPermission, setNeedsPermission] = useState<Record<string, boolean>>({});
   const [folderQuery, setFolderQuery] = useState<Record<string, string>>({});
 
@@ -78,6 +82,31 @@ export function Sidebar() {
   const isEmpty =
     Object.keys(files).length === 0 && Object.keys(folders).length === 0;
 
+  const getSectionOpen = (key: string) => sectionOpen[key] ?? true;
+
+  const collapseAll = () => {
+    const nextSection: Record<string, boolean> = { ...sectionOpen };
+    if (starred.length) nextSection["starred"] = false;
+    if (recent.length) nextSection["recent"] = false;
+    for (const { folder } of folderTrees)
+      nextSection[`folder:${folder.id}`] = false;
+    if (orphanFiles.length) nextSection["orphans"] = false;
+
+    // Also collapse every nested folder node inside every folder tree.
+    const nextCollapsed: Record<string, boolean> = { ...collapsed };
+    const walk = (nodes: TreeNode[]) => {
+      for (const n of nodes) {
+        if (n.kind === "folder") {
+          nextCollapsed[n.path] = true;
+          walk(n.children);
+        }
+      }
+    };
+    for (const t of folderTrees) walk(t.tree);
+
+    setSidebarCollapseState(nextSection, nextCollapsed);
+  };
+
   return (
     <aside className="bg-sidebar text-sidebar-foreground flex h-full w-64 shrink-0 flex-col overflow-hidden">
       <ScrollArea className="min-h-0 flex-1">
@@ -100,7 +129,11 @@ export function Sidebar() {
           )}
 
           {starred.length > 0 && (
-            <Section title="Starred" defaultOpen>
+            <Section
+              title="Starred"
+              open={getSectionOpen("starred")}
+              onOpenChange={(v) => setSectionOpen("starred", v)}
+            >
               {starred.map((f) => (
                 <FileRow
                   key={f.id}
@@ -116,7 +149,8 @@ export function Sidebar() {
           {recent.length > 0 && (
             <Section
               title="Recent"
-              defaultOpen
+              open={getSectionOpen("recent")}
+              onOpenChange={(v) => setSectionOpen("recent", v)}
               onRemove={() => clearRecent()}
               removeLabel="Clear recent list"
             >
@@ -141,7 +175,8 @@ export function Sidebar() {
               key={folder.id}
               title={folder.name}
               badge={String(count)}
-              defaultOpen
+              open={getSectionOpen(`folder:${folder.id}`)}
+              onOpenChange={(v) => setSectionOpen(`folder:${folder.id}`, v)}
               onRescan={
                 folder.kind === "fsa" && !needsPermission[folder.id]
                   ? async () => {
@@ -190,7 +225,7 @@ export function Sidebar() {
                       depth={0}
                       activeId={activeId}
                       collapsed={collapsed}
-                      onToggle={(p) => setCollapsed((c) => ({ ...c, [p]: !c[p] }))}
+                      onToggle={(p) => setTreeCollapsed(p, !collapsed[p])}
                       onClick={(id) => setActive(id)}
                       onRemove={(id) => removeFile(id)}
                     />
@@ -226,7 +261,8 @@ export function Sidebar() {
           {orphanFiles.length > 0 && (
             <Section
               title="Dropped files"
-              defaultOpen
+              open={getSectionOpen("orphans")}
+              onOpenChange={(v) => setSectionOpen("orphans", v)}
               badge={String(orphanFiles.length)}
               onRemove={() => {
                 if (
@@ -252,27 +288,39 @@ export function Sidebar() {
         </div>
       </ScrollArea>
       <Separator />
-      <div className="flex items-center justify-between px-2 py-1">
+      <div className="flex items-center justify-between gap-1 px-2 py-1">
         <span className="text-muted-foreground px-1 text-[10px] tabular-nums">
           {Object.keys(files).length} file{Object.keys(files).length === 1 ? "" : "s"}
         </span>
-        {!isEmpty && (
-          <button
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] transition-colors"
-            onClick={() => {
-              if (
-                confirm(
-                  "Clear everything from the library?\n\nAll files, folders, tags, stars, and root-path assignments will be removed. Files on disk are not touched."
+        <div className="flex items-center gap-0.5">
+          {!isEmpty && (
+            <button
+              className="text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] transition-colors"
+              onClick={collapseAll}
+              title="Collapse all sections and nested folders"
+            >
+              <ChevronsDownUp className="size-3" />
+              Collapse all
+            </button>
+          )}
+          {!isEmpty && (
+            <button
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] transition-colors"
+              onClick={() => {
+                if (
+                  confirm(
+                    "Clear everything from the library?\n\nAll files, folders, tags, stars, and root-path assignments will be removed. Files on disk are not touched."
+                  )
                 )
-              )
-                clearAll();
-            }}
-            title="Clear all entries from the library"
-          >
-            <Trash2 className="size-3" />
-            Clear all
-          </button>
-        )}
+                  clearAll();
+              }}
+              title="Clear all entries from the library"
+            >
+              <Trash2 className="size-3" />
+              Clear all
+            </button>
+          )}
+        </div>
       </div>
     </aside>
   );
@@ -319,6 +367,8 @@ function Section({
   title,
   badge,
   defaultOpen = true,
+  open: controlledOpen,
+  onOpenChange,
   onRemove,
   removeLabel,
   onRescan,
@@ -328,6 +378,9 @@ function Section({
   title: string;
   badge?: string;
   defaultOpen?: boolean;
+  /** Controlled open state. When set, `onOpenChange` is required. */
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
   onRemove?: () => void;
   removeLabel?: string;
   /** Optional "rescan" action; renders a refresh icon in the header. */
@@ -335,13 +388,18 @@ function Section({
   rescanLabel?: string;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const toggle = () => {
+    if (onOpenChange) onOpenChange(!open);
+    else setUncontrolledOpen((v) => !v);
+  };
   return (
     <div className="group/section mb-1">
       <div className="hover:text-sidebar-foreground text-muted-foreground flex w-full items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider">
         <button
           className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
-          onClick={() => setOpen((v) => !v)}
+          onClick={toggle}
         >
           <ChevronRight
             className={cn(

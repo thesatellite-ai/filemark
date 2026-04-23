@@ -69,6 +69,12 @@ export interface LibraryState {
   autoRefresh: boolean;
   /** Interval in ms for autoRefresh. Default 2000. */
   autoRefreshMs: number;
+  /** Sidebar top-level section open state. Keys: "starred" | "recent"
+   *  | `folder:<id>` | "orphans". Missing key = open (default). */
+  sidebarSections: Record<string, boolean>;
+  /** Sidebar nested-folder tree collapse state. Keys are tree-path strings
+   *  (e.g. "docs/api"). Missing key = expanded (default). */
+  sidebarTreeCollapsed: Record<string, boolean>;
 
   setActive(id: string | null): Promise<void>;
   closeTab(id: string): Promise<void>;
@@ -97,6 +103,13 @@ export interface LibraryState {
   toggleFullscreen(): void;
   toggleAutoRefresh(): void;
   setAutoRefreshMs(ms: number): void;
+  setSidebarSection(key: string, open: boolean): void;
+  setSidebarTreeCollapsed(path: string, collapsed: boolean): void;
+  /** Bulk-update both maps — used by the sidebar's "Collapse all" button. */
+  setSidebarCollapseState(
+    sections: Record<string, boolean>,
+    tree: Record<string, boolean>
+  ): void;
   setViewMode(mode: "rendered" | "raw"): void;
   removeFolder(folderId: string): Promise<void>;
   removeFile(fileId: string): Promise<void>;
@@ -122,6 +135,8 @@ interface UIPrefs {
   fullscreen: boolean;
   autoRefresh?: boolean;
   autoRefreshMs?: number;
+  sidebarSections?: Record<string, boolean>;
+  sidebarTreeCollapsed?: Record<string, boolean>;
 }
 
 function persistUI(s: {
@@ -130,6 +145,8 @@ function persistUI(s: {
   fullscreen: boolean;
   autoRefresh: boolean;
   autoRefreshMs: number;
+  sidebarSections: Record<string, boolean>;
+  sidebarTreeCollapsed: Record<string, boolean>;
 }) {
   idbStorage
     .set(KEYS.ui, {
@@ -138,6 +155,8 @@ function persistUI(s: {
       fullscreen: s.fullscreen,
       autoRefresh: s.autoRefresh,
       autoRefreshMs: s.autoRefreshMs,
+      sidebarSections: s.sidebarSections,
+      sidebarTreeCollapsed: s.sidebarTreeCollapsed,
     })
     .catch(() => {});
 }
@@ -159,6 +178,8 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   fullscreen: false,
   autoRefresh: false,
   autoRefreshMs: 2000,
+  sidebarSections: {},
+  sidebarTreeCollapsed: {},
 
   async hydrate() {
     const [files, folders, recent, theme, active, tabs, ui] = await Promise.all([
@@ -193,6 +214,8 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       fullscreen: ui?.fullscreen ?? false,
       autoRefresh: ui?.autoRefresh ?? false,
       autoRefreshMs: ui?.autoRefreshMs ?? 2000,
+      sidebarSections: ui?.sidebarSections ?? {},
+      sidebarTreeCollapsed: ui?.sidebarTreeCollapsed ?? {},
       hydrated: true,
     });
   },
@@ -507,6 +530,23 @@ export const useLibrary = create<LibraryState>((set, get) => ({
 
   setAutoRefreshMs(ms) {
     set({ autoRefreshMs: Math.max(250, ms) });
+    persistUI(get());
+  },
+
+  setSidebarSection(key, open) {
+    set((s) => ({ sidebarSections: { ...s.sidebarSections, [key]: open } }));
+    persistUI(get());
+  },
+
+  setSidebarTreeCollapsed(path, collapsed) {
+    set((s) => ({
+      sidebarTreeCollapsed: { ...s.sidebarTreeCollapsed, [path]: collapsed },
+    }));
+    persistUI(get());
+  },
+
+  setSidebarCollapseState(sections, tree) {
+    set({ sidebarSections: sections, sidebarTreeCollapsed: tree });
     persistUI(get());
   },
 
