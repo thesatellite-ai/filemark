@@ -1,5 +1,6 @@
 import chartFull from "../../../../examples/chart-full.md?raw";
 import kanbanFull from "../../../../examples/kanban-full.md?raw";
+import statsAdrFull from "../../../../examples/stats-adr-full.md?raw";
 import datagridFull from "../../../../examples/datagrid-full.md?raw";
 import datagridIntro from "../../../../examples/datagrid.md?raw";
 import showcase from "../../../../examples/showcase.md?raw";
@@ -118,6 +119,14 @@ export const EXAMPLES: Example[] = [
       "Group a CSV into columns, render rows as cards with rich types.",
     section: "Kanban",
     content: kanbanFull,
+  },
+  {
+    id: "stats-adr-full",
+    title: "Stats & ADR — full feature tour",
+    description:
+      "KPI card grid and Architecture Decision Record blocks for planning docs.",
+    section: "Planning",
+    content: statsAdrFull,
   },
   {
     id: "showcase",

@@ -12,6 +12,8 @@ import type { ViewerProps } from "@filemark/core";
 import { Callout } from "./components/Callout";
 import { Tabs, Tab } from "./components/Tabs";
 import { Details } from "./components/Details";
+import { Stats, Stat } from "./components/Stats";
+import { ADR } from "./components/ADR";
 import { CodeBlock } from "./CodeBlock";
 import { TaskCheckbox } from "./TaskCheckbox";
 import { SmartLink } from "./SmartLink";
@@ -64,6 +66,9 @@ export function MDXViewer(props: ViewerProps) {
         tabs: Tabs,
         tab: Tab,
         details: Details,
+        stats: Stats,
+        stat: Stat,
+        adr: ADR,
         // <Chart src="./metrics.csv" type="bar" x="region" y="revenue" />
         // Mirrors <Datagrid> — src-based; inline data uses a ```chart fence.
         chart: (p: Record<string, unknown>) => {
