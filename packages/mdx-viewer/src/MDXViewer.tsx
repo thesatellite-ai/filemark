@@ -19,6 +19,12 @@ import { SmartImage } from "./SmartImage";
 import { Frontmatter } from "./Frontmatter";
 import { Mermaid } from "./Mermaid";
 import { SchemaBlock } from "./SchemaBlock";
+import { DataBlock } from "./DataBlock";
+import { remarkCodeMeta } from "./remark-code-meta";
+import {
+  parseInfoString,
+  type DataGridOptions,
+} from "@filemark/datagrid";
 
 interface TocItem {
   id: string;
@@ -47,6 +53,27 @@ export function MDXViewer(props: ViewerProps) {
         tabs: Tabs,
         tab: Tab,
         details: Details,
+        // <datagrid src="..." title="..." sort="..." meta="type:col=status(...)" />
+        // Src-based only — for inline data, use a ```csv fenced block instead
+        // (HTML attributes can't cleanly hold multi-line CSV).
+        datagrid: (p: Record<string, unknown>) => {
+          const options = attrsToOptions(p);
+          if (!options.src) {
+            return <DatagridMissingSrc />;
+          }
+          return (
+            <DataBlock
+              source=""
+              options={options}
+              lang="datagrid"
+              assets={assets}
+              storage={storage}
+              storageKey={`${file.id}:datagrid-tag:${hashString(
+                JSON.stringify(options),
+              )}`}
+            />
+          );
+        },
 
         // Code + interactive renderers. `node` is injected by react-markdown;
         // strip it so it doesn't leak onto the DOM. Multi-line content is
@@ -70,6 +97,9 @@ export function MDXViewer(props: ViewerProps) {
           const raw = String(children ?? "");
           const langMatch = /language-([a-zA-Z0-9_+\-]+)/.exec(className ?? "");
           const lang = langMatch?.[1]?.toLowerCase();
+          const meta = (rest as Record<string, unknown>)["data-meta"] as
+            | string
+            | undefined;
           if (lang === "mermaid") {
             return <Mermaid source={raw.replace(/\n$/, "")} />;
           }
@@ -81,6 +111,23 @@ export function MDXViewer(props: ViewerProps) {
               <SchemaBlock
                 source={raw.replace(/\n$/, "")}
                 lang={lang as "schema" | "prisma" | "dbml"}
+              />
+            );
+          }
+          // Interactive datagrid for csv / tsv / datagrid fences.
+          // Info-string after the lang (e.g. `filter=false sort=age:desc
+          // src=./data.csv`) arrives via `data-meta` thanks to
+          // `remarkCodeMeta`.
+          if (lang === "csv" || lang === "tsv" || lang === "datagrid") {
+            return (
+              <DataBlock
+                source={raw}
+                options={parseInfoString(meta)}
+                lang={lang}
+                meta={meta}
+                assets={assets}
+                storage={storage}
+                storageKey={`${file.id}:${lang}:${hashString(raw + (meta ?? ""))}`}
               />
             );
           }
@@ -140,7 +187,7 @@ export function MDXViewer(props: ViewerProps) {
       <article ref={rootRef} className="fv-mdx-body">
         <Frontmatter data={frontData as Record<string, unknown>} />
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
+          remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCodeMeta]}
           rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
           components={components}
         >
@@ -184,6 +231,91 @@ function slugify(s: string): string {
     .trim()
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-");
+}
+
+// FNV-1a — small stable hash so datagrid storage keys stay the same
+// across re-renders but differ between blocks within one document.
+function hashString(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
+}
+
+function str(v: unknown): string | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  return undefined;
+}
+
+function bool(v: unknown): boolean | undefined {
+  if (v === undefined || v === null || v === "") return undefined;
+  if (typeof v === "boolean") return v;
+  const s = String(v).toLowerCase();
+  if (s === "true" || s === "yes" || s === "on" || s === "1") return true;
+  if (s === "false" || s === "no" || s === "off" || s === "0") return false;
+  return undefined;
+}
+
+function num(v: unknown): number | undefined {
+  if (v === undefined || v === null || v === "") return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function list(v: unknown): string[] | undefined {
+  const s = str(v);
+  if (!s) return undefined;
+  const items = s.split(",").map((x) => x.trim()).filter(Boolean);
+  return items.length ? items : undefined;
+}
+
+/**
+ * Build a DataGridOptions from the `<datagrid>` tag's HTML attributes.
+ * Simple attrs are read directly; the optional `meta` attr carries the
+ * `type:<col>=...` / `align:<col>=...` flags (HTML attribute names
+ * can't hold colons, so colon-bearing flags ride in `meta=`).
+ */
+function attrsToOptions(p: Record<string, unknown>): DataGridOptions {
+  const base: DataGridOptions = str(p.meta) ? parseInfoString(str(p.meta)) : {};
+  const src = str(p.src);
+  if (src) base.src = src;
+  const title = str(p.title);
+  if (title) base.title = title;
+  const sort = str(p.sort);
+  if (sort) base.sort = sort;
+  const filter = bool(p.filter);
+  if (filter !== undefined) base.filter = filter;
+  const search = bool(p.search);
+  if (search !== undefined) base.search = search;
+  const height = num(p.height);
+  if (height !== undefined) base.height = height;
+  const hide = list(p.hide);
+  if (hide) base.hide = hide;
+  const idCol = str(p["id-column"]) ?? str(p.idColumn);
+  if (idCol) base.idColumn = idCol;
+  const rowNums = bool(p["row-numbers"]) ?? bool(p.rowNumbers);
+  if (rowNums !== undefined) base.rowNumbers = rowNums;
+  const delim = str(p.delimiter);
+  if (delim) base.delimiter = delim === "\\t" ? "\t" : delim;
+  return base;
+}
+
+function DatagridMissingSrc() {
+  return (
+    <div className="not-prose my-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs">
+      <div className="font-semibold text-amber-600 dark:text-amber-400">
+        &lt;datagrid&gt; — missing <code>src=</code>
+      </div>
+      <div className="mt-1 text-foreground/80">
+        The <code>&lt;datagrid&gt;</code> tag loads CSV from a sibling file.
+        For inline data use a <code>```csv</code> fenced block instead.
+      </div>
+    </div>
+  );
 }
 
 const FRONT_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;

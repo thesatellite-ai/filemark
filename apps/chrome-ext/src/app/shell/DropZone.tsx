@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Upload } from "lucide-react";
 import { useLibrary, type LibraryFile, type LibraryFolder } from "../store";
 import { useSettings, isFormatEnabled } from "../settings";
-import { readDroppedFile } from "../fs";
+import { folderFromHandle, readDroppedFile } from "../fs";
+import { sessionHandles } from "../sessionHandles";
 import { isSupported, SUPPORTED_EXTS } from "../registry";
 
 export function DropZone() {
@@ -45,18 +46,64 @@ export function DropZone() {
       // appear in dataTransfer.files. Files DO appear in dataTransfer.files
       // reliably; webkitGetAsEntry can return null in synthetic DataTransfer
       // and on some browsers, so we don't trust it for the file list.
+      //
+      // Modern Chrome also exposes `getAsFileSystemHandle()` on DataTransferItem
+      // (since Chrome 86). For dropped directories we prefer that path — it
+      // returns a persistent `FileSystemDirectoryHandle` we can save to IDB,
+      // so edits to files on disk flow back into the reader on reload without
+      // the user having to re-drop. Fallback to webkitGetAsEntry snapshot when
+      // the API is missing or returns null.
       const items = Array.from(e.dataTransfer.items);
       const dirEntries: FileSystemDirectoryEntry[] = [];
+      const dirHandles: FileSystemDirectoryHandle[] = [];
       for (const it of items) {
         if (it.kind !== "file") continue;
+        let handle: FileSystemHandle | null = null;
+        try {
+          handle = (await (
+            it as DataTransferItem & {
+              getAsFileSystemHandle?: () => Promise<FileSystemHandle | null>;
+            }
+          ).getAsFileSystemHandle?.()) ?? null;
+        } catch {
+          handle = null;
+        }
+        if (handle && handle.kind === "directory") {
+          dirHandles.push(handle as FileSystemDirectoryHandle);
+          continue;
+        }
         const entry = it.webkitGetAsEntry?.();
         if (entry?.isDirectory) dirEntries.push(entry as FileSystemDirectoryEntry);
       }
       const looseFiles = Array.from(e.dataTransfer.files);
 
-      if (dirEntries.length === 0 && looseFiles.length === 0) return;
+      if (
+        dirEntries.length === 0 &&
+        dirHandles.length === 0 &&
+        looseFiles.length === 0
+      )
+        return;
 
       let firstActiveId: string | null = null;
+
+      // --- Directory drops (FSA handle, persistent) ---------------------
+      for (const dirHandle of dirHandles) {
+        try {
+          const res = await folderFromHandle(dirHandle);
+          sessionHandles.register(
+            res.folder.id,
+            res.folder.handle!,
+            res.fileHandles,
+          );
+          const supported = res.files.filter((f) => acceptExt(f.ext));
+          if (supported.length === 0) continue;
+          await addFolder(res.folder, supported);
+          if (!firstActiveId) firstActiveId = supported[0]!.id;
+          useLibrary.setState((s) => ({ sessionRev: s.sessionRev + 1 }));
+        } catch (err) {
+          console.warn("DropZone: failed to register FSA handle", err);
+        }
+      }
 
       // --- Directory drops ------------------------------------------------
       // Walk each dropped dir, read every supported file's content into

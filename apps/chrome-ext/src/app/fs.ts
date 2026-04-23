@@ -93,15 +93,20 @@ export async function trySilentRestore(folder: LibraryFolder): Promise<{
   return { handle, fileHandles };
 }
 
-export async function pickFolder(): Promise<{
+/**
+ * Build a full FSA-style `LibraryFolder` + `LibraryFile[]` + session
+ * file-handle map from an already-obtained `FileSystemDirectoryHandle`.
+ * The handle is persisted to IDB so it survives reloads. Used by both
+ * `pickFolder()` (via the user's Open Folder button) and by the
+ * drop-zone, when a dragged folder exposes `getAsFileSystemHandle()`.
+ */
+export async function folderFromHandle(
+  handle: FileSystemDirectoryHandle,
+): Promise<{
   folder: LibraryFolder;
   files: LibraryFile[];
   fileHandles: Map<string, FileSystemFileHandle>;
-} | null> {
-  // @ts-expect-error showDirectoryPicker typed in recent TS libs
-  const handle: FileSystemDirectoryHandle = await window.showDirectoryPicker({
-    mode: "read",
-  });
+}> {
   const id = crypto.randomUUID();
   await saveDirHandle(id, handle);
 
@@ -132,6 +137,18 @@ export async function pickFolder(): Promise<{
     kind: "fsa",
   };
   return { folder, files, fileHandles };
+}
+
+export async function pickFolder(): Promise<{
+  folder: LibraryFolder;
+  files: LibraryFile[];
+  fileHandles: Map<string, FileSystemFileHandle>;
+} | null> {
+  // @ts-expect-error showDirectoryPicker typed in recent TS libs
+  const handle: FileSystemDirectoryHandle = await window.showDirectoryPicker({
+    mode: "read",
+  });
+  return folderFromHandle(handle);
 }
 
 export async function restoreFolder(folder: LibraryFolder): Promise<{

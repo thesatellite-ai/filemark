@@ -5,3 +5,11 @@ dist
 .vite
 .turbo
 CLAUDE.md
+.env
+.env.*
+!.env.example
+filemark.zip
+# BEGIN repolink (managed — do not edit)
+/CLAUDE.md
+/docsi
+# END repolink

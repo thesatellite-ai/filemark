@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Tailwind v4 auto-detection only scans this app's sources by default; the
+   workspace viewer packages need to be opted in so their utilities end up
+   in the final CSS (otherwise hover/resize/etc. silently disappear). */
+@source "../../../../packages/*/src/**/*.{ts,tsx,js,jsx}";
+
 /* ─────────────────────────────────────────────────────────────────────────
    shadcn / basecn dark-mode variant. Maps `.dark` to our `[data-theme]`
    so the ThemeProvider (which writes `data-theme` on <html>) drives

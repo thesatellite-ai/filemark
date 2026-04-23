@@ -204,6 +204,45 @@ flowchart LR
 
 Or fence a schema with ` ```schema `, ` ```prisma `, or ` ```dbml ` and get an interactive ER diagram in the middle of your docs.
 
+### Interactive datagrid from CSV
+
+Fence any block with ` ```csv ` or ` ```tsv ` and it renders as a sortable,
+filterable, resizable grid:
+
+````md
+```csv type:priority=status(P0:danger,P1:warn,P2:info) type:owner=avatar agg:revenue=sum title="Q2 roadmap" sort=priority row-numbers selection group-by=priority
+id,title,priority,owner,revenue
+T-1,Ship datagrid core,P0,Ada Lovelace,12500
+T-2,Wire forms,P1,Grace Hopper,3400
+T-3,Theme v2,P2,Margaret Hamilton,2200
+```
+````
+
+18+ rich column types (`status`, `tags`, `avatar`, `checkbox`, `rating`,
+`progress`, `currency(USD)`, `percentage`, `filesize`, `date`, `relative`,
+`url`, `email`, `phone`, `color`, `sparkline`, `icon`, `country`, `duration`,
+`range`, `code-block`, `json`, `image`, `id`). Multi-column sort
+(shift-click), typed filter UIs per column, row selection + bulk copy
+(CSV / MD / JSON to clipboard), column resize + auto-fit, pinned columns,
+aggregation footer, row grouping, row-expansion detail panel, density
+toggle, full-screen view, raw-source toggle, URL-sync for shareable views.
+
+Prefer a component-style invocation:
+
+```md
+<Datagrid src="./team.csv"
+  title="Team"
+  sort="name"
+  id-column="id"
+  row-numbers="true"
+  meta="type:status=status type:avatar=avatar" />
+```
+
+`src=` accepts relative paths (resolved via the folder handle) or
+absolute URLs (fetched directly — `host_permissions: ["<all_urls>"]`
+in the manifest bypasses CORS). See `docsi/DATAGRID.md` for the full
+info-string grammar.
+
 ### YAML frontmatter
 
 ```md
@@ -319,7 +358,7 @@ Absolutely — install it from source, unpack the build, distribute the `dist/` 
 
 - **Editable raw source mode** — edit files straight from the viewer with full syntax highlighting
 - **Code-file renderer** — `.ts`, `.tsx`, `.js`, `.jsx`, `.py`, `.rs` and friends, with line anchors and copy-link
-- **CSV / TSV viewer** — filterable, sortable, handles hundreds of thousands of rows
+- **Standalone `.csv` / `.tsv` viewer** — reusing the datagrid (already shipped inside markdown)
 - **YAML / TOML renderers** — first-class structured viewers, not just syntax highlighting
 - **Image viewer** — zoom, pan, pixel-peep for `.svg`, `.png`, `.jpg`, `.webp`
 - **ORM schema auto-detection** — Drizzle, TypeORM, Sequelize, MikroORM, Kysely

@@ -1,0 +1,200 @@
+# Filemark — Taskfile
+# Run `task` (no args) to see every available command.
+# https://taskfile.dev
+#
+# Publish-related tasks need these env vars (see `.env.example`):
+#   CWS_EXTENSION_ID, CWS_CLIENT_ID, CWS_CLIENT_SECRET, CWS_REFRESH_TOKEN
+# The tasks load a local `.env` automatically via `dotenv:`.
+
+version: "3"
+
+dotenv: [".env"]
+
+vars:
+  DIST: apps/chrome-ext/dist
+  ZIP: filemark.zip
+  MANIFEST: apps/chrome-ext/public/manifest.json
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list-all
+    silent: true
+
+  # ── environment ─────────────────────────────────────────────────────────
+
+  install:
+    desc: Install all workspace dependencies (pnpm)
+    cmds:
+      - pnpm install
+
+  clean:
+    desc: Remove build artifacts (dist dirs + zipped extension)
+    cmds:
+      - rm -rf {{.DIST}}
+      - rm -rf packages/*/dist
+      - rm -f {{.ZIP}}
+
+  clean:all:
+    desc: Nuke everything incl. node_modules
+    cmds:
+      - task: clean
+      - rm -rf node_modules apps/*/node_modules packages/*/node_modules
+
+  # ── build ───────────────────────────────────────────────────────────────
+
+  build:packages:
+    desc: Build every viewer package (@filemark/core, mdx, json, schema)
+    cmds:
+      - 'pnpm -r --filter "./packages/*" build'
+
+  build:ext:
+    desc: Build the Chrome extension (requires packages built)
+    deps: [build:packages]
+    cmds:
+      - pnpm --filter chrome-ext build
+
+  build:
+    desc: Full production build — packages + extension
+    cmds:
+      - task: build:packages
+      - task: build:ext
+      - 'echo "✓ built to {{.DIST}}"'
+
+  dev:
+    desc: Watch-rebuild the extension while editing
+    cmds:
+      - pnpm --filter chrome-ext dev
+
+  typecheck:
+    desc: Type-check every package + the extension
+    cmds:
+      - pnpm -r typecheck
+
+  # ── versioning ──────────────────────────────────────────────────────────
+
+  version:
+    desc: Print the current extension version from manifest.json
+    cmds:
+      - 'jq -r ".version" {{.MANIFEST}}'
+    silent: true
+
+  version:bump:
+    desc: 'Set the extension version everywhere — usage: task version:bump -- 0.2.0'
+    cmds:
+      - |
+        V="{{.CLI_ARGS}}"
+        if [ -z "$V" ]; then echo "usage: task version:bump -- <x.y.z>"; exit 1; fi
+        echo "Setting version to $V …"
+        tmp=$(mktemp) && jq --arg v "$V" '.version = $v' {{.MANIFEST}} > "$tmp" && mv "$tmp" {{.MANIFEST}}
+        for f in package.json apps/chrome-ext/package.json packages/*/package.json; do
+          tmp=$(mktemp) && jq --arg v "$V" '.version = $v' "$f" > "$tmp" && mv "$tmp" "$f"
+        done
+        echo "✓ version bumped to $V"
+
+  # ── packaging ───────────────────────────────────────────────────────────
+
+  zip:
+    desc: Package the built extension into filemark.zip (uploadable to Chrome Web Store)
+    deps: [build]
+    cmds:
+      - rm -f {{.ZIP}}
+      - 'cd {{.DIST}} && zip -r "{{.TASKFILE_DIR}}/{{.ZIP}}" . -x "*.map"'
+      - 'echo "✓ packaged {{.ZIP}} ($(du -h {{.ZIP}} | cut -f1))"'
+
+  zip:verify:
+    desc: Sanity-check the packaged zip (manifest + required entry files present)
+    cmds:
+      - |
+        if [ ! -f {{.ZIP}} ]; then
+          echo "ERR: {{.ZIP}} not found. Run 'task zip' first."
+          exit 1
+        fi
+        echo "── manifest ─────────────────────────"
+        unzip -p {{.ZIP}} manifest.json | jq '{name, version, manifest_version, permissions, content_scripts: (.content_scripts // []) | length}'
+        echo "── required entries ─────────────────"
+        for f in manifest.json service-worker.js content.js src/app/index.html src/options/index.html; do
+          if unzip -l {{.ZIP}} | grep -q " $f$"; then
+            echo "  ✓ $f"
+          else
+            echo "  ✗ missing: $f"
+            exit 1
+          fi
+        done
+        echo "── size ─────────────────────────────"
+        ls -lh {{.ZIP}}
+
+  # ── Chrome Web Store publishing ─────────────────────────────────────────
+
+  cws:upload:
+    desc: Upload the current zip to the Chrome Web Store (creates a draft; review NOT submitted)
+    deps: [zip]
+    preconditions:
+      - sh: '[ -n "$CWS_EXTENSION_ID" ] && [ -n "$CWS_CLIENT_ID" ] && [ -n "$CWS_CLIENT_SECRET" ] && [ -n "$CWS_REFRESH_TOKEN" ]'
+        msg: "Set CWS_EXTENSION_ID / CWS_CLIENT_ID / CWS_CLIENT_SECRET / CWS_REFRESH_TOKEN in .env — see .env.example"
+    cmds:
+      - |
+        npx --yes chrome-webstore-upload-cli@3 upload \
+          --source {{.ZIP}} \
+          --extension-id "$CWS_EXTENSION_ID" \
+          --client-id "$CWS_CLIENT_ID" \
+          --client-secret "$CWS_CLIENT_SECRET" \
+          --refresh-token "$CWS_REFRESH_TOKEN"
+
+  cws:publish:
+    desc: Upload AND submit the new version for public review on the Chrome Web Store
+    deps: [zip]
+    preconditions:
+      - sh: '[ -n "$CWS_EXTENSION_ID" ] && [ -n "$CWS_CLIENT_ID" ] && [ -n "$CWS_CLIENT_SECRET" ] && [ -n "$CWS_REFRESH_TOKEN" ]'
+        msg: "Set CWS_EXTENSION_ID / CWS_CLIENT_ID / CWS_CLIENT_SECRET / CWS_REFRESH_TOKEN in .env"
+    cmds:
+      - task: cws:upload
+      - |
+        npx --yes chrome-webstore-upload-cli@3 publish \
+          --extension-id "$CWS_EXTENSION_ID" \
+          --client-id "$CWS_CLIENT_ID" \
+          --client-secret "$CWS_CLIENT_SECRET" \
+          --refresh-token "$CWS_REFRESH_TOKEN"
+      - 'echo "✓ submitted for review — track progress at https://chrome.google.com/webstore/devconsole"'
+
+  cws:publish:trusted:
+    desc: Publish to trustedTesters group (for staged rollouts before public submission)
+    deps: [zip]
+    preconditions:
+      - sh: '[ -n "$CWS_EXTENSION_ID" ] && [ -n "$CWS_CLIENT_ID" ] && [ -n "$CWS_CLIENT_SECRET" ] && [ -n "$CWS_REFRESH_TOKEN" ]'
+        msg: "Set CWS_EXTENSION_ID / CWS_CLIENT_ID / CWS_CLIENT_SECRET / CWS_REFRESH_TOKEN in .env"
+    cmds:
+      - task: cws:upload
+      - |
+        npx --yes chrome-webstore-upload-cli@3 publish \
+          --extension-id "$CWS_EXTENSION_ID" \
+          --client-id "$CWS_CLIENT_ID" \
+          --client-secret "$CWS_CLIENT_SECRET" \
+          --refresh-token "$CWS_REFRESH_TOKEN" \
+          --target trustedTesters
+
+  # ── shortcuts ───────────────────────────────────────────────────────────
+
+  dashboard:
+    desc: Open the Chrome Web Store developer dashboard in your default browser
+    cmds:
+      - open https://chrome.google.com/webstore/devconsole
+
+  repo:
+    desc: Open the GitHub repo
+    cmds:
+      - open https://github.com/thesatellite-ai/filemark
+
+  # ── release orchestration ───────────────────────────────────────────────
+
+  release:
+    desc: 'Full release — bump, build, zip, verify, publish. Usage: task release -- 0.2.0'
+    cmds:
+      - task: version:bump
+        vars: { CLI_ARGS: "{{.CLI_ARGS}}" }
+      - task: clean
+      - task: zip
+      - task: zip:verify
+      - task: cws:publish
+      - 'V=$(jq -r ".version" {{.MANIFEST}}); echo "✓ Filemark v$V submitted for Web Store review"'
