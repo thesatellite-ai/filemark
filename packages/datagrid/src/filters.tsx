@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { CellValue, Column, ColumnType, Row } from "./types";
 import { TONE_CLASS, defaultStatusTone } from "./parseColumnType";
 import { tagColorClass } from "./color-hash";
@@ -241,6 +241,14 @@ function MultiSelectFilter({
   allRows: Row[];
 }) {
   const [open, setOpen] = useState(false);
+  const [anchor, setAnchor] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+
   const options = useMemo(() => {
     const set = new Set<string>();
     for (const r of allRows) {
@@ -258,6 +266,43 @@ function MultiSelectFilter({
     return Array.from(set).sort();
   }, [allRows, column.key, column.type]);
 
+  const openMenu = () => {
+    if (buttonRef.current) {
+      const r = buttonRef.current.getBoundingClientRect();
+      setAnchor({ top: r.bottom + 4, left: r.left, width: r.width });
+    }
+    setOpen(true);
+  };
+
+  // Outside-click + scroll + escape dismiss. Dropdown is fixed-positioned
+  // so we close-on-scroll to avoid drift. Clicks inside the popover don't
+  // count as "outside" (checked via popoverRef.contains). The trigger
+  // button also doesn't count (so its own onClick can still toggle).
+  useEffect(() => {
+    if (!open) return;
+    const onDocDown = (e: MouseEvent) => {
+      const t = e.target as Node | null;
+      if (!t) return;
+      if (popoverRef.current?.contains(t)) return;
+      if (buttonRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    const onScroll = () => setOpen(false);
+    document.addEventListener("mousedown", onDocDown);
+    document.addEventListener("keydown", onEsc);
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      document.removeEventListener("mousedown", onDocDown);
+      document.removeEventListener("keydown", onEsc);
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [open]);
+
   const toggle = (opt: string) => {
     const next = value.includes(opt)
       ? value.filter((v) => v !== opt)
@@ -266,10 +311,11 @@ function MultiSelectFilter({
   };
 
   return (
-    <div className="relative">
+    <>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => (open ? setOpen(false) : openMenu())}
         className={[
           "h-6 w-full rounded-md border border-border/50 bg-background/80 px-2 text-left text-[11px] transition-colors",
           value.length
@@ -284,48 +330,51 @@ function MultiSelectFilter({
             : `${value.length} selected`}
         <span className="float-right opacity-50">▾</span>
       </button>
-      {open && (
-        <>
-          <div
-            className="fixed inset-0 z-20"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="absolute z-30 mt-1 max-h-56 min-w-full overflow-auto rounded-md border border-border/60 bg-popover p-1 shadow-md">
-            {options.length === 0 ? (
-              <div className="px-2 py-1 text-[11px] italic text-muted-foreground">
-                no values
-              </div>
-            ) : (
-              options.map((opt) => (
-                <MultiSelectRow
-                  key={opt}
-                  column={column}
-                  value={opt}
-                  selected={value.includes(opt)}
-                  onToggle={() => toggle(opt)}
-                />
-              ))
-            )}
-            {value.length > 0 && (
-              <>
-                <div className="my-1 h-px bg-border/50" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange([]);
-                    setOpen(false);
-                  }}
-                  className="w-full rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-                >
-                  Clear selection
-                </button>
-              </>
-            )}
-          </div>
-        </>
+      {open && anchor && (
+        <div
+          ref={popoverRef}
+          style={{
+            position: "fixed",
+            top: anchor.top,
+            left: anchor.left,
+            minWidth: Math.max(anchor.width, 160),
+            zIndex: 1000,
+          }}
+          className="max-h-56 overflow-auto rounded-md border border-border/60 bg-popover p-1 shadow-lg"
+        >
+          {options.length === 0 ? (
+            <div className="px-2 py-1 text-[11px] italic text-muted-foreground">
+              no values
+            </div>
+          ) : (
+            options.map((opt) => (
+              <MultiSelectRow
+                key={opt}
+                column={column}
+                value={opt}
+                selected={value.includes(opt)}
+                onToggle={() => toggle(opt)}
+              />
+            ))
+          )}
+          {value.length > 0 && (
+            <>
+              <div className="my-1 h-px bg-border/50" />
+              <button
+                type="button"
+                onClick={() => {
+                  onChange([]);
+                  setOpen(false);
+                }}
+                className="w-full rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              >
+                Clear selection
+              </button>
+            </>
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -368,15 +417,22 @@ function MultiSelectRow({
     );
   }
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-[11px] hover:bg-accent/60">
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1 text-left text-[11px] hover:bg-accent/60"
+    >
       <input
         type="checkbox"
         checked={selected}
-        onChange={onToggle}
-        className="h-3 w-3 accent-primary"
+        onChange={() => {
+          /* handled by parent button's onClick */
+        }}
+        tabIndex={-1}
+        className="pointer-events-none h-3 w-3 accent-primary"
       />
       {chip}
-    </label>
+    </button>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getExample } from "./examples";
 import { RenderedDoc } from "./RenderedDoc";
+import { MonacoPane } from "./MonacoPane";
 
 const DEFAULT_ID = "playground-starter";
 const URL_PARAM = "src";
@@ -77,13 +78,13 @@ export function Playground() {
         </div>
       </div>
       <div className="grid flex-1 min-h-0 gap-px bg-border md:grid-cols-2">
-        <textarea
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-          spellCheck={false}
-          className="h-full min-h-[60vh] resize-none bg-background p-4 font-mono text-[12.5px] leading-relaxed text-foreground outline-none focus:ring-1 focus:ring-ring/40"
-          placeholder="# Start writing markdown…"
-        />
+        <div className="h-full min-h-0 bg-background">
+          <MonacoPane
+            value={source}
+            onChange={setSource}
+            language="markdown"
+          />
+        </div>
         <div className="h-full min-h-0 overflow-auto bg-background">
           <RenderedDoc content={source} fileId="playground" name="playground.md" />
         </div>

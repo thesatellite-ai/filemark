@@ -726,6 +726,20 @@ export function DataGrid({
             </>
           )}
           <IconButton
+            onClick={() => {
+              if (!hasAnyFilter) return;
+              table.resetColumnFilters();
+              setGlobalFilter("");
+            }}
+            title={
+              hasAnyFilter
+                ? "Clear all filters and search"
+                : "No filters active"
+            }
+            icon={<IconClearFilter />}
+            disabled={!hasAnyFilter}
+          />
+          <IconButton
             onClick={() => cycleDensity(density, setDensity)}
             title={`Density: ${density}. Click to cycle.`}
             icon={<IconDensity density={density} />}
@@ -1440,11 +1454,13 @@ function IconButton({
   title,
   icon,
   active = false,
+  disabled = false,
 }: {
   onClick: () => void;
   title: string;
   icon: React.ReactNode;
   active?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
@@ -1452,11 +1468,14 @@ function IconButton({
       onClick={onClick}
       title={title}
       aria-label={title}
+      disabled={disabled}
       className={[
         "inline-flex h-6 min-w-[24px] items-center justify-center gap-1 rounded-md px-1.5 text-[10.5px] font-medium transition-opacity transition-colors",
-        active
-          ? "bg-primary/15 text-primary opacity-100"
-          : "text-muted-foreground opacity-60 hover:bg-accent/60 hover:text-foreground hover:opacity-100 group-hover/toolbar:opacity-100",
+        disabled
+          ? "text-muted-foreground/40 cursor-not-allowed opacity-40"
+          : active
+            ? "bg-primary/15 text-primary opacity-100"
+            : "text-muted-foreground opacity-60 hover:bg-accent/60 hover:text-foreground hover:opacity-100 group-hover/toolbar:opacity-100",
       ].join(" ")}
     >
       {icon}
@@ -1531,6 +1550,21 @@ function IconFullscreen({ active }: { active: boolean }) {
         fill="none"
         stroke="currentColor"
         strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconClearFilter() {
+  return (
+    <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+      <path
+        d="M1.5 2.5 H10.5 L7.5 6 V10 L4.5 8.5 V6 L1.5 2.5 Z M9 8.5 L11 10.5 M11 8.5 L9 10.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.1"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
