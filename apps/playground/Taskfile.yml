@@ -1,0 +1,158 @@
+# @filemark/playground — Taskfile
+# Run `task` (no args) to see every available command.
+# https://taskfile.dev
+#
+# Vercel tasks require the `vercel` CLI to be authed (`vercel login`)
+# and this folder linked to a project (`task vercel:link`, once).
+
+version: "3"
+
+dotenv: [".env", "../../.env"]
+
+vars:
+  MONOREPO_ROOT: "{{.TASKFILE_DIR}}/../.."
+  PKG: "@filemark/playground"
+  DIST: "dist"
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list-all
+    silent: true
+
+  # ── environment ─────────────────────────────────────────────────────────
+
+  install:
+    desc: Install all monorepo dependencies (pnpm)
+    dir: "{{.MONOREPO_ROOT}}"
+    cmds:
+      - pnpm install
+
+  clean:
+    desc: Remove the playground's build artifacts
+    cmds:
+      - rm -rf {{.DIST}}
+      - rm -rf .vercel/output
+
+  clean:all:
+    desc: Nuke build artifacts + the local node_modules
+    cmds:
+      - task: clean
+      - rm -rf node_modules
+
+  # ── typecheck / build / preview ────────────────────────────────────────
+
+  typecheck:
+    desc: Type-check the playground SPA
+    dir: "{{.MONOREPO_ROOT}}"
+    cmds:
+      - 'pnpm --filter {{.PKG}} typecheck'
+
+  build:packages:
+    desc: Build the viewer packages the playground depends on
+    dir: "{{.MONOREPO_ROOT}}"
+    cmds:
+      - 'pnpm -r --filter "./packages/*" build'
+
+  build:
+    desc: Full production build — packages + playground SPA
+    dir: "{{.MONOREPO_ROOT}}"
+    cmds:
+      - task: build:packages
+      - 'pnpm --filter {{.PKG}} build'
+      - 'echo "✓ built to apps/playground/{{.DIST}}"'
+
+  dev:
+    desc: Run the Vite dev server (hot-module reload)
+    dir: "{{.MONOREPO_ROOT}}"
+    cmds:
+      - 'pnpm --filter {{.PKG}} dev'
+
+  preview:
+    desc: Serve the production build locally to sanity-check before deploy
+    deps: [build]
+    dir: "{{.MONOREPO_ROOT}}"
+    cmds:
+      - 'pnpm --filter {{.PKG}} preview'
+
+  # ── Vercel publishing ──────────────────────────────────────────────────
+
+  vercel:link:
+    desc: One-time — link this folder to a Vercel project (follow the prompts)
+    cmds:
+      - 'npx --yes vercel@latest link'
+
+  vercel:env:pull:
+    desc: Sync env vars from Vercel to ./.vercel/.env.development.local
+    cmds:
+      - 'npx --yes vercel@latest env pull'
+
+  vercel:deploy:
+    desc: Deploy a preview build to Vercel (uploads source; Vercel builds remotely via vercel.json)
+    preconditions:
+      - sh: "[ -d .vercel ]"
+        msg: "Project not linked yet. Run `task vercel:link` first."
+    cmds:
+      - 'npx --yes vercel@latest deploy'
+
+  vercel:deploy:prod:
+    desc: Promote to the production domain (≈ filemark.vercel.app)
+    preconditions:
+      - sh: "[ -d .vercel ]"
+        msg: "Project not linked yet. Run `task vercel:link` first."
+    cmds:
+      - 'npx --yes vercel@latest deploy --prod'
+      - 'echo "✓ production deploy submitted — track at https://vercel.com/dashboard"'
+
+  vercel:deploy:prebuilt:
+    desc: Build locally then upload — faster + avoids remote-build surprises
+    deps: [build]
+    preconditions:
+      - sh: "[ -d .vercel ]"
+        msg: "Project not linked yet. Run `task vercel:link` first."
+    cmds:
+      - 'npx --yes vercel@latest build'
+      - 'npx --yes vercel@latest deploy --prebuilt'
+
+  vercel:deploy:prebuilt:prod:
+    desc: Build locally then promote to production
+    deps: [build]
+    preconditions:
+      - sh: "[ -d .vercel ]"
+        msg: "Project not linked yet. Run `task vercel:link` first."
+    cmds:
+      - 'npx --yes vercel@latest build --prod'
+      - 'npx --yes vercel@latest deploy --prebuilt --prod'
+      - 'echo "✓ production deploy submitted"'
+
+  vercel:logs:
+    desc: Tail Vercel logs for the most recent deployment
+    cmds:
+      - 'npx --yes vercel@latest logs'
+
+  vercel:dashboard:
+    desc: Open the Vercel project dashboard
+    cmds:
+      - open "https://vercel.com/dashboard"
+
+  # ── shortcuts ──────────────────────────────────────────────────────────
+
+  open:
+    desc: Open the local dev server in the default browser
+    cmds:
+      - open "http://localhost:5173/"
+
+  repo:
+    desc: Open the GitHub repo
+    cmds:
+      - open "https://github.com/thesatellite-ai/filemark"
+
+  # ── orchestration ──────────────────────────────────────────────────────
+
+  release:
+    desc: Full deploy — typecheck, build locally, push prod to Vercel
+    cmds:
+      - task: typecheck
+      - task: build
+      - task: vercel:deploy:prebuilt:prod
