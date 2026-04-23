@@ -61,6 +61,55 @@ export default function App() {
     return () => ws.close();
   }, []);
 
+  // Re-walk every FSA folder on disk so files added / removed outside
+  // the extension show up without a manual reload. Three triggers:
+  //   1) tab regains focus (cheap — walkDirectory just re-traverses
+  //      the in-memory directory handle)
+  //   2) tab becomes visible (visibilitychange)
+  //   3) auto-refresh interval (when the user has toggled it on in
+  //      the TopBar, same cadence as the file-content polling). Only
+  //      runs while there's at least one FSA folder in the library.
+  const autoRefresh = useLibrary((s) => s.autoRefresh);
+  const autoRefreshMs = useLibrary((s) => s.autoRefreshMs);
+  useEffect(() => {
+    const rescanAll = async () => {
+      const folders = useLibrary.getState().folders;
+      const fsaFolders = Object.values(folders).filter(
+        (f) => f.kind === "fsa",
+      );
+      if (!fsaFolders.length) return;
+      const rescan = useLibrary.getState().rescanFolder;
+      for (const f of fsaFolders) {
+        try {
+          await rescan(f.id);
+        } catch {
+          /* one folder failing shouldn't block the rest */
+        }
+      }
+    };
+
+    const onFocus = () => void rescanAll();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void rescanAll();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    let interval: number | null = null;
+    if (autoRefresh) {
+      interval = window.setInterval(
+        () => void rescanAll(),
+        Math.max(500, autoRefreshMs),
+      );
+    }
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      if (interval !== null) window.clearInterval(interval);
+    };
+  }, [autoRefresh, autoRefreshMs]);
+
   const showDemo =
     typeof window !== "undefined" &&
     new URLSearchParams(location.search).get("demo") === "components";

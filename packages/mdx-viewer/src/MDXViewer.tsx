@@ -25,6 +25,12 @@ import {
   parseInfoString,
   type DataGridOptions,
 } from "@filemark/datagrid";
+import {
+  ChartBlock,
+  attrsToChartOptions,
+  parseChartInfoString,
+  type ChartType,
+} from "@filemark/chart";
 
 interface TocItem {
   id: string;
@@ -53,6 +59,22 @@ export function MDXViewer(props: ViewerProps) {
         tabs: Tabs,
         tab: Tab,
         details: Details,
+        // <Chart src="./metrics.csv" type="bar" x="region" y="revenue" />
+        // Mirrors <Datagrid> — src-based; inline data uses a ```chart fence.
+        chart: (p: Record<string, unknown>) => {
+          const options = attrsToChartOptions(p);
+          if (!options.src) {
+            return <ChartMissingSrc />;
+          }
+          return (
+            <ChartBlock
+              source=""
+              options={options}
+              defaultDelimiter={","}
+              assets={assets}
+            />
+          );
+        },
         // <datagrid src="..." title="..." sort="..." meta="type:col=status(...)" />
         // Src-based only — for inline data, use a ```csv fenced block instead
         // (HTML attributes can't cleanly hold multi-line CSV).
@@ -128,6 +150,21 @@ export function MDXViewer(props: ViewerProps) {
                 assets={assets}
                 storage={storage}
                 storageKey={`${file.id}:${lang}:${hashString(raw + (meta ?? ""))}`}
+              />
+            );
+          }
+          // Interactive charts — ```chart / ```bar / ```line / ```pie /
+          // ```area / ```scatter. Lang tag sets the default type; `type=`
+          // in meta overrides. Mirrors the csv/tsv/datagrid branch.
+          if (CHART_LANGS.has(lang ?? "")) {
+            return (
+              <ChartBlock
+                source={raw}
+                options={parseChartInfoString(meta, {
+                  defaultType: lang as ChartType,
+                })}
+                defaultDelimiter={","}
+                assets={assets}
               />
             );
           }
@@ -302,6 +339,31 @@ function attrsToOptions(p: Record<string, unknown>): DataGridOptions {
   const delim = str(p.delimiter);
   if (delim) base.delimiter = delim === "\\t" ? "\t" : delim;
   return base;
+}
+
+const CHART_LANGS: ReadonlySet<string> = new Set([
+  "chart",
+  "bar",
+  "line",
+  "pie",
+  "area",
+  "scatter",
+  "funnel",
+  "radar",
+]);
+
+function ChartMissingSrc() {
+  return (
+    <div className="not-prose my-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs">
+      <div className="font-semibold text-amber-600 dark:text-amber-400">
+        &lt;Chart&gt; — missing <code>src=</code>
+      </div>
+      <div className="mt-1 text-foreground/80">
+        The <code>&lt;Chart&gt;</code> tag loads data from a sibling file or
+        absolute URL. For inline data use a <code>```chart</code> fenced block.
+      </div>
+    </div>
+  );
 }
 
 function DatagridMissingSrc() {

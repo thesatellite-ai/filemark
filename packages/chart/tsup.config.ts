@@ -10,12 +10,11 @@ export default defineConfig({
     "react",
     "react-dom",
     "@filemark/core",
-    "@filemark/chart",
     "@filemark/datagrid",
-    "yaml",
-    "mermaid",
-    "db-schema-toolkit",
-    /^db-schema-toolkit\/.*/,
+    // recharts is dynamic-imported at runtime via lazyRecharts.ts, never
+    // bundled into the package output. The host (chrome-ext / playground)
+    // installs it as a transitive dep via @filemark/chart.
+    "recharts",
   ],
   target: "es2022",
   splitting: false,

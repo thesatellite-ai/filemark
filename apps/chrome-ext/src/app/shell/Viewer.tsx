@@ -104,14 +104,25 @@ export function Viewer() {
       }
     };
 
-    setLoading(true);
+    // Only flash the "Loading…" placeholder on a **genuine first load**
+    // (no content yet). A re-load triggered by sessionRev bump (e.g.
+    // session handles re-registered, folder rescan) keeps the existing
+    // content mounted — load() will swap content silently via setContent
+    // only if the new bytes differ, preserving scroll position + avoiding
+    // flicker. This is the single biggest UX win for auto-refresh:
+    // previously every tick showed the loading screen briefly and
+    // unmounted the MDX body, scrolling the page to the top.
+    if (content === null) setLoading(true);
     load().finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
     // Key by file.id (not the whole file object) so re-activating the same
     // tab — which mutates the files map's object identity for lastOpenedAt —
-    // doesn't force a reload and the accompanying "Loading…" flash.
+    // doesn't force a reload and the accompanying "Loading…" flash. The
+    // `content` dep is intentionally omitted: we read it inside the effect
+    // (`content === null ? setLoading(true)`) but don't want an infinite
+    // loop re-running whenever content changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file?.id, sessionRev]);
 

@@ -77,6 +77,14 @@ export interface LibraryState {
   reorderTabs(fromId: string, toId: string): void;
   addFiles(files: LibraryFile[]): Promise<void>;
   addFolder(folder: LibraryFolder, files: LibraryFile[]): Promise<void>;
+  /**
+   * Re-walk an FSA-backed folder on disk and reconcile the library —
+   * picks up files added since the folder was dropped, drops files the
+   * user has deleted. Noop for non-FSA folders or when the handle isn't
+   * in sessionHandles (user hasn't re-granted permission this session).
+   * Returns the number of files added and removed.
+   */
+  rescanFolder(folderId: string): Promise<{ added: number; removed: number }>;
   setFolderRootPath(folderId: string, rootPath: string): Promise<void>;
   toggleStar(id: string): Promise<void>;
   setTags(id: string, tags: string[]): Promise<void>;
@@ -305,6 +313,115 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     }
     await idbStorage.set(KEYS.folders, persisted);
     await idbStorage.set(KEYS.files, nextFiles);
+  },
+
+  async rescanFolder(folderId) {
+    // Dynamic import to avoid circular dep between store.ts and fs.ts.
+    const { walkDirectory } = await import("./fs");
+    const { sessionHandles } = await import("./sessionHandles");
+
+    // fs.ts keeps fileExt() private; duplicate the two-liner here to
+    // avoid exporting it purely for this one call site.
+    const fileExt = (name: string): string => {
+      const i = name.lastIndexOf(".");
+      return i === -1 ? "" : name.slice(i + 1).toLowerCase();
+    };
+
+    const state = get();
+    const folder = state.folders[folderId];
+    if (!folder) return { added: 0, removed: 0 };
+
+    const dir = sessionHandles.getDir(folderId);
+    if (!dir) return { added: 0, removed: 0 };
+
+    let entries: Awaited<ReturnType<typeof walkDirectory>>;
+    try {
+      entries = await walkDirectory(dir);
+    } catch {
+      return { added: 0, removed: 0 };
+    }
+
+    // Rebuild the on-disk file set keyed by the same id scheme
+    // (`<folderId>:<relativePath>`) that pickFolder / folderFromHandle use.
+    const currentState = get();
+    const onDiskFiles: LibraryFile[] = [];
+    const newFileHandles = new Map<string, FileSystemFileHandle>();
+    for (const e of entries) {
+      const fid = `${folderId}:${e.path}`;
+      const name = e.path.split("/").pop() ?? e.path;
+      const prev = currentState.files[fid];
+      onDiskFiles.push({
+        id: fid,
+        name,
+        ext: fileExt(name),
+        path: e.path,
+        folderId,
+        // Preserve user-specific state (tags, starred, lastOpenedAt, size)
+        // from any previously-known row; reset on genuinely-new files.
+        size: prev?.size ?? 0,
+        ...(prev?.starred !== undefined && { starred: prev.starred }),
+        ...(prev?.tags && { tags: prev.tags }),
+        ...(prev?.lastOpenedAt !== undefined && { lastOpenedAt: prev.lastOpenedAt }),
+      });
+      newFileHandles.set(fid, e.handle);
+    }
+
+    const onDiskIds = new Set(onDiskFiles.map((f) => f.id));
+    const prevIdsForFolder = Object.values(currentState.files)
+      .filter((f) => f.folderId === folderId)
+      .map((f) => f.id);
+
+    const addedCount = onDiskFiles.filter(
+      (f) => !currentState.files[f.id],
+    ).length;
+    const removedIds = prevIdsForFolder.filter((id) => !onDiskIds.has(id));
+    const removedCount = removedIds.length;
+    if (addedCount === 0 && removedCount === 0) {
+      // Idempotent no-op branch — CRITICAL for auto-refresh to feel
+      // silent. Bumping `sessionRev` here would re-run every subscriber
+      // (Viewer's load effect keyed on [file.id, sessionRev]) and cause
+      // a visible loading flash on every poll tick, even when nothing
+      // changed on disk.
+      //
+      // Old handles remain valid between walkDirectory calls (same
+      // on-disk file → same semantic handle), so keeping the previously
+      // registered fileHandles map is safe. If a file IS moved / renamed
+      // / deleted, the diff above captures it and we hit the full
+      // apply-changes path below.
+      return { added: 0, removed: 0 };
+    }
+
+    // Apply add + remove atomically.
+    const nextFiles = { ...currentState.files };
+    for (const id of removedIds) delete nextFiles[id];
+    for (const f of onDiskFiles) nextFiles[f.id] = f;
+
+    // Close any tabs that pointed to removed files.
+    const nextOpenTabs = currentState.openTabs.filter(
+      (id) => !removedIds.includes(id),
+    );
+    const nextActive =
+      currentState.activeFileId && removedIds.includes(currentState.activeFileId)
+        ? (nextOpenTabs[0] ?? null)
+        : currentState.activeFileId;
+    const nextRecent = currentState.recentIds.filter(
+      (id: string) => !removedIds.includes(id),
+    );
+
+    set({
+      files: nextFiles,
+      openTabs: nextOpenTabs,
+      activeFileId: nextActive,
+      recentIds: nextRecent,
+    });
+    await idbStorage.set(KEYS.recent, nextRecent);
+
+    sessionHandles.register(folderId, dir, newFileHandles);
+    useLibrary.setState((s) => ({ sessionRev: s.sessionRev + 1 }));
+
+    await idbStorage.set(KEYS.files, nextFiles);
+
+    return { added: addedCount, removed: removedCount };
   },
 
   async setFolderRootPath(folderId, rootPath) {

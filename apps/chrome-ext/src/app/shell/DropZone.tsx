@@ -42,40 +42,59 @@ export function DropZone() {
 
       const uriList = readUriList(e.dataTransfer);
 
-      // Directory detection goes through items.webkitGetAsEntry() — dirs don't
-      // appear in dataTransfer.files. Files DO appear in dataTransfer.files
-      // reliably; webkitGetAsEntry can return null in synthetic DataTransfer
-      // and on some browsers, so we don't trust it for the file list.
+      // The DataTransfer object is **only valid during the synchronous**
+      // part of the drop event handler. `await` resolves on a later
+      // microtask — by then `e.dataTransfer.files` / `.items` are stale
+      // (Chrome empties them after the handler returns). So we must:
+      //   1. Snapshot `looseFiles` + `items` synchronously.
+      //   2. START the async `getAsFileSystemHandle()` promises + call
+      //      `webkitGetAsEntry()` synchronously — each method has to be
+      //      called inside the event window, but the returned Promise
+      //      can be awaited later.
+      //   3. Await resolutions in the next phase, off the now-stale event.
       //
-      // Modern Chrome also exposes `getAsFileSystemHandle()` on DataTransferItem
-      // (since Chrome 86). For dropped directories we prefer that path — it
-      // returns a persistent `FileSystemDirectoryHandle` we can save to IDB,
-      // so edits to files on disk flow back into the reader on reload without
-      // the user having to re-drop. Fallback to webkitGetAsEntry snapshot when
-      // the API is missing or returns null.
+      // Previous bug: snapshot happened AFTER the await loop, so
+      // dragging a single file gave us an empty `looseFiles` array — no
+      // file added, silent failure.
       const items = Array.from(e.dataTransfer.items);
+      const looseFiles = Array.from(e.dataTransfer.files);
+      const webkitEntries: Array<FileSystemEntry | null> = items.map((it) =>
+        it.kind === "file" ? (it.webkitGetAsEntry?.() ?? null) : null,
+      );
+      const handlePromises: Array<Promise<FileSystemHandle | null>> = items.map(
+        (it) => {
+          if (it.kind !== "file") return Promise.resolve(null);
+          try {
+            const fn = (
+              it as DataTransferItem & {
+                getAsFileSystemHandle?: () => Promise<FileSystemHandle | null>;
+              }
+            ).getAsFileSystemHandle;
+            return fn ? fn.call(it) : Promise.resolve(null);
+          } catch {
+            return Promise.resolve(null);
+          }
+        },
+      );
+
+      // --- now safe to await; DataTransfer is stale but we have snapshots.
+      const resolvedHandles = await Promise.all(
+        handlePromises.map((p) => p.catch(() => null)),
+      );
+
       const dirEntries: FileSystemDirectoryEntry[] = [];
       const dirHandles: FileSystemDirectoryHandle[] = [];
-      for (const it of items) {
-        if (it.kind !== "file") continue;
-        let handle: FileSystemHandle | null = null;
-        try {
-          handle = (await (
-            it as DataTransferItem & {
-              getAsFileSystemHandle?: () => Promise<FileSystemHandle | null>;
-            }
-          ).getAsFileSystemHandle?.()) ?? null;
-        } catch {
-          handle = null;
-        }
+      for (let i = 0; i < items.length; i++) {
+        const handle = resolvedHandles[i];
         if (handle && handle.kind === "directory") {
           dirHandles.push(handle as FileSystemDirectoryHandle);
           continue;
         }
-        const entry = it.webkitGetAsEntry?.();
-        if (entry?.isDirectory) dirEntries.push(entry as FileSystemDirectoryEntry);
+        const entry = webkitEntries[i];
+        if (entry?.isDirectory) {
+          dirEntries.push(entry as FileSystemDirectoryEntry);
+        }
       }
-      const looseFiles = Array.from(e.dataTransfer.files);
 
       if (
         dirEntries.length === 0 &&

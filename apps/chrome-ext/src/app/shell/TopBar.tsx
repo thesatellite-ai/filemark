@@ -16,8 +16,6 @@ import { sessionHandles } from "../sessionHandles";
 import { Button } from "@/components/ui/button";
 import { ThemePopover } from "./ThemePopover";
 import { FileActions } from "./FileActions";
-import { sessionHandles as liveHandles } from "../sessionHandles";
-import { fileIsRefreshable } from "./Viewer";
 import { cn } from "@/lib/utils";
 
 export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
@@ -96,31 +94,6 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
                 )}
               />
             </IconBtn>
-            {(() => {
-              const refreshable = fileIsRefreshable(activeFile, liveHandles);
-              return (
-                <IconBtn
-                  onClick={refreshable ? toggleAutoRefresh : undefined}
-                  title={
-                    !refreshable
-                      ? "Auto-refresh unavailable — this file has no live source. Open it via file:// or pick its folder to enable."
-                      : autoRefresh
-                        ? `Auto-refresh on (every ${(autoRefreshMs / 1000).toFixed(1)}s) — click to stop`
-                        : `Auto-refresh off — click to re-read every ${(autoRefreshMs / 1000).toFixed(1)}s`
-                  }
-                  aria-label="Auto-refresh"
-                  aria-pressed={autoRefresh}
-                >
-                  <RefreshCw
-                    className={cn(
-                      "size-3.5 transition-colors",
-                      !refreshable && "opacity-40",
-                      refreshable && autoRefresh && "text-emerald-500"
-                    )}
-                  />
-                </IconBtn>
-              );
-            })()}
             <FileActions file={activeFile} />
           </>
         )}
@@ -135,6 +108,23 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         >
           <FolderOpen className="size-3.5" /> Open Folder
         </Button>
+        <IconBtn
+          onClick={toggleAutoRefresh}
+          title={
+            autoRefresh
+              ? `Auto-refresh on — polling active file + all folders every ${(autoRefreshMs / 1000).toFixed(1)}s. Click to stop.`
+              : `Auto-refresh off — click to poll every ${(autoRefreshMs / 1000).toFixed(1)}s.`
+          }
+          aria-label="Auto-refresh"
+          aria-pressed={autoRefresh}
+        >
+          <RefreshCw
+            className={cn(
+              "size-4 transition-colors",
+              autoRefresh && "text-emerald-500",
+            )}
+          />
+        </IconBtn>
         <IconBtn onClick={onOpenSearch} title="Search (⌘K)" aria-label="Search">
           <Search className="size-4" />
         </IconBtn>

@@ -1,3 +1,4 @@
+import chartFull from "../../../../examples/chart-full.md?raw";
 import datagridFull from "../../../../examples/datagrid-full.md?raw";
 import datagridIntro from "../../../../examples/datagrid.md?raw";
 import showcase from "../../../../examples/showcase.md?raw";
@@ -100,6 +101,14 @@ export const EXAMPLES: Example[] = [
     description: "Minimal scratch doc you can edit live.",
     section: "Datagrid",
     content: STARTER_DOC,
+  },
+  {
+    id: "chart-full",
+    title: "Chart — full feature tour",
+    description:
+      "Bar / line / pie / area via recharts; formats, by-pivot, tags.",
+    section: "Chart",
+    content: chartFull,
   },
   {
     id: "showcase",

@@ -23,6 +23,7 @@ export function Sidebar() {
   const sessionRev = useLibrary((s) => s.sessionRev);
   const removeFile = useLibrary((s) => s.removeFile);
   const removeFolder = useLibrary((s) => s.removeFolder);
+  const rescanFolder = useLibrary((s) => s.rescanFolder);
   const clearAll = useLibrary((s) => s.clearAll);
   const clearRecent = useLibrary((s) => s.clearRecent);
   const clearDropped = useLibrary((s) => s.clearDropped);
@@ -141,6 +142,14 @@ export function Sidebar() {
               title={folder.name}
               badge={String(count)}
               defaultOpen
+              onRescan={
+                folder.kind === "fsa" && !needsPermission[folder.id]
+                  ? async () => {
+                      await rescanFolder(folder.id);
+                    }
+                  : undefined
+              }
+              rescanLabel={`Rescan ${folder.name} for changes on disk`}
               onRemove={() => {
                 if (
                   confirm(
@@ -269,12 +278,51 @@ export function Sidebar() {
   );
 }
 
+function RescanButton({
+  onRescan,
+  label,
+}: {
+  onRescan: () => void | Promise<void>;
+  label: string;
+}) {
+  const [spinning, setSpinning] = useState(false);
+  const onClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSpinning(true);
+    try {
+      await onRescan();
+    } finally {
+      // Keep the spin on for a beat so the click is visible even when
+      // the rescan is effectively instant.
+      setTimeout(() => setSpinning(false), 350);
+    }
+  };
+  return (
+    <button
+      className="hover:text-sidebar-foreground text-muted-foreground opacity-0 transition-opacity group-hover/section:opacity-100 data-[spinning=true]:opacity-100"
+      data-spinning={spinning}
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+    >
+      <RotateCw
+        className={cn(
+          "size-3 transition-transform",
+          spinning && "animate-spin",
+        )}
+      />
+    </button>
+  );
+}
+
 function Section({
   title,
   badge,
   defaultOpen = true,
   onRemove,
   removeLabel,
+  onRescan,
+  rescanLabel,
   children,
 }: {
   title: string;
@@ -282,6 +330,9 @@ function Section({
   defaultOpen?: boolean;
   onRemove?: () => void;
   removeLabel?: string;
+  /** Optional "rescan" action; renders a refresh icon in the header. */
+  onRescan?: () => void | Promise<void>;
+  rescanLabel?: string;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -308,6 +359,12 @@ function Section({
             </Badge>
           )}
         </button>
+        {onRescan && (
+          <RescanButton
+            onRescan={onRescan}
+            label={rescanLabel ?? `Rescan ${title} for changes on disk`}
+          />
+        )}
         {onRemove && (
           <button
             className="hover:text-destructive opacity-0 transition-opacity group-hover/section:opacity-100"
