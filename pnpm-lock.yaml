@@ -241,6 +241,34 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  packages/kanban:
+    dependencies:
+      '@filemark/core':
+        specifier: workspace:*
+        version: link:../viewer-core
+      '@filemark/datagrid':
+        specifier: workspace:*
+        version: link:../datagrid
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.5
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.5(react@19.2.5)
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.10)(typescript@5.9.3)(yaml@2.8.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/mdx-viewer:
     dependencies:
       '@filemark/chart':
@@ -252,6 +280,9 @@ importers:
       '@filemark/datagrid':
         specifier: workspace:*
         version: link:../datagrid
+      '@filemark/kanban':
+        specifier: workspace:*
+        version: link:../kanban
       db-schema-toolkit:
         specifier: ^1.0.0
         version: 1.1.13

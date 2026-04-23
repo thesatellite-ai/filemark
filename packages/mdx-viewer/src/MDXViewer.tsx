@@ -31,6 +31,11 @@ import {
   parseChartInfoString,
   type ChartType,
 } from "@filemark/chart";
+import {
+  KanbanBlock,
+  attrsToKanbanOptions,
+  parseKanbanInfoString,
+} from "@filemark/kanban";
 
 interface TocItem {
   id: string;
@@ -73,6 +78,17 @@ export function MDXViewer(props: ViewerProps) {
               defaultDelimiter={","}
               assets={assets}
             />
+          );
+        },
+        // <Kanban src="./roadmap.csv" group-by="status" card-title="title" />
+        // Src-based; inline data uses a ```kanban fence.
+        kanban: (p: Record<string, unknown>) => {
+          const options = attrsToKanbanOptions(p);
+          if (!options.src) {
+            return <KanbanMissingSrc />;
+          }
+          return (
+            <KanbanBlock source="" options={options} assets={assets} />
           );
         },
         // <datagrid src="..." title="..." sort="..." meta="type:col=status(...)" />
@@ -150,6 +166,16 @@ export function MDXViewer(props: ViewerProps) {
                 assets={assets}
                 storage={storage}
                 storageKey={`${file.id}:${lang}:${hashString(raw + (meta ?? ""))}`}
+              />
+            );
+          }
+          // Kanban board — ```kanban group-by=status ...
+          if (lang === "kanban") {
+            return (
+              <KanbanBlock
+                source={raw}
+                options={parseKanbanInfoString(meta)}
+                assets={assets}
               />
             );
           }
@@ -361,6 +387,20 @@ function ChartMissingSrc() {
       <div className="mt-1 text-foreground/80">
         The <code>&lt;Chart&gt;</code> tag loads data from a sibling file or
         absolute URL. For inline data use a <code>```chart</code> fenced block.
+      </div>
+    </div>
+  );
+}
+
+function KanbanMissingSrc() {
+  return (
+    <div className="not-prose my-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs">
+      <div className="font-semibold text-amber-600 dark:text-amber-400">
+        &lt;Kanban&gt; — missing <code>src=</code>
+      </div>
+      <div className="mt-1 text-foreground/80">
+        The <code>&lt;Kanban&gt;</code> tag loads data from a sibling file or
+        absolute URL. For inline data use a <code>```kanban</code> fenced block.
       </div>
     </div>
   );
