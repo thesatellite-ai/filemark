@@ -97,6 +97,45 @@ export function JSONViewer(
     }
   };
 
+  const csvStr = useMemo(
+    () => (parsed.value !== null ? jsonToCSV(parsed.value) : null),
+    [parsed.value]
+  );
+  const baseName = useMemo(
+    () => file.name.replace(/\.(jsonc?|json5?)$/i, "") || "export",
+    [file.name]
+  );
+  const [dlOpen, setDlOpen] = useState(false);
+
+  const doDownload = (body: string, filename: string, mime: string) => {
+    const blob = new Blob([body], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setDlOpen(false);
+  };
+  const dlJson = () =>
+    doDownload(
+      JSON.stringify(parsed.value, null, 2),
+      `${baseName}.json`,
+      "application/json"
+    );
+  const dlJsonCompact = () =>
+    doDownload(
+      JSON.stringify(parsed.value),
+      `${baseName}.min.json`,
+      "application/json"
+    );
+  const dlCsv = () => {
+    if (csvStr == null) return;
+    doDownload(csvStr, `${baseName}.csv`, "text/csv");
+  };
+
   const pickedTheme: JsonThemeId =
     options?.theme && options.theme !== "auto"
       ? options.theme
@@ -135,6 +174,42 @@ export function JSONViewer(
           <ToolbarBtn onClick={() => setCollapsed(false)} title="Expand all">
             Expand
           </ToolbarBtn>
+          <div className="relative">
+            <ToolbarBtn
+              onClick={() => setDlOpen((v) => !v)}
+              title="Download options"
+            >
+              Download ▾
+            </ToolbarBtn>
+            {dlOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={() => setDlOpen(false)}
+                  aria-hidden
+                />
+                <div className="bg-background absolute right-0 top-full z-30 mt-1 min-w-[200px] rounded-md border p-1 shadow-md">
+                  <DlRow onClick={dlJson} disabled={parsed.value === null}>
+                    JSON (pretty)
+                  </DlRow>
+                  <DlRow
+                    onClick={dlJsonCompact}
+                    disabled={parsed.value === null}
+                  >
+                    JSON (compact)
+                  </DlRow>
+                  <DlRow onClick={dlCsv} disabled={csvStr == null}>
+                    CSV
+                    {csvStr == null && (
+                      <span className="text-muted-foreground ml-auto text-[10px]">
+                        flat array only
+                      </span>
+                    )}
+                  </DlRow>
+                </div>
+              </>
+            )}
+          </div>
           <ToolbarBtn onClick={copyAll} title="Copy raw JSON" primary>
             {copied ? "Copied" : "Copy"}
           </ToolbarBtn>
@@ -268,6 +343,59 @@ function ToolbarBtn({
       {children}
     </button>
   );
+}
+
+function DlRow({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-[12px] outline-none transition-colors disabled:pointer-events-none disabled:opacity-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * Convert a JSON value to CSV when it's a flat array of plain objects.
+ * Returns null otherwise — caller should disable the CSV option.
+ * Union of keys across all rows forms the header; nested values are
+ * JSON-stringified into a single cell. Escaping: quote on `,` / `"` /
+ * newline; double up embedded quotes.
+ */
+function jsonToCSV(value: unknown): string | null {
+  if (!Array.isArray(value)) return null;
+  if (value.length === 0) return "";
+  const rowsOk = value.every(
+    (r) => r !== null && typeof r === "object" && !Array.isArray(r)
+  );
+  if (!rowsOk) return null;
+  const keySet = new Set<string>();
+  for (const row of value) {
+    for (const k of Object.keys(row as Record<string, unknown>)) keySet.add(k);
+  }
+  const keys = [...keySet];
+  const esc = (v: unknown): string => {
+    if (v == null) return "";
+    const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+    return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [keys.join(",")];
+  for (const row of value) {
+    const rec = row as Record<string, unknown>;
+    lines.push(keys.map((k) => esc(rec[k])).join(","));
+  }
+  return lines.join("\n");
 }
 
 function Pill({

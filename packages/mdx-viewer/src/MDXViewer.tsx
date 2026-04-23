@@ -14,6 +14,7 @@ import { Tabs, Tab } from "./components/Tabs";
 import { Details } from "./components/Details";
 import { Stats, Stat } from "./components/Stats";
 import { ADR } from "./components/ADR";
+import { MDXTable } from "./components/MDXTable";
 import { CodeBlock } from "./CodeBlock";
 import { TaskCheckbox } from "./TaskCheckbox";
 import { SmartLink } from "./SmartLink";
@@ -209,6 +210,14 @@ export function MDXViewer(props: ViewerProps) {
           );
         },
         pre: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+        // MDXTable wraps every rendered markdown table with:
+        //  1. A horizontal-scroll container so wide tables stay inside the
+        //     body column and don't overlap the TOC.
+        //  2. A hover-revealed "Download" menu with CSV / JSON / compact JSON
+        //     exports computed from the rendered DOM.
+        table: ({ node: _n, ...p }: React.TableHTMLAttributes<HTMLTableElement> & { node?: unknown }) => (
+          <MDXTable {...p} />
+        ),
         a: ({ node: _n, ...p }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => (
           <SmartLink {...p} onNavigate={onNavigate} />
         ),
