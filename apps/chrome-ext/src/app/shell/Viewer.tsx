@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLibrary } from "../store";
 import { useTaskIndex } from "../taskIndex";
 import { getRenderer } from "../registry";
@@ -266,6 +266,31 @@ export function Viewer() {
     };
   }, [scrollTarget, file, contentFileId]);
 
+  // Stabilize refs passed to <MDXViewer>. Without memoization, `assets` is a
+  // brand-new function every render and the `file` prop is a fresh object
+  // literal every render — both land in MDXViewer's `components` useMemo
+  // dependency array, which busts the memo every render. That in turn gives
+  // MDXComponentsProvider a new value, which re-renders every consumer
+  // (CodeBlock's shiki pass, Tabs, Callout, TaskItem, …) — visible as
+  // rapid flicker on any doc with multiple fenced code blocks or tabs.
+  const assets = useMemo(() => {
+    const dirHandle = folder?.id ? sessionHandles.getDir(folder.id) : null;
+    return createFSAAssetResolver(dirHandle, file?.path ?? "");
+  }, [folder?.id, file?.path, sessionRev]);
+  const mdxFile = useMemo(
+    () =>
+      file
+        ? {
+            id: file.id,
+            name: file.name,
+            ext: file.ext,
+            path: file.path,
+            sourceUrl: file.sourceUrl,
+          }
+        : null,
+    [file?.id, file?.name, file?.ext, file?.path, file?.sourceUrl]
+  );
+
   if (!file) return <WelcomeView />;
 
   const Renderer = getRenderer(file.ext);
@@ -290,9 +315,6 @@ export function Viewer() {
     return <StateBlock>Loading…</StateBlock>;
   }
 
-  const dirHandle = folder?.id ? sessionHandles.getDir(folder.id) : null;
-  const assets = createFSAAssetResolver(dirHandle, file.path);
-
   if (viewMode === "raw") {
     return (
       <div className="px-6 pb-16 pt-4">
@@ -304,13 +326,7 @@ export function Viewer() {
   const isJson = file.ext === "json" || file.ext === "jsonc";
   const rendererProps = {
     content,
-    file: {
-      id: file.id,
-      name: file.name,
-      ext: file.ext,
-      path: file.path,
-      sourceUrl: file.sourceUrl,
-    },
+    file: mdxFile!,
     storage: idbStorage,
     assets,
     ...(isJson ? { options: jsonSettings } : {}),
