@@ -353,8 +353,8 @@
   padding: var(--fm-table-row-padding-cozy, 6px 12px);
   border: 1px solid var(--fm-table-border-color, var(--border));
   text-align: left;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 .fv-mdx-body th {
   background: var(--fm-table-header-bg, var(--muted));
@@ -400,8 +400,8 @@
 .fv-mdx-body .fv-mdx-table--resize { table-layout: fixed; }
 .fv-mdx-body .fv-mdx-table--resize th,
 .fv-mdx-body .fv-mdx-table--resize td {
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 .fv-mdx-body .fv-mdx-table--nowrap {
   table-layout: auto;
