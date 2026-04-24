@@ -8,7 +8,16 @@ import {
   type ReactNode,
 } from "react";
 
-export type ThemeMode = "light" | "dark" | "sepia";
+/**
+ * Built-in theme modes are `light` / `dark` / `sepia`. The `(string & {})`
+ * intersection widens the union to accept arbitrary custom theme names
+ * (e.g. `neon`, `solarized`, `brand-b`) at runtime while still offering
+ * autocomplete for the built-ins. Consumers register custom themes by
+ * shipping a CSS file with an `html[data-theme="<name>"]` block and
+ * feeding `<name>` to `setTheme({ mode: "<name>" })`. See
+ * `docsi/THEMING.md` for the full theming contract.
+ */
+export type ThemeMode = "light" | "dark" | "sepia" | (string & {});
 
 export interface ThemeSettings {
   mode: ThemeMode;

@@ -296,22 +296,22 @@ function TaskPanelRow({
           </span>
           <span className="flex flex-wrap gap-1">
             {task.priority && (
-              <span className={`fv-task-chip ${priorityClass(task.priority)}`}>
+              <span className={`fv-chip ${priorityClass(task.priority)}`}>
                 {task.priority.toUpperCase()}
               </span>
             )}
             {task.owners.map((o) => (
-              <span key={o} className="fv-task-chip fv-task-chip--owner">
+              <span key={o} className="fv-chip fv-chip--owner">
                 @{o}
               </span>
             ))}
             {task.due?.iso && (
-              <span className={`fv-task-chip ${dueToneClass(task.due.iso, task.status)}`}>
+              <span className={`fv-chip ${dueToneClass(task.due.iso, task.status)}`}>
                 ~{task.due.iso}
               </span>
             )}
             {task.project && (
-              <span className="fv-task-chip fv-task-chip--project">
+              <span className="fv-chip fv-chip--project">
                 ({task.project})
               </span>
             )}
@@ -405,25 +405,25 @@ function statusGlyph(s: string): string {
 function priorityClass(p: string): string {
   switch (p) {
     case "p0":
-      return "fv-task-chip--danger";
+      return "fv-chip--danger";
     case "p1":
-      return "fv-task-chip--warn";
+      return "fv-chip--warn";
     case "p2":
-      return "fv-task-chip--info";
+      return "fv-chip--info";
     default:
-      return "fv-task-chip--muted";
+      return "fv-chip--muted";
   }
 }
 
 function dueToneClass(iso: string, status: string): string {
-  if (status === "done" || status === "cancelled") return "fv-task-chip--muted";
+  if (status === "done" || status === "cancelled") return "fv-chip--muted";
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(iso);
   const delta = Math.round((d.getTime() - today.getTime()) / 86400000);
-  if (delta < 0) return "fv-task-chip--danger";
-  if (delta <= 1) return "fv-task-chip--warn";
-  return "fv-task-chip--info";
+  if (delta < 0) return "fv-chip--danger";
+  if (delta <= 1) return "fv-chip--warn";
+  return "fv-chip--info";
 }
 
 function basename(path: string): string {

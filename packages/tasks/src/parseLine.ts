@@ -304,6 +304,7 @@ export function parseTaskLine(
     created: task.created,
     completed: task.completed,
     project: task.project,
+    recurrence: task.recurrence,
     links: task.links!,
     dependencies: task.dependencies!,
     customFields: task.customFields!,

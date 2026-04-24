@@ -93,7 +93,7 @@ export function TaskItem({ node, className, children, ...rest }: LiProps) {
 //
 // Chips are small, muted, and mirror datagrid's TONE_CLASS for colors
 // where applicable. Individual chip styling lives in the host stylesheet
-// under `.fv-task-chip*` — see apps/chrome-ext/src/styles/index.css.
+// under `.fv-chip*` — see apps/chrome-ext/src/styles/index.css.
 // ─────────────────────────────────────────────────────────────────────────
 
 export function TaskChips({ task }: { task: Task }) {
@@ -114,40 +114,40 @@ export function TaskChips({ task }: { task: Task }) {
       {task.start && <TimeChip t={task.start} prefix="start" />}
       {task.due && <TimeChip t={task.due} prefix="due" />}
       {task.estimate && (
-        <span className="fv-task-chip fv-task-chip--muted" title="Estimate">
+        <span className="fv-chip fv-chip--muted" title="Estimate">
           ⏱ {task.estimate.display}
         </span>
       )}
       {task.percent != null && (
-        <span className="fv-task-chip fv-task-chip--muted" title="Percent complete">
+        <span className="fv-chip fv-chip--muted" title="Percent complete">
           {task.percent}%
         </span>
       )}
       {task.recurrence && (
         <span
-          className="fv-task-chip fv-task-chip--info"
+          className="fv-chip fv-chip--info"
           title={`Recurrence: every ${task.recurrence.display}`}
         >
           🔁 {task.recurrence.display}
         </span>
       )}
       {task.project && (
-        <span className="fv-task-chip fv-task-chip--project" title="Project">
+        <span className="fv-chip fv-chip--project" title="Project">
           {task.project}
         </span>
       )}
       {task.area && (
-        <span className="fv-task-chip fv-task-chip--muted" title="Area">
+        <span className="fv-chip fv-chip--muted" title="Area">
           .{task.area}
         </span>
       )}
       {task.goal && (
-        <span className="fv-task-chip fv-task-chip--muted" title="Goal">
+        <span className="fv-chip fv-chip--muted" title="Goal">
           ✨ {task.goal}
         </span>
       )}
       {task.tags.map((t) => (
-        <span key={t} className="fv-task-chip fv-task-chip--tag">
+        <span key={t} className="fv-chip fv-chip--tag">
           #{t}
         </span>
       ))}
@@ -156,7 +156,7 @@ export function TaskChips({ task }: { task: Task }) {
       ))}
       {blockers.length > 0 && (
         <span
-          className="fv-task-chip fv-task-chip--danger"
+          className="fv-chip fv-chip--danger"
           title={
             "Blocked by:\n" +
             blockers.map((b) => `  ${b.status}: ${b.text}`).join("\n")
@@ -168,7 +168,7 @@ export function TaskChips({ task }: { task: Task }) {
       {task.dependencies.map((d, i) => (
         <span
           key={i}
-          className="fv-task-chip fv-task-chip--muted"
+          className="fv-chip fv-chip--muted"
           title={`${d.relation}: ${d.ids.join(", ")}`}
         >
           ⛓ {d.relation}: {d.ids.length}
@@ -176,7 +176,7 @@ export function TaskChips({ task }: { task: Task }) {
       ))}
       {task.diagnostics.length > 0 && (
         <span
-          className="fv-task-chip fv-task-chip--warn"
+          className="fv-chip fv-chip--warn"
           title={task.diagnostics.map((d) => d.message).join("\n")}
         >
           ⚠ {task.diagnostics.length}
@@ -189,14 +189,14 @@ export function TaskChips({ task }: { task: Task }) {
 function PriorityChip({ p }: { p: Priority }) {
   const cls =
     p === "p0"
-      ? "fv-task-chip--danger"
+      ? "fv-chip--danger"
       : p === "p1"
-        ? "fv-task-chip--warn"
+        ? "fv-chip--warn"
         : p === "p2"
-          ? "fv-task-chip--info"
-          : "fv-task-chip--muted";
+          ? "fv-chip--info"
+          : "fv-chip--muted";
   return (
-    <span className={`fv-task-chip ${cls}`} title={`Priority ${p}`}>
+    <span className={`fv-chip ${cls}`} title={`Priority ${p}`}>
       {p.toUpperCase()}
     </span>
   );
@@ -204,7 +204,7 @@ function PriorityChip({ p }: { p: Priority }) {
 
 function OwnerChip({ name }: { name: string }) {
   return (
-    <span className="fv-task-chip fv-task-chip--owner" title={`Owner ${name}`}>
+    <span className="fv-chip fv-chip--owner" title={`Owner ${name}`}>
       @{name}
     </span>
   );
@@ -225,7 +225,7 @@ function TimeChip({ t, prefix }: { t: TimeValue; prefix: "due" | "start" }) {
   const title = t.iso ?? t.keyword ?? (t.start ? `${t.start}..${t.end}` : "");
   return (
     <span
-      className={`fv-task-chip fv-task-chip--${tone}`}
+      className={`fv-chip fv-chip--${tone}`}
       title={`${prefix}: ${title}`}
     >
       {prefix === "due" ? "→ " : "↦ "}
@@ -296,7 +296,7 @@ function LinkChip({ link }: { link: TaskLink }) {
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="fv-task-chip fv-task-chip--link"
+      className="fv-chip fv-chip--link"
       title={link.url}
     >
       {icon} {label}

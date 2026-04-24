@@ -273,25 +273,94 @@ Great for "show me everyone's load" at a glance.
 
 ## 26. Recurring tasks — `every:<spec>`
 
-Mark tasks that repeat on a schedule. Renders a 🔁 chip + lets you filter with `is:recurring`. Filemark **doesn't** auto-create the next instance on check-off — it's a reader, so the markdown file stays exactly as you (or your AI) wrote it. The chip is informational: it tells a human reader + an AI agent "this is supposed to repeat."
+**Plain version:** stick `every:<something>` on a task → filemark shows a 🔁 icon + lets you filter to "only routine stuff." That's the whole feature in one sentence.
+
+**What filemark does:**
+1. Renders a **🔁 chip** next to the task so you can see at a glance it's routine.
+2. Lets you filter views by `is:recurring` or `has:recurrence` to split routine from one-off work.
+3. Gives your AI assistant an unambiguous machine-readable marker — "this is supposed to repeat." An agent greps `every:` and knows which rows are weekly / monthly / quarterly vs. one-time work.
+
+**What filemark does NOT do:** auto-create the next week's bullet when you check the box. Filemark is a **reader** — it never writes to your markdown files. The markdown stays canonical. When you (or your AI) are ready to roll the routine forward, you write the next bullet yourself.
+
+**Why it's useful anyway:** the `every:…` tag is the **machine-readable contract** between you and your AI agent. When you say "copy this week's routine forward," Claude greps the tags, proposes the next bullets, and you approve. Without the tag, "weekly review" is just prose — the agent has to guess which lines are routines.
+
+**Analogy:** it's like Google Calendar's "Repeats weekly" flag. Calendar shows a 🔁 icon + lets you view recurring events. The difference: Calendar auto-creates future instances in its own DB; filemark asks the AI (or you) to write the next instance when it's time, so the markdown stays as the single source of truth.
 
 ### 26a — a realistic mix of recurring commitments
 
-A typical week's recurring load across ops, planning, and personal habits:
+A real week's recurring load across ops, planning, personal habits, and maintenance. Every row has `every:<spec>` + a concrete next-due date so the timeline + filters show something substantive.
 
-- [/] Standup prep @alice !p2 every:daily ~today #ops
-- [ ] Weekly review @alice !p1 every:weekly ~friday #planning
-- [ ] Sprint planning @grace !p1 every:biweekly ~2026-04-28 (launch)
-- [ ] Monthly retro @alice !p2 every:monthly ~eom #planning
-- [x] MWF gym @alice every:mon,wed,fri =2026-04-22 .area/health
-- [ ] Team all-hands @linus !p2 every:first-monday ~2026-05-04 #ops
-- [ ] Pay rent !p0 every:monthly ~2026-05-01 $2000usd
-- [ ] Quarterly goal review @alice every:quarterly ~eoq *goal-q2
-- [!] Security training every:yearly ~2026-06-15 #compliance
-- [ ] Vendor invoicing @karen every:monthly ~eom $ .area/finance
+**Daily standups + rituals:**
+
+- [/] Standup prep @alice !p2 every:daily ~today ^2026-04-24 #ops
+- [ ] Inbox zero @alice every:daily ~today ^2026-04-24 &30m .area/work
+- [x] Morning journal @alice every:daily =2026-04-24 .area/mindfulness
+- [/] Evening shutdown @alice every:daily ~today ^2026-04-24 &15m .area/work
+- [ ] Team kickoff @grace !p1 every:daily ~today ^2026-04-24 #ops
+
+**Weekly rhythm:**
+
+- [ ] Weekly review @alice !p1 every:weekly ~2026-04-26 ^2026-04-24 #planning
+- [ ] 1:1 with manager @alice !p1 every:weekly ~2026-04-28 &1h #career
+- [ ] Friday deploy @grace !p1 every:weekly ~2026-04-25 ^2026-04-24 #infra
+- [ ] Demo Friday @linus every:weekly ~2026-04-25 #team
+- [ ] Eng all-hands @linus !p2 every:weekly ~2026-04-28 #ops
+- [x] Weekly metrics roundup @karen every:weekly =2026-04-19 #marketing
+- [ ] Garbage + recycling out @alice every:weekly ~2026-04-27 .area/home
+
+**Biweekly / every-N:**
+
+- [ ] Sprint planning @grace !p1 every:biweekly ~2026-04-28 ^2026-04-25 #sprint (launch)
+- [ ] Retrospective @grace !p2 every:biweekly ~2026-05-09 #sprint (launch)
 - [ ] Content calendar sync @grace every:2weeks ~2026-04-30 #marketing
-- [ ] Backup verification @linus every:7d ~2026-04-25 #infra
-- [ ] Last-friday happy hour @alice every:last-friday ~2026-04-25 #culture
+- [ ] Backup verification @linus every:7d ~2026-04-25 ^2026-04-24 #infra
+- [ ] Payroll review @karen !p1 every:2weeks ~2026-05-01 .area/finance
+- [ ] Sharpen kitchen knives @alice every:3weeks ~2026-05-10 .area/home
+
+**Specific weekdays (`mon,wed,fri` style):**
+
+- [x] MWF gym @alice every:mon,wed,fri =2026-04-23 &1h .area/health
+- [ ] Swim Tue/Thu @alice every:tue,thu ~2026-04-24 &45m .area/health
+- [ ] Meal prep Sunday @alice every:sun ~2026-04-27 &2h .area/health
+- [ ] Bug triage @linus every:mon,thu ~2026-04-24 #infra
+- [ ] Marketing sync @karen every:mon,wed ~2026-04-28 #marketing
+
+**Monthly + first/last-day anchors:**
+
+- [ ] Monthly retro @alice !p2 every:monthly ~eom #planning
+- [ ] Pay rent !p0 every:monthly ~2026-05-01 $2000usd .area/finance
+- [ ] Vendor invoicing @karen every:monthly ~eom $50000usd .area/finance
+- [ ] Team all-hands @linus !p2 every:first-monday ~2026-05-04 #ops
+- [ ] Last-Friday happy hour @alice every:last-friday ~2026-04-24 ^2026-04-24 #culture
+- [ ] First-of-month house cleaning @alice every:first-monday ~2026-05-04 &3h .area/home
+- [ ] Investment check @alice every:monthly ~2026-05-15 .area/finance
+- [ ] Wardrobe rotation @alice every:monthly ~eom .area/home
+
+**Quarterly + yearly:**
+
+- [ ] Quarterly goal review @alice !p1 every:quarterly ~eoq *goal-q2 #planning
+- [ ] Budget reforecast @karen !p0 every:quarterly ~eoq .area/finance
+- [ ] OKR check-in @grace every:quarterly ~eoq *goal-q2
+- [!] Security training every:yearly ~2026-06-15 #compliance
+- [ ] Annual performance review @alice every:yearly ~2026-12-15 .area/career
+- [ ] Doctor checkup @alice every:yearly ~2026-11-01 .area/health
+- [ ] Dentist cleaning @alice every:yearly ~2026-10-15 .area/health
+- [ ] Tax filing @alice !p0 every:yearly ~2027-04-15 .area/finance
+
+**Real-world infra maintenance:**
+
+- [ ] Rotate SSL certs @linus !p0 every:3weeks ~2026-05-02 #infra
+- [ ] Dependency audit @grace every:2weeks ~2026-05-01 ^2026-04-24 #security
+- [ ] DB vacuum @linus every:weekly ~2026-04-27 ^2026-04-24 &30m #infra
+- [ ] Log archive rotation @linus every:monthly ~eom #infra
+- [ ] On-call handoff @linus every:weekly ~2026-04-25 #oncall
+
+**Done / cancelled (so the stats include completed recurrences):**
+
+- [x] MWF gym — Wednesday =2026-04-22 every:mon,wed,fri .area/health
+- [x] Weekly review — last week @alice every:weekly =2026-04-19
+- [x] Morning journal @alice every:daily =2026-04-23 .area/mindfulness
+- [-] Defunct monthly ritual @alice every:monthly #retired
 
 ### 26b — KPIs for the recurring slice
 
