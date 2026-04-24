@@ -451,4 +451,102 @@ Lane grouping; today vertical marker; priority color (p0 red, p1 amber, p2 blue,
 
 ---
 
+## 31. Task details (popup sheet) — rich content without breaking the task list
+
+Tasks can carry arbitrary markdown detail: paragraphs, images, code, tables, callouts, charts, kanban, nested task lists — anything. Indent it underneath the bullet like you would in any GFM renderer. Filemark shows a **📎 detail** chip on the row; click it → the content opens in a right-side **popup sheet**, not inline. The list stays scannable.
+
+### 31a — Straightforward prose + code + image + table
+
+- [ ] Ship datagrid v2 @alice !p0 ~2026-04-30 #grid
+
+    Virtualization lets us handle **100K+ rows at 60fps**. Key tradeoffs captured below.
+
+    ![mockup](https://filemark.app/mocks/datagrid-v2.png)
+
+    ```ts
+    interface VirtualizationOpts {
+      rowHeight: number | ((rowIndex: number) => number);
+      overscan?: number;
+    }
+    ```
+
+    Approaches considered:
+
+    | Approach | Memory | Complexity | Verdict |
+    |---|---|---|---|
+    | Fixed row height | O(n) | low | ✓ ship v2 |
+    | Dynamic estimator | O(n log n) | medium | v3 |
+    | Grid-virtualization | O(n) | high | overkill |
+
+    ~~Cut scope: nested sub-grids (v3).~~
+
+### 31b — Detail with embedded filemark components
+
+- [ ] Planning Q3 launch @alice !p1 ~2026-05-15 (launch)
+
+    Overall health of the launch rollup:
+
+    <TaskStats md></TaskStats>
+
+    Weekly breakdown by owner:
+
+    <TaskList group-by="owner" filter="is:open"></TaskList>
+
+    Full schedule as a timeline:
+
+    <TaskTimeline md lane="status"></TaskTimeline>
+
+    Every filemark component works inside a task detail — they share the
+    same render pipeline as the main doc.
+
+### 31c — Nested tasks with their own rich detail
+
+- [ ] Migrate auth to v3 @grace !p0 ~2026-05-10 #auth
+
+    Top-level plan. Each subtask below has its own **📎 detail** chip
+    with its own popup — they're independent rows in the task list.
+
+    - [/] Design new token shape @grace
+
+        Token proposal:
+
+        ```ts
+        interface OpaqueToken {
+          kind: "opaque";
+          id: string;         // 24-byte random
+          userId: string;
+          expiresAt: number;  // unix ms
+        }
+        ```
+
+        Storage: Redis cluster, 14-day TTL. Rotation policy still TBD.
+
+    - [ ] Write migration script @grace ~2026-05-05
+
+        Dual-write for 2 weeks, then swap reads.
+
+        Rollout stages:
+
+        1. Deploy write path behind flag
+        2. Bulk-migrate existing sessions overnight
+        3. Flip reads
+        4. Garbage-collect legacy JWTs after 30 days
+
+    - [x] Audit current auth flow @grace
+
+        ![flow](https://filemark.app/mocks/auth-v2-flow.png)
+
+        Captured the full request path. No surprises; JWT → Redis swap
+        is straightforward.
+
+### 31d — Tasks without detail render normally
+
+- [ ] Simple task without detail @alice
+- [x] Another plain task
+- [ ] Priority task @grace !p1
+
+Tasks without any indented content below show no chip — the row stays compact. Detail is opt-in per task.
+
+---
+
 Every line above is one sentence of markdown. No database. No server. Grep `!p0` and you get every top-priority item across every file. That's the point.

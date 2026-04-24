@@ -29,7 +29,13 @@
 // Detailed spec: docsi/TASKS_PLAN.md §5.1 and §10.1.
 // ─────────────────────────────────────────────────────────────────────────
 
-import { Children, type ReactNode, type HTMLAttributes } from "react";
+import {
+  Children,
+  isValidElement,
+  useState,
+  type ReactNode,
+  type HTMLAttributes,
+} from "react";
 import {
   useTaskByLine,
   useTasks,
@@ -39,6 +45,7 @@ import {
   type Priority,
   type TimeValue,
 } from "@filemark/tasks";
+import { TaskDetailSheet } from "./TaskDetailSheet";
 
 // Props flowing in from react-markdown's `li` component handler.
 // `node` carries the hast node — we need `position.start.line` to find
@@ -51,6 +58,8 @@ type LiProps = HTMLAttributes<HTMLLIElement> & {
 export function TaskItem({ node, className, children, ...rest }: LiProps) {
   const line = node?.position?.start?.line;
   const task = useTaskByLine(line);
+  // Detail sheet open state — per-row local state. Not persisted (v1).
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Not a task — pass through. (The `task-list-item` class usually also
   // implies a checkbox child, but we don't render chips unless the task
@@ -63,10 +72,17 @@ export function TaskItem({ node, className, children, ...rest }: LiProps) {
     );
   }
 
-  // Strip trailing sigil tokens from the rendered prose so the chips
-  // aren't a visual duplicate. Preserves inline markdown (links, code,
-  // bold) inside the text portion.
-  const cleaned = stripTrailingSigils(children);
+  // When a task has rich `detail` (paragraphs, images, code, tables,
+  // embedded components indented under the bullet), remark-gfm still
+  // renders all of that INSIDE the <li> — which would duplicate the
+  // content that the popup sheet already shows. Strip detail blocks
+  // from the inline render, then strip trailing sigil tokens from the
+  // remaining task-text portion so chips aren't a visual duplicate.
+  const hasDetail = !!task.detail && task.detail.trim().length > 0;
+  const filtered = hasDetail
+    ? stripDetailFromChildren(children)
+    : children;
+  const cleaned = stripTrailingSigils(filtered);
 
   // Tag the <li> with the source line number so cross-file panels (e.g.
   // chrome-ext's TaskPanel) can scroll the viewer to this row when a
@@ -79,7 +95,14 @@ export function TaskItem({ node, className, children, ...rest }: LiProps) {
       {...rest}
     >
       {cleaned}
-      <TaskChips task={task} />
+      <TaskChips task={task} onOpenDetail={hasDetail ? () => setSheetOpen(true) : undefined} />
+      {hasDetail && (
+        <TaskDetailSheet
+          task={task}
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
     </li>
   );
 }
@@ -96,7 +119,15 @@ export function TaskItem({ node, className, children, ...rest }: LiProps) {
 // under `.fv-chip*` — see apps/chrome-ext/src/styles/index.css.
 // ─────────────────────────────────────────────────────────────────────────
 
-export function TaskChips({ task }: { task: Task }) {
+export function TaskChips({
+  task,
+  onOpenDetail,
+}: {
+  task: Task;
+  /** When provided, renders a "📎 detail" chip; clicking invokes the
+   *  callback to open the task detail popup sheet. */
+  onOpenDetail?: () => void;
+}) {
   // Resolve blocking prerequisites (after/requires/parent → open tasks).
   // `useTasks()` returns the full TasksContext array; for tasks rendered
   // outside a provider it's an empty array, which means resolveBlockers
@@ -107,6 +138,21 @@ export function TaskChips({ task }: { task: Task }) {
 
   return (
     <span className="fv-task-chips">
+      {onOpenDetail && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onOpenDetail();
+          }}
+          className="fv-chip fv-chip--detail"
+          title="Open task detail"
+          aria-label="Open task detail"
+        >
+          📎 detail
+        </button>
+      )}
       {task.priority && <PriorityChip p={task.priority} />}
       {task.owners.map((o) => (
         <OwnerChip key={o} name={o} />
@@ -386,4 +432,101 @@ function stripTrailingSigils(children: ReactNode): ReactNode {
     }
   }
   return arr;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// stripDetailFromChildren — hide detail blocks from the inline task row
+// so they don't render twice (once inline, once in the popup sheet).
+//
+// remark-gfm renders an indented paragraph / image / code / table /
+// callout under a task bullet as a NESTED child of the <li>. If we pass
+// those through, the row visually extends with the whole detail below
+// the task text. The popup sheet already renders the detail through a
+// separate ReactMarkdown pass — so the inline copy is duplicate noise.
+//
+// Filter rule:
+//   - Keep: <input> (GFM checkbox), <ul>/<ol> (nested subtask or note
+//     lists), strings + inline elements before any block has appeared,
+//     and the FIRST <p> (task text in loose-list mode).
+//   - Skip: everything else once we've seen a block — second <p>,
+//     <img>, <pre>, <blockquote>, <table>, <h1..h6>, <figure>, and any
+//     other obvious block-level tag or custom component.
+//
+// Custom React components (tags with `type === "function"`) after a
+// block boundary are treated as detail too. Known inline ones (like
+// SmartLink which renders <a>) always appear in the text portion
+// before a block boundary, so they're captured naturally.
+// ─────────────────────────────────────────────────────────────────────────
+
+const BLOCK_TAGS = new Set<string>([
+  "p",
+  "img",
+  "pre",
+  "blockquote",
+  "table",
+  "thead",
+  "tbody",
+  "tr",
+  "td",
+  "th",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "hr",
+  "figure",
+]);
+
+function stripDetailFromChildren(children: ReactNode): ReactNode {
+  const arr = Children.toArray(children);
+  const kept: ReactNode[] = [];
+  let blockSeen = false;
+
+  for (const child of arr) {
+    // Raw strings: keep until we've entered "block territory".
+    if (typeof child === "string") {
+      if (!blockSeen) kept.push(child);
+      continue;
+    }
+    if (!isValidElement(child)) continue;
+
+    const type = child.type;
+    const tag = typeof type === "string" ? type : "";
+
+    // Always keep: GFM checkbox + nested lists (subtasks / notes).
+    if (tag === "input" || tag === "ul" || tag === "ol") {
+      kept.push(child);
+      continue;
+    }
+
+    // First <p> is the task text — keep it; mark block-seen so
+    // subsequent <p>s (detail paragraphs) are dropped.
+    if (tag === "p" && !blockSeen) {
+      kept.push(child);
+      blockSeen = true;
+      continue;
+    }
+
+    // Any other block tag = detail. Drop + flag.
+    if (BLOCK_TAGS.has(tag)) {
+      blockSeen = true;
+      continue;
+    }
+
+    // Custom components (tag === "") after a block boundary = detail.
+    // Before the boundary they could be inline (SmartLink → <a>) and
+    // should pass through.
+    if (!tag) {
+      if (!blockSeen) kept.push(child);
+      else continue;
+      continue;
+    }
+
+    // Remaining inline HTML tags (em, strong, code, a, span, br, …) —
+    // pass through when we're still assembling the task text.
+    if (!blockSeen) kept.push(child);
+  }
+  return kept;
 }

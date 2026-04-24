@@ -206,7 +206,164 @@ export function extractTasks(
     }
   }
 
+  // ── STEP 4: collect rich detail per task ────────────────────────────
+  //
+  // See docsi/TASKS_PLAN.md §18b. For each task we scan forward through
+  // the source lines, collecting indented non-bullet block content as
+  // the task's `detail` — raw markdown ready to be re-rendered in a
+  // popup sheet. Subtasks (nested task bullets) and notes (nested
+  // non-task bullets) are skipped; they're handled by their own
+  // extraction paths.
+  //
+  // Convention: detail content appears BEFORE any child bullets.
+  // Once we hit the first child bullet we stop collecting, which
+  // captures the common authoring pattern (headline → prose + media →
+  // subtasks). Content after a child bullet is not currently folded
+  // into the parent's detail; revisit in v1.1 if authors complain.
+  for (const t of flat) {
+    const extracted = collectTaskDetail(lines, t);
+    if (extracted) {
+      t.detail = extracted.detail;
+      t.detailLineRange = extracted.range;
+    }
+  }
+
   return flat;
+}
+
+/**
+ * Walk forward from a task line and collect its rich detail — all
+ * non-bullet, non-blank content indented at or past the task's content
+ * column. Stops at the first child bullet OR at less-indented content
+ * OR at end of document. Generic ``` / ~~~ code fences are preserved
+ * verbatim (including their inner contents, even when those would
+ * otherwise look like bullets).
+ *
+ * Returns null when the task has no detail under it. Otherwise returns
+ * the raw source slice (common indent stripped) + the 1-based inclusive
+ * line range of the detail block — useful for click-to-open-source.
+ */
+function collectTaskDetail(
+  lines: string[],
+  task: Task
+): { detail: string; range: [number, number] } | null {
+  if (!task.line) return null;
+  const taskLineIdx = task.line - 1;
+  const taskLine = lines[taskLineIdx];
+  if (!taskLine) return null;
+
+  // Continuation indent for content under this list item. Per GFM /
+  // CommonMark, content must be indented by at least `bullet indent +
+  // width of marker + 1`, which for `- ` is bulletIndent + 2. So a
+  // top-level `- [ ] Task` accepts continuation indented by 2 spaces.
+  // Previously we used `prefix[0].length` (which included the checkbox,
+  // requiring 6 spaces of indent) — that's stricter than remark-gfm's
+  // own parsing, so 4-space-indented content was being dropped as
+  // "out of scope". The fix accepts any indent ≥ bulletIndent + 2.
+  const markerPrefix = /^(\s*)[-*+]\s+/.exec(taskLine);
+  if (!markerPrefix) return null;
+  const bulletIndent = markerPrefix[1].length;
+  const contentCol = bulletIndent + 2;
+
+  const detailLines: string[] = [];
+  let firstIdx = -1;
+  let lastIdx = -1;
+  let inFence = false;
+  let fenceMarker: string | null = null;
+
+  for (let i = taskLineIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+
+    // ── Generic code-fence tracking ───────────────────────────────
+    //
+    // We track `<indent> ``` ` and `<indent> ~~~` pairs so we don't
+    // accidentally treat a bullet-looking line INSIDE a code block
+    // as a child bullet. The opening fence is only recognized as
+    // part of this task's scope if it's indented at or beyond the
+    // content column AND isn't a `tasks`-source fence (those have
+    // their own handler in the outer parse loop).
+    const fm = /^(\s*)(`{3,}|~{3,})/.exec(line);
+    if (fm) {
+      const marker = fm[2][0];
+      const fenceIndent = fm[1].length;
+      if (!inFence && fenceIndent >= contentCol && !/^\s*```tasks\b/.test(line)) {
+        inFence = true;
+        fenceMarker = marker;
+        detailLines.push(line);
+        if (firstIdx === -1) firstIdx = i;
+        lastIdx = i;
+        continue;
+      } else if (inFence && marker === fenceMarker) {
+        inFence = false;
+        fenceMarker = null;
+        detailLines.push(line);
+        lastIdx = i;
+        continue;
+      }
+    }
+    if (inFence) {
+      detailLines.push(line);
+      lastIdx = i;
+      continue;
+    }
+
+    // Blank lines stay in the buffer — they're structural markdown
+    // separators (e.g. paragraph breaks). We trim leading/trailing
+    // blanks at the end.
+    if (line.trim() === "") {
+      detailLines.push(line);
+      continue;
+    }
+
+    const leadingMatch = /^(\s*)/.exec(line);
+    const indent = (leadingMatch?.[1] ?? "").replace(/\t/g, "  ").length;
+
+    // Out of scope — content less indented than the task's body means
+    // the task ended (and a sibling / less-nested item begins).
+    if (indent < contentCol) break;
+
+    // First child bullet at ≥ contentCol → stop. Everything from here
+    // onward belongs to subtasks / notes, not the parent's detail.
+    if (/^(\s*)[-*+]\s+/.test(line)) break;
+
+    detailLines.push(line);
+    if (firstIdx === -1) firstIdx = i;
+    lastIdx = i;
+  }
+
+  // Trim outer blank lines (they're noise, not structure).
+  while (detailLines.length && detailLines[0].trim() === "") detailLines.shift();
+  while (detailLines.length && detailLines[detailLines.length - 1].trim() === "") detailLines.pop();
+
+  if (detailLines.length === 0 || firstIdx === -1 || lastIdx === -1) return null;
+
+  // Compute the minimum leading whitespace across all NON-BLANK detail
+  // lines, then strip that common indent from every line. This is
+  // stricter than "strip up to contentCol chars" (the old behavior)
+  // because authors commonly indent detail by 4 spaces even when the
+  // CommonMark continuation minimum is 2 — so we'd leave 2 ghost
+  // spaces in front of every line, which can flip markdown into
+  // indented-code-block mode and break rendering.
+  let commonIndent = Infinity;
+  for (const l of detailLines) {
+    if (l.trim() === "") continue;
+    const m = /^([ \t]*)/.exec(l);
+    const indent = (m?.[1] ?? "").replace(/\t/g, "  ").length;
+    if (indent < commonIndent) commonIndent = indent;
+  }
+  if (!Number.isFinite(commonIndent)) commonIndent = contentCol;
+
+  const stripped = detailLines.map((l) => {
+    if (l.trim() === "") return "";
+    let j = 0;
+    while (j < l.length && j < commonIndent && (l[j] === " " || l[j] === "\t")) j++;
+    return l.slice(j);
+  });
+
+  return {
+    detail: stripped.join("\n"),
+    range: [firstIdx + 1, lastIdx + 1],
+  };
 }
 
 /**

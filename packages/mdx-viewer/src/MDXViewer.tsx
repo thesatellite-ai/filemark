@@ -21,6 +21,7 @@ import { TaskStats } from "./components/TaskStats";
 import { TaskTimeline } from "./components/TaskTimeline";
 import { KanbanFromTasks } from "./components/KanbanFromTasks";
 import { extractTasks, TasksProvider } from "@filemark/tasks";
+import { MDXComponentsProvider } from "./components-context";
 import { CodeBlock } from "./CodeBlock";
 import { TaskCheckbox } from "./TaskCheckbox";
 import { SmartLink } from "./SmartLink";
@@ -305,15 +306,17 @@ export function MDXViewer(props: ViewerProps) {
     <div className="fv-mdx-root">
       <article ref={rootRef} className="fv-mdx-body">
         <Frontmatter data={frontData as Record<string, unknown>} />
-        <TasksProvider value={tasks}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCodeMeta]}
-            rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
-            components={components}
-          >
-            {body}
-          </ReactMarkdown>
-        </TasksProvider>
+        <MDXComponentsProvider value={components as never}>
+          <TasksProvider value={tasks}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCodeMeta]}
+              rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
+              components={components}
+            >
+              {body}
+            </ReactMarkdown>
+          </TasksProvider>
+        </MDXComponentsProvider>
       </article>
       {toc.length > 1 && (
         <nav className="fv-toc" aria-label="Table of contents">

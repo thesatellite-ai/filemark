@@ -309,6 +309,18 @@ export interface Task {
   subTasks?: Task[];
   /** Non-task child bullets rendered as collapsible notes. */
   notes?: string[];
+  /** Raw markdown source slice of all block-level content indented
+   *  beneath the task bullet, EXCLUDING nested task-bullets (which
+   *  become subTasks) and EXCLUDING non-task child bullets (which
+   *  become notes). The common indent is stripped so the string
+   *  reads like a fresh markdown fragment — ready to pipe through
+   *  a nested <ReactMarkdown>. Empty / undefined when the task has
+   *  no prose content below it. See docsi/TASKS_PLAN.md §18b. */
+  detail?: string;
+  /** 1-based line range [startLine, endLine] of the detail in the
+   *  original source. Enables "open source at this line" jumps from
+   *  the detail sheet's footer. */
+  detailLineRange?: [number, number];
 
   /** Non-fatal parse warnings. Always an array — empty when clean. */
   diagnostics: Diagnostic[];
