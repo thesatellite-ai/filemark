@@ -92,7 +92,7 @@ export interface LibraryState {
   closeTab(id: string): Promise<void>;
   nextTab(): void;
   prevTab(): void;
-  reorderTabs(fromId: string, toId: string): void;
+  reorderTabs(fromId: string, toId: string, placement?: "before" | "after"): void;
   addFiles(files: LibraryFile[]): Promise<void>;
   addFolder(folder: LibraryFolder, files: LibraryFile[]): Promise<void>;
   /**
@@ -320,14 +320,18 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     get().setActive(prev);
   },
 
-  reorderTabs(fromId, toId) {
+  reorderTabs(fromId, toId, placement = "before") {
     const s = get();
     const from = s.openTabs.indexOf(fromId);
     const to = s.openTabs.indexOf(toId);
     if (from < 0 || to < 0 || from === to) return;
     const next = [...s.openTabs];
     const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
+    // After splice the index of `toId` shifts left by 1 if it was after
+    // `from` in the original list. Recompute relative to the spliced array.
+    const newToIdx = next.indexOf(toId);
+    const insertAt = placement === "after" ? newToIdx + 1 : newToIdx;
+    next.splice(insertAt, 0, moved);
     set({ openTabs: next });
     idbStorage.set(KEYS.tabs, next).catch(() => {});
   },
