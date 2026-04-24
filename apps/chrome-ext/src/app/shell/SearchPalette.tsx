@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import FlexSearch from "flexsearch";
 import { useLibrary, type LibraryFile, type LibraryFolder } from "../store";
@@ -94,6 +94,17 @@ export function SearchPalette({
     };
   }, [q, files, folders]);
 
+  // Whenever hits change, force the cmdk list to scroll to the top.
+  // cmdk's scroll-into-view logic preserves stale positions across query
+  // refinements even after a remount; resetting imperatively here is the
+  // only reliable way to keep the most-relevant top result in view.
+  useLayoutEffect(() => {
+    const list = document.querySelector(
+      "[cmdk-list]"
+    ) as HTMLElement | null;
+    if (list) list.scrollTop = 0;
+  }, [hits]);
+
   const select = (id: string) => {
     setActive(id);
     onOpenChange(false);
@@ -113,7 +124,17 @@ export function SearchPalette({
         value={q}
         onValueChange={setQ}
       />
-      <CommandList>
+      {/*
+       * Key the list on query + top-hit id so cmdk's internal active-item
+       * tracker resets both (a) when the user types — instantly remounts
+       * before async results land — and (b) when async results arrive and
+       * change the top hit. Without this second leg, cmdk preserves the
+       * previously-active item across hit changes and auto-scrolls the
+       * list to keep it in view (e.g. for "task pl", top result shifts to
+       * TASKS_PLAN.md but cmdk stays on whatever was active from "task p"
+       * and scrolls past the actually-relevant top result).
+       */}
+      <CommandList key={q + "::" + (hits[0]?.id ?? "")}>
         {q && hits.length === 0 && <CommandEmpty>No matches</CommandEmpty>}
         {hits.map((h) => (
           <CommandItem
