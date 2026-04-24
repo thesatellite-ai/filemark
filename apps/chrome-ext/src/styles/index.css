@@ -188,3 +188,14 @@ html[data-theme="sepia"] {
    Imported once via apps/chrome-ext/src/main.tsx — no duplication here.
    See docsi/THEMING.md for the architecture + token catalog.
    ───────────────────────────────────────────────────────────────────────── */
+
+/* Sidebar row flash — applied transiently when "Reveal current file"
+   scrolls a row into view. Pulses the row background so the eye lands
+   on it after the scroll, then fades. */
+@keyframes fv-row-flash-anim {
+  0%   { background-color: color-mix(in oklab, var(--primary) 35%, transparent); }
+  100% { background-color: transparent; }
+}
+.fv-row-flash {
+  animation: fv-row-flash-anim 1.2s ease-out;
+}

@@ -82,6 +82,11 @@ export interface LibraryState {
    *  the active file matches. Bumped to null after the scroll fires so
    *  the same target can be re-triggered later. */
   scrollTarget: { fileId: string; line: number; rev: number } | null;
+  /** Counter bumped whenever the user asks "reveal active file in
+   *  sidebar" (toolbar button or shortcut). Sidebar listens for changes
+   *  → expands every parent folder along the path, scrolls the row into
+   *  view, then briefly flashes it. */
+  revealRequest: number;
 
   setActive(id: string | null): Promise<void>;
   closeTab(id: string): Promise<void>;
@@ -122,6 +127,10 @@ export interface LibraryState {
     sections: Record<string, boolean>,
     tree: Record<string, boolean>
   ): void;
+  /** Reveal the active file in the sidebar — opens its folder section,
+   *  expands every parent folder along the path, and bumps revealRequest
+   *  so Sidebar can scroll the row into view + flash. */
+  revealActiveInSidebar(): void;
   setViewMode(mode: "rendered" | "raw"): void;
   removeFolder(folderId: string): Promise<void>;
   removeFile(fileId: string): Promise<void>;
@@ -197,6 +206,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   sidebarTreeCollapsed: {},
   tasksOpen: false,
   scrollTarget: null,
+  revealRequest: 0,
 
   async hydrate() {
     const [files, folders, recent, theme, active, tabs, ui] = await Promise.all([
@@ -338,7 +348,27 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     };
     const nextFiles = { ...state.files };
     for (const f of files) nextFiles[f.id] = { ...nextFiles[f.id], ...f };
-    set({ folders: nextFolders, files: nextFiles });
+
+    // Seed the sidebar collapse map so every nested folder under this
+    // newly-added drop starts collapsed. Without this, the global
+    // default (missing key = expanded) would pop the entire tree open
+    // the moment the folder is added — overwhelming for deep repos.
+    // Existing entries (user already toggled them open before) are
+    // preserved.
+    const nextCollapsed = { ...state.sidebarTreeCollapsed };
+    for (const f of files) {
+      const segs = f.path.split("/").slice(0, -1);
+      for (let i = 1; i <= segs.length; i++) {
+        const p = segs.slice(0, i).join("/");
+        if (!(p in nextCollapsed)) nextCollapsed[p] = true;
+      }
+    }
+
+    set({
+      folders: nextFolders,
+      files: nextFiles,
+      sidebarTreeCollapsed: nextCollapsed,
+    });
 
     // Persist without handle / fileHandles (non-serializable).
     const persisted: Record<string, LibraryFolder> = {};
@@ -588,6 +618,32 @@ export const useLibrary = create<LibraryState>((set, get) => ({
 
   setSidebarCollapseState(sections, tree) {
     set({ sidebarSections: sections, sidebarTreeCollapsed: tree });
+    persistUI(get());
+  },
+
+  revealActiveInSidebar() {
+    const s = get();
+    const file = s.activeFileId ? s.files[s.activeFileId] : null;
+    if (!file) return;
+    const nextSections = { ...s.sidebarSections };
+    const nextCollapsed = { ...s.sidebarTreeCollapsed };
+    if (file.folderId) {
+      // Open the owning folder section.
+      nextSections[`folder:${file.folderId}`] = true;
+    } else {
+      // Loose drop — open the orphans section.
+      nextSections["orphans"] = true;
+    }
+    // Expand every parent dir of the file path so its row is reachable.
+    const parts = file.path.split("/").slice(0, -1);
+    for (let i = 1; i <= parts.length; i++) {
+      nextCollapsed[parts.slice(0, i).join("/")] = false;
+    }
+    set({
+      sidebarSections: nextSections,
+      sidebarTreeCollapsed: nextCollapsed,
+      revealRequest: s.revealRequest + 1,
+    });
     persistUI(get());
   },
 

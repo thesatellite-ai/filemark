@@ -57,6 +57,7 @@ export function MDXViewer(props: ViewerProps) {
   const { content, file, storage, assets, onNavigate } = props;
   const rootRef = useRef<HTMLDivElement>(null);
   const [toc, setToc] = useState<TocItem[]>([]);
+  const [activeTocId, setActiveTocId] = useState<string | null>(null);
 
   // Frontmatter extraction. Browser-friendly: match `---\n…\n---\n` at the
   // very start, parse the YAML body with the `yaml` package (pure JS), and
@@ -302,6 +303,37 @@ export function MDXViewer(props: ViewerProps) {
     }
   }, [body]);
 
+  // Scroll-spy: highlight the TOC entry whose heading is currently nearest
+  // the top of the viewport. The negative bottom margin shrinks the
+  // intersection viewport so a heading is "active" only while it sits in
+  // the upper third of the screen — otherwise the active row would jump
+  // around mid-section. Re-observes whenever the body changes (new file).
+  useEffect(() => {
+    if (!rootRef.current) return;
+    if (typeof IntersectionObserver === "undefined") return;
+    const hs = Array.from(
+      rootRef.current.querySelectorAll<HTMLHeadingElement>("h1,h2,h3,h4")
+    );
+    if (hs.length === 0) return;
+
+    const visibleIds = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visibleIds.add(e.target.id);
+          else visibleIds.delete(e.target.id);
+        }
+        // Pick the visible heading nearest the top of the doc — preserves
+        // doc order when several headings overlap the active band.
+        const ordered = hs.map((h) => h.id).filter((id) => visibleIds.has(id));
+        if (ordered.length > 0) setActiveTocId(ordered[0]);
+      },
+      { rootMargin: "0px 0px -70% 0px", threshold: 0 }
+    );
+    for (const h of hs) if (h.id) observer.observe(h);
+    return () => observer.disconnect();
+  }, [body]);
+
   return (
     <div className="fv-mdx-root">
       <article ref={rootRef} className="fv-mdx-body">
@@ -326,6 +358,7 @@ export function MDXViewer(props: ViewerProps) {
               <li key={i} data-depth={t.depth}>
                 <a
                   href={`#${t.id}`}
+                  aria-current={t.id === activeTocId ? "location" : undefined}
                   onClick={(e) => {
                     e.preventDefault();
                     const el = document.getElementById(t.id);

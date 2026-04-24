@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { ChevronRight, ChevronsDownUp, FileText, RotateCw, Search, Star, Trash2, X } from "lucide-react";
+import { ChevronRight, ChevronsDownUp, ChevronsUpDown, FileText, RotateCw, Search, Star, Trash2, X } from "lucide-react";
 import { useLibrary, type LibraryFile } from "../store";
 import { restoreFolder } from "../fs";
 import { sessionHandles } from "../sessionHandles";
@@ -32,6 +32,7 @@ export function Sidebar() {
   const sectionOpen = useLibrary((s) => s.sidebarSections);
   const setSectionOpen = useLibrary((s) => s.setSidebarSection);
   const setSidebarCollapseState = useLibrary((s) => s.setSidebarCollapseState);
+  const revealRequest = useLibrary((s) => s.revealRequest);
   const [needsPermission, setNeedsPermission] = useState<Record<string, boolean>>({});
   const [folderQuery, setFolderQuery] = useState<Record<string, string>>({});
 
@@ -53,6 +54,42 @@ export function Sidebar() {
     });
   }, [folders, files]);
 
+  // Count how many folders share each name. When a name appears more
+  // than once (common when dropping multiple `docs/` from different
+  // repos), we disambiguate with the parent dir of rootPath in the
+  // section title. Otherwise titles stay clean.
+  const folderNameCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const f of Object.values(folders)) {
+      counts[f.name] = (counts[f.name] ?? 0) + 1;
+    }
+    return counts;
+  }, [folders]);
+
+  // Same idea for files — when two `SKILL.md` (or `README.md`) end up
+  // in Recent / Starred / Dropped, the rows are indistinguishable. Only
+  // tag rows whose name appears more than once across the whole library.
+  const fileNameCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const f of Object.values(files)) {
+      counts[f.name] = (counts[f.name] ?? 0) + 1;
+    }
+    return counts;
+  }, [files]);
+
+  const fileSubtitleFor = (file: LibraryFile): string | undefined => {
+    if ((fileNameCounts[file.name] ?? 0) <= 1) return undefined;
+    const folderName = file.folderId
+      ? folders[file.folderId]?.name
+      : undefined;
+    const segs = file.path.split("/").filter(Boolean);
+    const parent = segs.slice(0, -1).join("/");
+    if (folderName && parent) return `${folderName}/${parent}`;
+    if (folderName) return folderName;
+    if (parent) return parent;
+    return "Dropped";
+  };
+
   const orphanFiles = useMemo(
     () => Object.values(files).filter((f) => !f.folderId),
     [files]
@@ -67,6 +104,26 @@ export function Sidebar() {
     }
     setNeedsPermission(missing);
   }, [folders, sessionRev]);
+
+  // Reveal active file in sidebar — driven by store.revealRequest counter.
+  // The store opens the right sections + uncollapses parent folders before
+  // bumping the counter, so by the time this effect runs React has rendered
+  // the new tree state and the row exists in the DOM. rAF gives the browser
+  // one paint to lay out the rows so scrollIntoView lands on the final pos.
+  useEffect(() => {
+    if (revealRequest === 0) return;
+    if (!activeId) return;
+    const id = activeId;
+    requestAnimationFrame(() => {
+      const row = document.querySelector(
+        `[data-file-id="${CSS.escape(id)}"]`
+      ) as HTMLElement | null;
+      if (!row) return;
+      row.scrollIntoView({ block: "center", behavior: "smooth" });
+      row.classList.add("fv-row-flash");
+      setTimeout(() => row.classList.remove("fv-row-flash"), 1200);
+    });
+  }, [revealRequest, activeId]);
 
   const reconnect = async (folderId: string) => {
     const folder = useLibrary.getState().folders[folderId];
@@ -98,6 +155,28 @@ export function Sidebar() {
       for (const n of nodes) {
         if (n.kind === "folder") {
           nextCollapsed[n.path] = true;
+          walk(n.children);
+        }
+      }
+    };
+    for (const t of folderTrees) walk(t.tree);
+
+    setSidebarCollapseState(nextSection, nextCollapsed);
+  };
+
+  const expandAll = () => {
+    const nextSection: Record<string, boolean> = { ...sectionOpen };
+    if (starred.length) nextSection["starred"] = true;
+    if (recent.length) nextSection["recent"] = true;
+    for (const { folder } of folderTrees)
+      nextSection[`folder:${folder.id}`] = true;
+    if (orphanFiles.length) nextSection["orphans"] = true;
+
+    const nextCollapsed: Record<string, boolean> = { ...collapsed };
+    const walk = (nodes: TreeNode[]) => {
+      for (const n of nodes) {
+        if (n.kind === "folder") {
+          nextCollapsed[n.path] = false;
           walk(n.children);
         }
       }
@@ -141,6 +220,7 @@ export function Sidebar() {
                   active={f.id === activeId}
                   onClick={() => setActive(f.id)}
                   onRemove={() => removeFile(f.id)}
+                  subtitle={fileSubtitleFor(f)}
                 />
               ))}
             </Section>
@@ -165,6 +245,7 @@ export function Sidebar() {
                     active={f.id === activeId}
                     onClick={() => setActive(f.id)}
                     onRemove={() => removeFile(f.id)}
+                    subtitle={fileSubtitleFor(f)}
                   />
                 ))}
             </Section>
@@ -173,7 +254,11 @@ export function Sidebar() {
           {folderTrees.map(({ folder, tree, count }) => (
             <Section
               key={folder.id}
-              title={folder.name}
+              title={
+                folderNameCounts[folder.name] > 1
+                  ? `${folder.name} (${parentDirOf(folder.rootPath) ?? folder.id.slice(0, 6)})`
+                  : folder.name
+              }
               badge={String(count)}
               open={getSectionOpen(`folder:${folder.id}`)}
               onOpenChange={(v) => setSectionOpen(`folder:${folder.id}`, v)}
@@ -281,6 +366,7 @@ export function Sidebar() {
                   active={f.id === activeId}
                   onClick={() => setActive(f.id)}
                   onRemove={() => removeFile(f.id)}
+                  subtitle={fileSubtitleFor(f)}
                 />
               ))}
             </Section>
@@ -295,17 +381,27 @@ export function Sidebar() {
         <div className="flex items-center gap-0.5">
           {!isEmpty && (
             <button
-              className="text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] transition-colors"
-              onClick={collapseAll}
-              title="Collapse all sections and nested folders"
+              className="text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent flex size-6 items-center justify-center rounded-sm transition-colors"
+              onClick={expandAll}
+              title="Expand all sections and nested folders"
+              aria-label="Expand all"
             >
-              <ChevronsDownUp className="size-3" />
-              Collapse all
+              <ChevronsUpDown className="size-3.5" />
             </button>
           )}
           {!isEmpty && (
             <button
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] transition-colors"
+              className="text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent flex size-6 items-center justify-center rounded-sm transition-colors"
+              onClick={collapseAll}
+              title="Collapse all sections and nested folders"
+              aria-label="Collapse all"
+            >
+              <ChevronsDownUp className="size-3.5" />
+            </button>
+          )}
+          {!isEmpty && (
+            <button
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-6 items-center justify-center rounded-sm transition-colors"
               onClick={() => {
                 if (
                   confirm(
@@ -315,9 +411,9 @@ export function Sidebar() {
                   clearAll();
               }}
               title="Clear all entries from the library"
+              aria-label="Clear all"
             >
-              <Trash2 className="size-3" />
-              Clear all
+              <Trash2 className="size-3.5" />
             </button>
           )}
         </div>
@@ -460,6 +556,7 @@ function FileRow({
 }) {
   return (
     <div
+      data-file-id={file.id}
       className={cn(
         "group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 items-center gap-1.5 rounded-sm pr-1 text-[13px] leading-tight transition-colors",
         active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
@@ -644,4 +741,18 @@ function buildTree(files: LibraryFile[]): TreeNode[] {
     parentList.push({ kind: "file", file: f });
   }
   return root;
+}
+
+/**
+ * Last segment of a folder's parent dir, used to disambiguate two
+ * folders that share the same `name` (e.g. multiple `docs` from
+ * different repos). `/Volumes/.../filemark/docs` → `filemark`.
+ * Returns null if there's no rootPath to derive from — caller falls
+ * back to a short folder id.
+ */
+function parentDirOf(rootPath: string | undefined): string | null {
+  if (!rootPath) return null;
+  const segs = rootPath.replace(/\/+$/, "").split("/").filter(Boolean);
+  if (segs.length < 2) return null;
+  return segs[segs.length - 2];
 }

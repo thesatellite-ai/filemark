@@ -2,6 +2,7 @@ import {
   FolderOpen,
   List,
   PanelLeft,
+  Crosshair,
   RefreshCw,
   Search,
   Settings,
@@ -23,6 +24,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
   const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
+  const revealActiveInSidebar = useLibrary((s) => s.revealActiveInSidebar);
   const tasksOpen = useLibrary((s) => s.tasksOpen);
   const toggleAutoRefresh = useLibrary((s) => s.toggleAutoRefresh);
   const autoRefresh = useLibrary((s) => s.autoRefresh);
@@ -134,6 +136,15 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         <IconBtn onClick={toggleToc} title="Table of contents" aria-label="TOC">
           <List className="size-4" />
         </IconBtn>
+        {activeFile && (
+          <IconBtn
+            onClick={revealActiveInSidebar}
+            title="Reveal current file in sidebar"
+            aria-label="Reveal in sidebar"
+          >
+            <Crosshair className="size-4" />
+          </IconBtn>
+        )}
         <IconBtn
           onClick={toggleTasksPanel}
           title="Tasks panel (⌘T)"

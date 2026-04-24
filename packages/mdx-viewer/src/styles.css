@@ -765,6 +765,11 @@
   border-radius: 4px;
 }
 .fv-toc a:hover { color: var(--foreground); }
+.fv-toc a[aria-current="location"] {
+  color: var(--foreground);
+  font-weight: 600;
+  background: var(--fm-toc-active-bg, color-mix(in oklab, var(--primary) 12%, transparent));
+}
 
 /* Host gate: hide the TOC when the user toggles it off via
    `data-toc="closed"` on the outer wrapper. Consumer opts in by
