@@ -205,6 +205,85 @@ html[data-theme="sepia"] {
 .fv-mdx-body li.task-list-item { list-style-type: none; }
 .fv-mdx-body li.task-list-item { margin-left: -1.4em; padding-left: 0.3em; }
 .fv-mdx-body li.task-list-item input { margin-right: 0.5em; transform: translateY(1px); }
+
+/* Task metadata chips — rendered by @filemark/tasks TaskChips (inline) +
+   TaskList (grouped). Colors follow datagrid's TONE_CLASS scheme. ---- */
+.fv-task-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.fv-task-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.fv-task-chip--danger {
+  background: color-mix(in oklab, oklch(0.65 0.22 25) 15%, transparent);
+  color: oklch(0.55 0.2 25);
+  border-color: color-mix(in oklab, oklch(0.65 0.22 25) 35%, transparent);
+}
+[data-theme="dark"] .fv-mdx-body .fv-task-chip--danger {
+  color: oklch(0.75 0.18 25);
+}
+.fv-task-chip--warn {
+  background: color-mix(in oklab, oklch(0.82 0.17 85) 15%, transparent);
+  color: oklch(0.55 0.15 75);
+  border-color: color-mix(in oklab, oklch(0.82 0.17 85) 35%, transparent);
+}
+[data-theme="dark"] .fv-mdx-body .fv-task-chip--warn {
+  color: oklch(0.8 0.15 85);
+}
+.fv-task-chip--info {
+  background: color-mix(in oklab, oklch(0.7 0.16 240) 15%, transparent);
+  color: oklch(0.5 0.18 240);
+  border-color: color-mix(in oklab, oklch(0.7 0.16 240) 35%, transparent);
+}
+[data-theme="dark"] .fv-mdx-body .fv-task-chip--info {
+  color: oklch(0.78 0.15 240);
+}
+.fv-task-chip--owner {
+  background: color-mix(in oklab, oklch(0.7 0.17 290) 15%, transparent);
+  color: oklch(0.5 0.17 290);
+  border-color: color-mix(in oklab, oklch(0.7 0.17 290) 35%, transparent);
+}
+[data-theme="dark"] .fv-mdx-body .fv-task-chip--owner {
+  color: oklch(0.8 0.13 290);
+}
+.fv-task-chip--tag {
+  background: transparent;
+}
+.fv-task-chip--project {
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+.fv-task-chip--link {
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in oklab, var(--primary) 25%, transparent);
+  text-decoration: none;
+  cursor: pointer;
+}
+.fv-task-chip--link:hover {
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+  text-decoration: none;
+}
+.fv-task-chip--muted {
+  background: var(--muted);
+}
 .fv-mdx-body blockquote {
   margin: 0 0 1em;
   padding: 0.2em 1em;
@@ -216,6 +295,25 @@ html[data-theme="sepia"] {
 .fv-mdx-body hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
 .fv-mdx-body a { color: var(--primary); text-decoration: none; }
 .fv-mdx-body a:hover { text-decoration: underline; }
+/* Table wrap + hover toolbar + options/download menus. Mirrors the
+   Chrome extension's index.css — kept in sync when changing. ------- */
+.fv-mdx-body .fv-mdx-table-outer {
+  position: relative;
+  margin: 0 0 1em;
+}
+.fv-mdx-body .fv-mdx-table-outer:hover .fv-mdx-table-actions,
+.fv-mdx-body .fv-mdx-table-outer:focus-within .fv-mdx-table-actions {
+  opacity: 1;
+}
+.fv-mdx-body .fv-mdx-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+}
+.fv-mdx-body .fv-mdx-table-wrap table {
+  margin: 0;
+}
 .fv-mdx-body table {
   border-collapse: collapse;
   width: 100%;
@@ -223,8 +321,127 @@ html[data-theme="sepia"] {
   font-size: 0.95em;
 }
 .fv-mdx-body th,
-.fv-mdx-body td { padding: 6px 12px; border: 1px solid var(--border); text-align: left; }
+.fv-mdx-body td {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  text-align: left;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
 .fv-mdx-body th { background: var(--muted); font-weight: 600; }
+.fv-mdx-body .fv-mdx-table--compact th,
+.fv-mdx-body .fv-mdx-table--compact td { padding: 2px 8px; font-size: 0.85em; }
+.fv-mdx-body .fv-mdx-table--cozy    th,
+.fv-mdx-body .fv-mdx-table--cozy    td { padding: 6px 12px; }
+.fv-mdx-body .fv-mdx-table--relaxed th,
+.fv-mdx-body .fv-mdx-table--relaxed td { padding: 12px 16px; line-height: 1.55; }
+.fv-mdx-body .fv-mdx-table--zebra tbody tr:nth-child(even) td {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+.fv-mdx-body .fv-mdx-table--sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.fv-mdx-body .fv-mdx-table--resize {
+  table-layout: fixed;
+}
+.fv-mdx-body .fv-mdx-table--nowrap {
+  table-layout: auto;
+  width: auto;
+  min-width: 100%;
+}
+.fv-mdx-body .fv-mdx-table--nowrap th,
+.fv-mdx-body .fv-mdx-table--nowrap td {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.fv-mdx-body .fv-mdx-table-handles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.fv-mdx-body .fv-mdx-table-handle {
+  position: absolute;
+  width: 6px;
+  pointer-events: auto;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 120ms ease;
+}
+.fv-mdx-body .fv-mdx-table-handle:hover,
+.fv-mdx-body .fv-mdx-table-handle:active {
+  background: color-mix(in oklab, var(--primary) 60%, transparent);
+}
+.fv-mdx-body .fv-mdx-table-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  z-index: 3;
+}
+.fv-mdx-body .fv-mdx-table-actions-row { display: flex; gap: 4px; }
+.fv-mdx-body .fv-mdx-table-chip {
+  background: color-mix(in oklab, var(--background) 92%, transparent);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(6px);
+}
+.fv-mdx-body .fv-mdx-table-chip:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.fv-mdx-body .fv-mdx-table-backdrop { position: fixed; inset: 0; z-index: 20; }
+.fv-mdx-body .fv-mdx-table-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 200px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 4px;
+}
+.fv-mdx-body .fv-mdx-table-menu-item {
+  display: block; width: 100%; text-align: left; padding: 6px 10px;
+  font-size: 12px; border-radius: var(--radius-sm); background: transparent;
+  border: none; cursor: pointer; color: var(--foreground);
+}
+.fv-mdx-body .fv-mdx-table-menu-item:hover {
+  background: var(--accent); color: var(--accent-foreground);
+}
+.fv-mdx-body .fv-mdx-table-menu-label {
+  padding: 4px 8px; font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--muted-foreground);
+}
+.fv-mdx-body .fv-mdx-table-menu-sep { margin: 4px -4px; border-top: 1px solid var(--border); }
+.fv-mdx-body .fv-mdx-table-seg { display: flex; gap: 2px; padding: 0 4px 4px; }
+.fv-mdx-body .fv-mdx-table-seg-btn {
+  flex: 1; padding: 4px 6px; font-size: 11px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted-foreground); cursor: pointer;
+}
+.fv-mdx-body .fv-mdx-table-seg-btn.active {
+  background: var(--primary); color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+.fv-mdx-body .fv-mdx-table-toggle {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  font-size: 12px; cursor: pointer; border-radius: var(--radius-sm);
+}
+.fv-mdx-body .fv-mdx-table-toggle:hover { background: var(--accent); }
+.fv-mdx-body .fv-mdx-table-toggle input { margin: 0; cursor: pointer; }
 .fv-mdx-body img {
   max-width: 100%;
   border-radius: var(--radius-md);

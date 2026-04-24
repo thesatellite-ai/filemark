@@ -8,6 +8,7 @@ import { Viewer } from "./Viewer";
 import { DropZone } from "./DropZone";
 import { SearchPalette } from "./SearchPalette";
 import { TabStrip } from "./TabStrip";
+import { TaskPanel } from "./TaskPanel";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Maximize2, Minimize2 } from "lucide-react";
@@ -16,8 +17,10 @@ export function Shell() {
   const hydrated = useLibrary((s) => s.hydrated);
   const sidebarOpen = useLibrary((s) => s.sidebarOpen);
   const fullscreen = useLibrary((s) => s.fullscreen);
+  const tasksOpen = useLibrary((s) => s.tasksOpen);
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
+  const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
   const toggleFullscreen = useLibrary((s) => s.toggleFullscreen);
   const activeId = useLibrary((s) => s.activeFileId);
   const setActive = useLibrary((s) => s.setActive);
@@ -93,6 +96,12 @@ export function Shell() {
         if (!isShortcutEnabled(settings, "toggleSidebar")) return;
         e.preventDefault();
         toggleSidebar();
+      } else if ((e.metaKey || e.ctrlKey) && (e.key === "t" || e.key === "T")) {
+        // ⌘T — toggle the cross-file task panel.
+        // Note: bare ⌘T opens a new browser tab. Our ext runs in its
+        // own chrome-extension://… page so the default is free.
+        e.preventDefault();
+        toggleTasksPanel();
       } else if (e.key === "\\" && !isInInput(e)) {
         if (!isShortcutEnabled(settings, "toggleToc")) return;
         e.preventDefault();
@@ -123,6 +132,7 @@ export function Shell() {
   }, [
     toggleSidebar,
     toggleToc,
+    toggleTasksPanel,
     toggleFullscreen,
     setActive,
     setViewMode,
@@ -189,6 +199,12 @@ export function Shell() {
             </Button>
           )}
         </main>
+        {tasksOpen && !fullscreen && (
+          <>
+            <Separator orientation="vertical" />
+            <TaskPanel />
+          </>
+        )}
       </div>
       <DropZone />
       <SearchPalette open={searchOpen} onOpenChange={setSearchOpen} />

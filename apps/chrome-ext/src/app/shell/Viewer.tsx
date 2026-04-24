@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLibrary } from "../store";
+import { useTaskIndex } from "../taskIndex";
 import { getRenderer } from "../registry";
 import { idbStorage } from "../adapters/idbStorage";
 import { createFSAAssetResolver } from "../adapters/fsaAssets";
@@ -22,7 +23,9 @@ export function Viewer() {
   const tocOpen = useLibrary((s) => s.tocOpen);
   const autoRefresh = useLibrary((s) => s.autoRefresh);
   const autoRefreshMs = useLibrary((s) => s.autoRefreshMs);
+  const scrollTarget = useLibrary((s) => s.scrollTarget);
   const jsonSettings = useSettings((s) => s.settings.json);
+  const indexFile = useTaskIndex((s) => s.indexFile);
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -154,6 +157,39 @@ export function Viewer() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh, autoRefreshMs, file?.id, sessionRev]);
+
+  // Feed the cross-file task index every time content changes for this
+  // file. The index dedupes by content hash so repeated calls with the
+  // same bytes are cheap no-ops. Only runs for markdown-ish files —
+  // parsing JSON / schema files as "tasks" would produce nothing anyway
+  // but we guard explicitly to avoid pointless hash work at scale.
+  useEffect(() => {
+    if (!file || content == null) return;
+    const ext = file.ext.toLowerCase();
+    if (ext !== "md" && ext !== "mdx" && ext !== "markdown") return;
+    indexFile(file.id, content, file.name, file.path);
+  }, [file, content, indexFile]);
+
+  // Scroll-to-line handler. When the TaskPanel clicks a task row,
+  // library.openTaskLocation() bumps scrollTarget. If the target is in
+  // the currently-displayed file, find the <li data-fv-task-line="N">
+  // and scroll it into view. We also add a transient highlight class so
+  // the user can spot where the cursor landed.
+  useEffect(() => {
+    if (!scrollTarget) return;
+    if (!file || scrollTarget.fileId !== file.id) return;
+    // Defer to next tick so the doc has rendered any content change.
+    const timer = window.setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(
+        `[data-fv-task-line="${scrollTarget.line}"]`
+      );
+      if (!el) return;
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      el.classList.add("fv-task-flash");
+      window.setTimeout(() => el.classList.remove("fv-task-flash"), 1500);
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [scrollTarget, file]);
 
   if (!file) return <WelcomeView />;
 

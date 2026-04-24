@@ -1,6 +1,7 @@
 import chartFull from "../../../../examples/chart-full.md?raw";
 import kanbanFull from "../../../../examples/kanban-full.md?raw";
 import statsAdrFull from "../../../../examples/stats-adr-full.md?raw";
+import tasksFull from "../../../../examples/tasks-full.md?raw";
 import datagridFull from "../../../../examples/datagrid-full.md?raw";
 import datagridIntro from "../../../../examples/datagrid.md?raw";
 import showcase from "../../../../examples/showcase.md?raw";
@@ -127,6 +128,14 @@ export const EXAMPLES: Example[] = [
       "KPI card grid and Architecture Decision Record blocks for planning docs.",
     section: "Planning",
     content: statsAdrFull,
+  },
+  {
+    id: "tasks-full",
+    title: "Tasks — full feature tour",
+    description:
+      "Markdown-native task DSL — 6 statuses, inline metadata chips, links, subtasks, cascading defaults.",
+    section: "Planning",
+    content: tasksFull,
   },
   {
     id: "showcase",

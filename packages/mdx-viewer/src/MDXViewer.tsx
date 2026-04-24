@@ -15,6 +15,12 @@ import { Details } from "./components/Details";
 import { Stats, Stat } from "./components/Stats";
 import { ADR } from "./components/ADR";
 import { MDXTable } from "./components/MDXTable";
+import { TaskItem } from "./components/TaskItem";
+import { TaskList } from "./components/TaskList";
+import { TaskStats } from "./components/TaskStats";
+import { TaskTimeline } from "./components/TaskTimeline";
+import { KanbanFromTasks } from "./components/KanbanFromTasks";
+import { extractTasks, TasksProvider } from "@filemark/tasks";
 import { CodeBlock } from "./CodeBlock";
 import { TaskCheckbox } from "./TaskCheckbox";
 import { SmartLink } from "./SmartLink";
@@ -59,6 +65,19 @@ export function MDXViewer(props: ViewerProps) {
     [content]
   );
 
+  // Task parse — one pass per file render, memoized by (body, file.path).
+  // The result is provided via TasksProvider so every downstream component
+  // (enhanced <li> TaskItem, future <TaskList>, <Kanban md>, <TaskStats md>)
+  // reads the same array without re-parsing. See docsi/TASKS_PLAN.md §8.
+  //
+  // Defaults cascade: extractTasks itself reads frontmatter default-owner /
+  // default-priority / project / area. Host-level defaults can be passed
+  // here if filemark ever wants a global owner/project, but none exist yet.
+  const tasks = useMemo(
+    () => extractTasks(body, { file: file.path }),
+    [body, file.path]
+  );
+
   const components = useMemo(
     () =>
       ({
@@ -88,7 +107,17 @@ export function MDXViewer(props: ViewerProps) {
         },
         // <Kanban src="./roadmap.csv" group-by="status" card-title="title" />
         // Src-based; inline data uses a ```kanban fence.
+        //
+        // SPECIAL MODE: <Kanban md group-by="status"/> — when the `md`
+        // presence flag is set (with no `src`), render KanbanFromTasks
+        // instead: board fed by TasksContext, no CSV needed. Same thesis
+        // as TaskStats md — tasks from markdown become a board.
         kanban: (p: Record<string, unknown>) => {
+          // Task-source mode: `md` is a presence flag (empty string
+          // attribute in HTML becomes "" — both truthy-ish forms work).
+          if ("md" in p || p["md"] !== undefined) {
+            return <KanbanFromTasks {...p} />;
+          }
           const options = attrsToKanbanOptions(p);
           if (!options.src) {
             return <KanbanMissingSrc />;
@@ -97,6 +126,15 @@ export function MDXViewer(props: ViewerProps) {
             <KanbanBlock source="" options={options} assets={assets} />
           );
         },
+        // <TaskList filter="…" group-by="status" sort="due:asc" limit="20"/>
+        // Pure projection over TasksContext — no src; reads the current doc.
+        tasklist: (p: Record<string, unknown>) => <TaskList {...p} />,
+        // <TaskStats md filter="project=launch"/> — KPI tiles built on
+        // <Stats> + <Stat>. `md` is a presence marker (future: `src=./x.md`).
+        taskstats: (p: Record<string, unknown>) => <TaskStats {...p} />,
+        // <TaskTimeline md lane="owner" from=… to=…/> — Gantt-lite SVG
+        // bars on a date axis, grouped by lane. Reads TasksContext.
+        tasktimeline: (p: Record<string, unknown>) => <TaskTimeline {...p} />,
         // <datagrid src="..." title="..." sort="..." meta="type:col=status(...)" />
         // Src-based only — for inline data, use a ```csv fenced block instead
         // (HTML attributes can't cleanly hold multi-line CSV).
@@ -230,6 +268,10 @@ export function MDXViewer(props: ViewerProps) {
           }
           return <input {...p} />;
         },
+        // Custom <li> handler — upgrades task-list-items with metadata
+        // chips pulled from @filemark/tasks via context. Regular <li>
+        // elements fall through transparently (TaskItem self-detects).
+        li: TaskItem,
       }) as never,
     [onNavigate, assets, storage, file]
   );
@@ -263,13 +305,15 @@ export function MDXViewer(props: ViewerProps) {
     <div className="fv-mdx-root">
       <article ref={rootRef} className="fv-mdx-body">
         <Frontmatter data={frontData as Record<string, unknown>} />
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCodeMeta]}
-          rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
-          components={components}
-        >
-          {body}
-        </ReactMarkdown>
+        <TasksProvider value={tasks}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCodeMeta]}
+            rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
+            components={components}
+          >
+            {body}
+          </ReactMarkdown>
+        </TasksProvider>
       </article>
       {toc.length > 1 && (
         <nav className="fv-toc" aria-label="Table of contents">

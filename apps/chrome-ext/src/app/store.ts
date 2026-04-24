@@ -75,6 +75,13 @@ export interface LibraryState {
   /** Sidebar nested-folder tree collapse state. Keys are tree-path strings
    *  (e.g. "docs/api"). Missing key = expanded (default). */
   sidebarTreeCollapsed: Record<string, boolean>;
+  /** Task panel (right-edge cross-file task dashboard) open/closed. */
+  tasksOpen: boolean;
+  /** Ephemeral scroll target — { fileId, taskLine } bumped whenever a
+   *  panel row is clicked. Viewer watches this + scrolls into view when
+   *  the active file matches. Bumped to null after the scroll fires so
+   *  the same target can be re-triggered later. */
+  scrollTarget: { fileId: string; line: number; rev: number } | null;
 
   setActive(id: string | null): Promise<void>;
   closeTab(id: string): Promise<void>;
@@ -103,6 +110,11 @@ export interface LibraryState {
   toggleFullscreen(): void;
   toggleAutoRefresh(): void;
   setAutoRefreshMs(ms: number): void;
+  toggleTasksPanel(): void;
+  setTasksOpen(v: boolean): void;
+  /** Trigger a scroll-to-line inside the Viewer. Sets `scrollTarget`
+   *  with a fresh `rev` so repeated clicks on the same row re-trigger. */
+  openTaskLocation(fileId: string, line: number): Promise<void>;
   setSidebarSection(key: string, open: boolean): void;
   setSidebarTreeCollapsed(path: string, collapsed: boolean): void;
   /** Bulk-update both maps — used by the sidebar's "Collapse all" button. */
@@ -137,6 +149,7 @@ interface UIPrefs {
   autoRefreshMs?: number;
   sidebarSections?: Record<string, boolean>;
   sidebarTreeCollapsed?: Record<string, boolean>;
+  tasksOpen?: boolean;
 }
 
 function persistUI(s: {
@@ -147,6 +160,7 @@ function persistUI(s: {
   autoRefreshMs: number;
   sidebarSections: Record<string, boolean>;
   sidebarTreeCollapsed: Record<string, boolean>;
+  tasksOpen: boolean;
 }) {
   idbStorage
     .set(KEYS.ui, {
@@ -157,6 +171,7 @@ function persistUI(s: {
       autoRefreshMs: s.autoRefreshMs,
       sidebarSections: s.sidebarSections,
       sidebarTreeCollapsed: s.sidebarTreeCollapsed,
+      tasksOpen: s.tasksOpen,
     })
     .catch(() => {});
 }
@@ -180,6 +195,8 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   autoRefreshMs: 2000,
   sidebarSections: {},
   sidebarTreeCollapsed: {},
+  tasksOpen: false,
+  scrollTarget: null,
 
   async hydrate() {
     const [files, folders, recent, theme, active, tabs, ui] = await Promise.all([
@@ -216,6 +233,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       autoRefreshMs: ui?.autoRefreshMs ?? 2000,
       sidebarSections: ui?.sidebarSections ?? {},
       sidebarTreeCollapsed: ui?.sidebarTreeCollapsed ?? {},
+      tasksOpen: ui?.tasksOpen ?? false,
       hydrated: true,
     });
   },
@@ -531,6 +549,29 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   setAutoRefreshMs(ms) {
     set({ autoRefreshMs: Math.max(250, ms) });
     persistUI(get());
+  },
+
+  toggleTasksPanel() {
+    set((s) => ({ tasksOpen: !s.tasksOpen }));
+    persistUI(get());
+  },
+
+  setTasksOpen(v) {
+    set({ tasksOpen: v });
+    persistUI(get());
+  },
+
+  async openTaskLocation(fileId, line) {
+    // Activate the target file (no-op if already active).
+    const st = get();
+    if (st.activeFileId !== fileId) {
+      await st.setActive(fileId);
+    }
+    // Bump scrollTarget with a monotonically-increasing rev so repeated
+    // clicks on the same row re-trigger the scroll even when fileId+line
+    // are unchanged. Viewer watches rev as a dep.
+    const rev = (get().scrollTarget?.rev ?? 0) + 1;
+    set({ scrollTarget: { fileId, line, rev } });
   },
 
   setSidebarSection(key, open) {

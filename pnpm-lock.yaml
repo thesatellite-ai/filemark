@@ -25,6 +25,9 @@ importers:
       '@filemark/schema':
         specifier: workspace:*
         version: link:../../packages/schema-viewer
+      '@filemark/tasks':
+        specifier: workspace:*
+        version: link:../../packages/tasks
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -283,6 +286,9 @@ importers:
       '@filemark/kanban':
         specifier: workspace:*
         version: link:../kanban
+      '@filemark/tasks':
+        specifier: workspace:*
+        version: link:../tasks
       db-schema-toolkit:
         specifier: ^1.0.0
         version: 1.1.13
@@ -350,6 +356,31 @@ importers:
       db-schema-toolkit:
         specifier: ^1.0.0
         version: 1.1.13
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.5
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.5(react@19.2.5)
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.10)(typescript@5.9.3)(yaml@2.8.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/tasks:
+    dependencies:
+      '@filemark/core':
+        specifier: workspace:*
+        version: link:../viewer-core
     devDependencies:
       '@types/react':
         specifier: ^19.0.0

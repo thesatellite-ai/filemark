@@ -9,6 +9,7 @@ import {
   Sun,
   Moon,
   BookOpenText,
+  ListTodo,
 } from "lucide-react";
 import { useLibrary } from "../store";
 import { pickFolder } from "../fs";
@@ -21,6 +22,8 @@ import { cn } from "@/lib/utils";
 export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
+  const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
+  const tasksOpen = useLibrary((s) => s.tasksOpen);
   const toggleAutoRefresh = useLibrary((s) => s.toggleAutoRefresh);
   const autoRefresh = useLibrary((s) => s.autoRefresh);
   const autoRefreshMs = useLibrary((s) => s.autoRefreshMs);
@@ -131,6 +134,16 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         <IconBtn onClick={toggleToc} title="Table of contents" aria-label="TOC">
           <List className="size-4" />
         </IconBtn>
+        <IconBtn
+          onClick={toggleTasksPanel}
+          title="Tasks panel (⌘T)"
+          aria-label="Tasks panel"
+          className={cn(
+            tasksOpen && "bg-accent text-accent-foreground"
+          )}
+        >
+          <ListTodo className="size-4" />
+        </IconBtn>
         <ThemePopover>
           <Button
             variant="ghost"
@@ -163,17 +176,19 @@ function IconBtn({
   onClick,
   title,
   "aria-label": ariaLabel,
+  className,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   title?: string;
   "aria-label"?: string;
+  className?: string;
 }) {
   return (
     <Button
       variant="ghost"
       size="sm"
-      className="size-7 p-0"
+      className={cn("size-7 p-0", className)}
       onClick={onClick}
       title={title}
       aria-label={ariaLabel}

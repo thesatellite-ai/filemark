@@ -13,6 +13,7 @@ export default defineConfig({
     "@filemark/chart",
     "@filemark/datagrid",
     "@filemark/kanban",
+    "@filemark/tasks",
     "yaml",
     "mermaid",
     "db-schema-toolkit",
