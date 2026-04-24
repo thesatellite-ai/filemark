@@ -79,6 +79,22 @@ export function Sidebar() {
 
   const fileSubtitleFor = (file: LibraryFile): string | undefined => {
     if ((fileNameCounts[file.name] ?? 0) <= 1) return undefined;
+
+    // (1) file:// intercept or Finder drag-drop with text/uri-list:
+    //     sourceUrl holds the absolute path. Show the last 2 parent
+    //     segments — enough to identify which repo the file is from.
+    if (file.sourceUrl && file.sourceUrl.startsWith("file://")) {
+      try {
+        const abs = decodeURIComponent(new URL(file.sourceUrl).pathname);
+        const segs = abs.split("/").filter(Boolean);
+        const parent = segs.slice(-3, -1).join("/"); // last 2 dirs above filename
+        if (parent) return parent;
+      } catch {
+        /* fall through */
+      }
+    }
+
+    // (2) Inside a library folder — show folder + relative parent path.
     const folderName = file.folderId
       ? folders[file.folderId]?.name
       : undefined;
@@ -87,7 +103,20 @@ export function Sidebar() {
     if (folderName && parent) return `${folderName}/${parent}`;
     if (folderName) return folderName;
     if (parent) return parent;
-    return "Dropped";
+
+    // (3) True loose drop with no path metadata — distinguish by size +
+    //     drop time so at least the row isn't a literal dupe.
+    const sizeKb = file.size ? `${Math.max(1, Math.round(file.size / 1024))} KB` : "";
+    const ts = file.lastOpenedAt
+      ? new Date(file.lastOpenedAt).toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+    const tail = [sizeKb, ts].filter(Boolean).join(" · ");
+    return tail || "Dropped";
   };
 
   const orphanFiles = useMemo(
