@@ -140,7 +140,7 @@ Install into any project with [skills.sh](https://skills.sh):
 
 ```bash
 # From the root of the project you want the skill available in:
-curl -sL https://skills.sh | sh -s -- install \
+npx skills.sh install \
   https://github.com/thesatellite-ai/filemark/tree/main/skills/filemark
 ```
 
