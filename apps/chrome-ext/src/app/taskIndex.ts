@@ -86,9 +86,19 @@ export const useTaskIndex = create<TaskIndexState>((set, get) => ({
     // double-fires and auto-refresh ticks with identical bytes.
     if (prev && prev.hash === hash) return;
 
+    // Strip frontmatter BEFORE calling extractTasks so task.line values
+    // are body-relative — matching what @filemark/mdx's MDXViewer
+    // produces (it also parses the frontmatter-stripped body) and
+    // matching what react-markdown's `node.position.start.line` reports
+    // on each <li>'s data-fv-task-line attribute. Without this, panel
+    // click → openTaskLocation → scrollTarget.line would be
+    // full-content-relative, so querySelector would miss the target
+    // (or highlight the wrong row coincidentally at the same offset).
+    const body = stripFrontmatter(content);
+
     let tasks: Task[] = [];
     try {
-      tasks = extractTasks(content, { file: filePath });
+      tasks = extractTasks(body, { file: filePath });
     } catch {
       // Parser shouldn't throw, but belt-and-suspenders — keep the cell
       // with an empty task list rather than crashing the panel.
@@ -156,4 +166,23 @@ function fnv1a(s: string): string {
     h = Math.imul(h, 0x01000193) >>> 0;
   }
   return h.toString(16).padStart(8, "0");
+}
+
+/**
+ * Strip a leading YAML-ish `---` frontmatter block from markdown content.
+ * Mirrors the extractor in @filemark/mdx's MDXViewer so the line numbers
+ * produced by extractTasks here match what react-markdown sees when it
+ * renders the body. If no frontmatter is present the original content
+ * is returned unchanged.
+ */
+function stripFrontmatter(content: string): string {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") return content;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") {
+      return lines.slice(i + 1).join("\n");
+    }
+  }
+  // Unterminated frontmatter — bail safely.
+  return content;
 }

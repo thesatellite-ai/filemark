@@ -27,6 +27,13 @@ export function Viewer() {
   const jsonSettings = useSettings((s) => s.settings.json);
   const indexFile = useTaskIndex((s) => s.indexFile);
   const [content, setContent] = useState<string | null>(null);
+  // Tracks which file the current `content` state is actually for.
+  // Needed because file switches keep the previous file's `content`
+  // mounted until async load completes (to avoid a "Loading…" flash).
+  // Without this, the scroll-to-line effect can't tell whether the DOM
+  // it's querying is the target file or the previous one. Updated
+  // whenever setContent() is called with new bytes.
+  const [contentFileId, setContentFileId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   // Keep the latest content in a ref so the poll callback can compare without
@@ -41,12 +48,20 @@ export function Viewer() {
   useEffect(() => {
     if (!file) {
       setContent(null);
+      setContentFileId(null);
       setError(null);
       return;
     }
     // Drag-drop-only files cache content directly.
+    //
+    // Every `setContent(...)` call site also updates `setContentFileId`
+    // so the scroll-to-line effect can tell whether the DOM it's about
+    // to query is actually rendered from the target file's content or
+    // still showing the previous file's bytes. Paired-invariant: if
+    // you add another `setContent(...)` call, also `setContentFileId`.
     if (file.content !== undefined && !file.folderId && !file.sourceUrl) {
       setContent(file.content);
+      setContentFileId(file.id);
       setError(null);
       return;
     }
@@ -62,6 +77,7 @@ export function Viewer() {
             const text = await readFileAsText(handle);
             if (!cancelled) {
               setContent(text);
+              setContentFileId(file.id);
               setError(null);
             }
             return;
@@ -81,6 +97,7 @@ export function Viewer() {
             const text = await r.text();
             if (!cancelled) {
               setContent(text);
+              setContentFileId(file.id);
               setError(null);
             }
             return;
@@ -94,6 +111,7 @@ export function Viewer() {
       if (file.content !== undefined) {
         if (!cancelled) {
           setContent(file.content);
+          setContentFileId(file.id);
           setError(null);
         }
         return;
@@ -104,6 +122,7 @@ export function Viewer() {
           "Folder access needs to be re-granted. Use the sidebar's “Reconnect folder”."
         );
         setContent(null);
+        setContentFileId(null);
       }
     };
 
@@ -145,6 +164,7 @@ export function Viewer() {
         if (cancelled || next === null) return;
         if (next !== contentRef.current) {
           setContent(next);
+          setContentFileId(file.id);
         }
       } catch {
         /* swallow — one tick failure shouldn't break the loop */
@@ -170,26 +190,81 @@ export function Viewer() {
     indexFile(file.id, content, file.name, file.path);
   }, [file, content, indexFile]);
 
-  // Scroll-to-line handler. When the TaskPanel clicks a task row,
-  // library.openTaskLocation() bumps scrollTarget. If the target is in
-  // the currently-displayed file, find the <li data-fv-task-line="N">
-  // and scroll it into view. We also add a transient highlight class so
-  // the user can spot where the cursor landed.
+  // Scroll-to-line handler. When TaskPanel clicks a row,
+  // library.openTaskLocation() bumps `scrollTarget`. If the target is
+  // in the currently-displayed file, find the <li data-fv-task-line=N>
+  // and scroll it into view + add a transient highlight class.
+  //
+  // Three real-world complications this guards against:
+  //
+  //   1. Cross-file clicks. The panel may point at a task in a file
+  //      DIFFERENT from the active one. setActive runs instantly but
+  //      content fetch (FSA handle, file:// URL, IDB, sourceUrl)
+  //      resolves async. If we queried the DOM before new content
+  //      mounted, we'd hit the OLD file's rendered tasks and highlight
+  //      the wrong row. Now we also depend on `content` so the effect
+  //      re-fires once the new file's markdown has arrived.
+  //
+  //   2. MDX render lag. Even after `content` is set, react-markdown +
+  //      the components map need a tick or two to mount, and task
+  //      context population happens inside MDXViewer. Element may not
+  //      exist on the first query. We poll briefly (every 100ms up to
+  //      2s) until either we find the element or give up quietly.
+  //
+  //   3. Repeat clicks on the same row. scrollTarget includes a `rev`
+  //      counter so identity changes even when fileId+line don't —
+  //      effect re-fires, scroll repeats.
   useEffect(() => {
     if (!scrollTarget) return;
     if (!file || scrollTarget.fileId !== file.id) return;
-    // Defer to next tick so the doc has rendered any content change.
-    const timer = window.setTimeout(() => {
+    // Critical gate: wait until the RENDERED content is actually from
+    // the target file. Viewer deliberately keeps the previous file's
+    // content mounted during a file switch to avoid a Loading… flash,
+    // so `content !== null` alone would let the querySelector hit the
+    // old file's DOM. contentFileId only updates when setContent() is
+    // called with bytes for a specific file, so this check correctly
+    // waits for the new file's markdown to mount.
+    if (contentFileId !== scrollTarget.fileId) return;
+
+    let cancelled = false;
+    let flashTimer: number | null = null;
+    let attempt = 0;
+    const MAX_ATTEMPTS = 20; // ~2s total polling
+    const POLL_MS = 100;
+
+    const tryScroll = () => {
+      if (cancelled) return;
+      // Clear any previous flash highlights — if the user clicks a
+      // different row while a flash is active, the stale highlight on
+      // the OLD row shouldn't linger alongside the new one.
+      document
+        .querySelectorAll<HTMLElement>(".fv-task-flash")
+        .forEach((n) => n.classList.remove("fv-task-flash"));
       const el = document.querySelector<HTMLElement>(
         `[data-fv-task-line="${scrollTarget.line}"]`
       );
-      if (!el) return;
-      el.scrollIntoView({ block: "center", behavior: "smooth" });
-      el.classList.add("fv-task-flash");
-      window.setTimeout(() => el.classList.remove("fv-task-flash"), 1500);
-    }, 120);
-    return () => window.clearTimeout(timer);
-  }, [scrollTarget, file]);
+      if (el) {
+        el.scrollIntoView({ block: "center", behavior: "smooth" });
+        el.classList.add("fv-task-flash");
+        flashTimer = window.setTimeout(() => {
+          el.classList.remove("fv-task-flash");
+        }, 1500);
+        return;
+      }
+      attempt++;
+      if (attempt < MAX_ATTEMPTS) {
+        window.setTimeout(tryScroll, POLL_MS);
+      }
+    };
+
+    // First tick after the current render; then poll if needed.
+    const initialTimer = window.setTimeout(tryScroll, 50);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(initialTimer);
+      if (flashTimer) window.clearTimeout(flashTimer);
+    };
+  }, [scrollTarget, file, contentFileId]);
 
   if (!file) return <WelcomeView />;
 
