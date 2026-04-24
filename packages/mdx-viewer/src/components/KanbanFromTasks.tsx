@@ -29,7 +29,7 @@
 // Spec: docsi/TASKS_PLAN.md §10.3.
 // ─────────────────────────────────────────────────────────────────────────
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   useTasks,
   filterTasks,
@@ -39,6 +39,7 @@ import {
   type GroupBy,
 } from "@filemark/tasks";
 import { TaskChips } from "./TaskItem";
+import { TaskDetailSheet } from "./TaskDetailSheet";
 
 export function KanbanFromTasks(props: Record<string, unknown>) {
   const tasks = useTasks();
@@ -144,6 +145,8 @@ function KanbanColumn({
  */
 function KanbanCard({ task, hideGroupKey }: { task: Task; hideGroupKey: GroupBy }) {
   const struck = task.status === "done" || task.status === "cancelled";
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const hasDetail = !!task.detail && task.detail.trim().length > 0;
   return (
     <article className="bg-background rounded-md border p-2 text-[13px] leading-snug shadow-sm">
       <div className="flex items-start gap-2">
@@ -157,12 +160,23 @@ function KanbanCard({ task, hideGroupKey }: { task: Task; hideGroupKey: GroupBy 
         </span>
       </div>
       <div className="mt-1.5">
-        <TaskChipsFiltered task={task} hideGroupKey={hideGroupKey} />
+        <TaskChipsFiltered
+          task={task}
+          hideGroupKey={hideGroupKey}
+          onOpenDetail={hasDetail ? () => setSheetOpen(true) : undefined}
+        />
       </div>
       {task.file && task.line && (
         <div className="text-muted-foreground/70 mt-1 text-[10px] tabular-nums">
           {basename(task.file)}:{task.line}
         </div>
+      )}
+      {hasDetail && (
+        <TaskDetailSheet
+          task={task}
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+        />
       )}
     </article>
   );
@@ -175,9 +189,11 @@ function KanbanCard({ task, hideGroupKey }: { task: Task; hideGroupKey: GroupBy 
 function TaskChipsFiltered({
   task,
   hideGroupKey,
+  onOpenDetail,
 }: {
   task: Task;
   hideGroupKey: GroupBy;
+  onOpenDetail?: () => void;
 }) {
   const display = useMemo<Task>(() => {
     // Shallow clone; only nullify the field that equals the column key.
@@ -190,7 +206,7 @@ function TaskChipsFiltered({
     if (hideGroupKey === "tag") copy.tags = [];
     return copy;
   }, [task, hideGroupKey]);
-  return <TaskChips task={display} />;
+  return <TaskChips task={display} onOpenDetail={onOpenDetail} />;
 }
 
 function statusGlyph(s: string): string {

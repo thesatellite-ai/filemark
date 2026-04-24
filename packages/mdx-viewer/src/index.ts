@@ -5,4 +5,6 @@ export { Details } from "./components/Details";
 export { Frontmatter } from "./Frontmatter";
 export { Mermaid } from "./Mermaid";
 export { SchemaBlock } from "./SchemaBlock";
+export { TaskDetailSheet } from "./components/TaskDetailSheet";
+export { MDXComponentsProvider, useMDXComponents } from "./components-context";
 export { highlight as highlightCode } from "./shiki";

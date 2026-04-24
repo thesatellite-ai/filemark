@@ -31,7 +31,7 @@
 // Pure projection — never parses the document. One-parse-many-consumers.
 // ─────────────────────────────────────────────────────────────────────────
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   useTasks,
   filterTasks,
@@ -41,6 +41,7 @@ import {
   type GroupBy,
 } from "@filemark/tasks";
 import { TaskChips } from "./TaskItem";
+import { TaskDetailSheet } from "./TaskDetailSheet";
 
 export function TaskList(props: Record<string, unknown>) {
   const tasks = useTasks();
@@ -124,6 +125,8 @@ function TaskGroup({ label, tasks }: { label: string; tasks: Task[] }) {
 function TaskListRow({ task }: { task: Task }) {
   const glyph = statusGlyph(task.status);
   const struck = task.status === "done" || task.status === "cancelled";
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const hasDetail = !!task.detail && task.detail.trim().length > 0;
   return (
     <li className="fv-tasklist-row flex items-start gap-2 text-sm">
       <span
@@ -142,7 +145,17 @@ function TaskListRow({ task }: { task: Task }) {
           </span>
         )}
       </span>
-      <TaskChips task={task} />
+      <TaskChips
+        task={task}
+        onOpenDetail={hasDetail ? () => setSheetOpen(true) : undefined}
+      />
+      {hasDetail && (
+        <TaskDetailSheet
+          task={task}
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
     </li>
   );
 }

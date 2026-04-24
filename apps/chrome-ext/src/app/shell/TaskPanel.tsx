@@ -52,6 +52,7 @@ import {
   type Task,
   type GroupBy,
 } from "@filemark/tasks";
+import { TaskDetailSheet } from "@filemark/mdx";
 import { useLibrary } from "../store";
 import { useTaskIndex } from "../taskIndex";
 import { cn } from "@/lib/utils";
@@ -265,6 +266,8 @@ function TaskPanelRow({
   const glyph = statusGlyph(task.status);
   const struck = task.status === "done" || task.status === "cancelled";
   const fileId = useFileIdFor(task);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const hasDetail = !!task.detail && task.detail.trim().length > 0;
 
   const onClick = () => {
     if (fileId && task.line != null) onOpenLocation(fileId, task.line);
@@ -295,6 +298,28 @@ function TaskPanelRow({
             {task.text || <span className="italic opacity-60">(empty)</span>}
           </span>
           <span className="flex flex-wrap gap-1">
+            {hasDetail && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSheetOpen(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSheetOpen(true);
+                  }
+                }}
+                className="fv-chip fv-chip--detail cursor-pointer"
+                title="Open task detail"
+              >
+                📎 detail
+              </span>
+            )}
             {task.priority && (
               <span className={`fv-chip ${priorityClass(task.priority)}`}>
                 {task.priority.toUpperCase()}
@@ -323,6 +348,13 @@ function TaskPanelRow({
           </span>
         </span>
       </button>
+      {hasDetail && (
+        <TaskDetailSheet
+          task={task}
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
     </li>
   );
 }
