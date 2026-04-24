@@ -535,6 +535,279 @@ For status-grouped views, canonical order is `todo → wip → blocked → quest
 
 Filemark's side-panel reads from a global task index — every open file contributes tasks. The **inline** components (`<TaskList>`, `<Kanban md>`, etc.) are scoped to **one document**. The side-panel aggregates across **all** open files. Same DSL both places.
 
+## AI agents — reading, writing, managing tasks
+
+Filemark treats markdown as the source of truth. AI agents **read** tasks by grepping or by calling `extractTasks()`, **write** tasks by composing a bullet line, and **manage** tasks by editing text in place. Never through an API or DB. This section is the complete contract for doing those three things without corrupting the file.
+
+### Reading — grep patterns by sigil
+
+Every sigil is a simple ASCII token on its own line — greppable without a parser. The patterns below work with plain `grep` or ripgrep (`rg`) across any repo.
+
+| You want | Pattern |
+|---|---|
+| All tasks | `rg -n '^\s*- \[[ /x\-?!]\]' .` |
+| All open tasks (not done/cancelled) | `rg -n '^\s*- \[[ /?!]\]' .` |
+| All todo (unstarted) tasks | `rg -n '^\s*- \[ \]' .` |
+| All in-progress | `rg -n '^\s*- \[/\]' .` |
+| All done | `rg -n '^\s*- \[x\]' .` |
+| All blocked | `rg -n '^\s*- \[[!?]\]' .` |
+| Every P0 task | `rg -n '!p0\b' .` |
+| Every task for alice | `rg -n '@alice\b' .` |
+| Every task tagged #backend | `rg -n '#backend\b' .` |
+| Every task in project (launch) | `rg -n '\(launch\)' .` |
+| Every recurring task | `rg -n 'every:' .` |
+| Every task with a due date | `rg -n '~\d{4}-\d{2}-\d{2}\|~(today\|tomorrow\|monday\|tuesday\|wednesday\|thursday\|friday\|saturday\|sunday\|next-week)' .` |
+| Tasks due in April 2026 | `rg -n '~2026-04-\d{2}' .` |
+| Tasks that depend on another task | `rg -n 'after:task-' .` |
+| External-linked tasks | `rg -n '^\s*- \[.\].*\]\(https?://' .` |
+| Detail-bearing tasks | See "detail detection" below |
+
+### Reading — combined filters
+
+grep can't express `AND`/`OR` directly, but pipes work:
+
+```bash
+# Open AND p0 (both patterns must match)
+rg -n '^\s*- \[[ /?!]\].*!p0' .
+
+# Alice AND overdue (due before today = 2026-04-24)
+rg -n '@alice.*~2026-0[1-3]-\d{2}' .
+
+# Done last month (status=done + completed-on date)
+rg -n '^\s*- \[x\].*=2026-03-\d{2}' .
+
+# Blocked by a specific upstream
+rg -n 'after:task-payment-v2' .
+```
+
+For real boolean queries + time math, parse with the extractor (below).
+
+### Reading — programmatic via `@filemark/tasks`
+
+```ts
+import { extractTasks } from "@filemark/tasks";
+import { readFileSync } from "node:fs";
+
+const body = readFileSync("tasks.md", "utf8");
+const tasks = extractTasks(body, { file: "tasks.md" });
+// tasks: Task[] with fields { id, text, status, owner, priority, due,
+//   scheduled, tags, project, area, goal, estimate, percent, cost,
+//   refs, blockers, related, recurrence, detail, detailLineRange, line }
+```
+
+Use this for: aggregation across files, cross-references (`after:` / `related:` resolution), date math, anything grep can't do cleanly. The parser is pure-JS, zero deps, drops out on CI.
+
+### Reading — detail detection
+
+A task has rich detail when the bullet is followed by **indented continuation lines** (4+ spaces, or a tab). Grep detection:
+
+```bash
+# Tasks followed by at least one indented line
+rg -nU --multiline '^(\s*)- \[.\].*\n\1    \S' .
+```
+
+In `extractTasks()` output, check `task.detail` (the raw markdown block) and `task.detailLineRange` (1-indexed line span in the body).
+
+### Writing — create a new task
+
+A valid task line looks like:
+
+```md
+- [<status>] <text> <sigils>…
+```
+
+All sigils are **tail-first** — put the visible prose up front, metadata at the end:
+
+```md
+- [ ] Ship payment v2 @alice !p0 ~2026-05-10 &2h (launch) #infra ^task-pay-v2
+```
+
+Ordering rules for the sigils themselves do not matter — the parser scans tail-first. But **consistent order reads better**: owner → priority → due → estimate → project → tags → stable-id is the convention in the example files.
+
+Minimum valid task:
+
+```md
+- [ ] Do the thing
+```
+
+Add sigils as you learn the data. Never invent sigils that don't appear in the "Full sigil reference" table — unrecognized tokens get pushed into the task text and become part of the visible prose.
+
+### Writing — hide metadata inside prose with `::`
+
+When the task text itself contains a sigil character (`@`, `#`, `!`, `(`, `~`, `^`, etc.), wrap the real metadata in the `::…::` fence so tail-scan parses only inside it:
+
+```md
+- [ ] Reply to @support about invoice :: @alice !p1 ~2026-04-30 ::
+```
+
+Task text after parse: `"Reply to @support about invoice"`.
+
+If you write a task bullet into an existing file and the original had a `::` fence, **preserve it verbatim** — don't unwrap even if it "looks fine" without.
+
+### Writing — when to escape with `\`
+
+Use backslash only when the sigil would otherwise be parsed. Outside of sigil positions, no escape is needed.
+
+```md
+- [ ] Tag \#1 on the list   <!-- literal "#1" in text -->
+- [ ] Rate \@3 stars        <!-- literal "@3" in text -->
+```
+
+### Writing — adding indented detail
+
+Indent **4 spaces** past the bullet marker. Blank line between bullet and detail is required.
+
+```md
+- [ ] Parent task @alice !p0
+
+    A paragraph of detail.
+
+    ```ts
+    interface Foo { bar: string }
+    ```
+
+    <Callout type="tip" title="Nested component works">
+
+    Components inside detail render normally.
+
+    </Callout>
+```
+
+If you strip detail, you strip the `📎` chip and the popup. If you nest a subtask inside detail, it becomes a task of its own (with its own popup if *it* has detail).
+
+### Managing — edit-in-place operations
+
+**Always preserve:**
+
+1. Leading indentation of the bullet line (it determines subtask nesting).
+2. The stable id `^task-<slug>` if present — other tasks may depend on it.
+3. Every unrecognized token, *including* trailing whitespace inside `::…::` fences.
+4. The `=<date>` completion marker on recurring tasks (it's how history is reconstructed).
+5. Frontmatter `defaults:` block — tasks below depend on it for inherited project/area/owner.
+
+**Flipping a checkbox** — only modify the two characters between `[` and `]`:
+
+```
+- [ ] …   →   - [x] …
+- [/] …   →   - [x] …
+- [x] …   →   - [ ] …   (un-complete)
+```
+
+Do **not** re-serialize the line via a parse-then-emit round trip — you'll lose any quirk the parser didn't model.
+
+**Adding a dependency** — append `after:<target-id>` to the dependent task, before the stable id if one exists:
+
+```md
+- [ ] New work @grace !p1 ~2026-05-10 after:task-pay-v2 ^task-new-work
+```
+
+**Changing a due date** — replace the existing `~<date>` token in place. Don't duplicate.
+
+**Reassigning owner** — replace the `@<user>` token. Multiple `@` tokens become multiple owners (intentional for pair-owned work).
+
+**Promoting a task to have detail** — insert a blank line after the bullet, then add 4-space-indented content below. Don't put content on the same line as the bullet.
+
+### Managing — rolling a recurring task forward
+
+Filemark does **not** auto-create the next instance when a `every:` task is checked. The AI (or the human) writes the next bullet manually. Canonical pattern:
+
+```md
+<!-- Before checking off: -->
+- [ ] Weekly review @alice every:weekly ~2026-04-26
+
+<!-- After completion, turn the original into a dated-done record + write the next: -->
+- [x] Weekly review @alice every:weekly =2026-04-26
+- [ ] Weekly review @alice every:weekly ~2026-05-03
+```
+
+Rules:
+
+- Keep `every:<spec>` on both the completed row and the new row — preserves history provenance.
+- New due date = previous `~due` + recurrence interval. For `weekly`: +7d. `biweekly`: +14d. `2weeks`: +14d. `7d`: +7d. `mon,wed,fri`: next matching weekday.
+- If the recurrence has a cadence (`~monday`), advance the relative token — don't hard-code the absolute date unless the user asked for it.
+- Stable id, if any, must change on the new bullet (it's a new row). Use `^task-<slug>-<date>` to make new ids unique but discoverable.
+- Never skip instances. If today is 2026-04-26 and the task was due 2026-04-19 (missed a week), the agent should ask — don't silently produce a 2026-05-03 row that pretends the skip didn't happen.
+
+### Managing — bulk operations
+
+**Rewrite one task line in place (canonical metadata order):**
+
+```ts
+import { extractTasks, serializeTaskLine } from "@filemark/tasks";
+import { readFileSync, writeFileSync } from "node:fs";
+
+const body = readFileSync("tasks.md", "utf8");
+const tasks = extractTasks(body);
+const lines = body.split(/\r?\n/);
+
+for (const t of tasks) {
+  if (t.priority === "p0" && t.status === "todo") {
+    // serializeTaskLine emits a canonical-order bullet for just this task
+    lines[t.line - 1] = serializeTaskLine(t);
+  }
+}
+
+writeFileSync("tasks.md", lines.join("\n"));
+```
+
+`serializeTaskLine(task)` emits the canonical metadata order (see `docsi/TASKS_PLAN.md §12.1`). `serializeTask(task)` returns the same without the leading `- [x] ` — handy when you want to splice the body into an existing bullet structure.
+
+**Re-assign every task from @departed-user to @new-owner:**
+
+```bash
+rg -l '@departed-user' . | xargs sed -i '' 's/@departed-user\b/@new-owner/g'
+```
+
+(`sed -i ''` is macOS form; GNU sed drops the empty arg.)
+
+**Close out a project:**
+
+```bash
+# Flip all open tasks in (sprint-41) to cancelled
+rg -l '(sprint-41)' . | xargs sed -i '' 's/^- \[[ /?!]\]\(.*\(sprint-41\).*\)$/- [-]\1/g'
+```
+
+Grep/sed is fine for single-sigil swaps; reach for `extractTasks()` when you need multi-field logic.
+
+### Safety rules for AI editing
+
+Order the list below from highest-stakes to lowest:
+
+1. **Never renumber or rewrite existing stable ids (`^task-<slug>`).** Other files / other tasks may reference them via `after:` / `related:`. Breaking one breaks the cross-file graph silently.
+2. **Never auto-advance recurring due dates on check-off without user confirmation.** The whole point of `every:` being a reader-only chip is that the human stays in control of calendar semantics.
+3. **Never collapse a `::…::` fence** into tail-scanned sigils. The fence exists *because* the prose contains sigil-like tokens; unwrapping corrupts the visible text.
+4. **Never strip backslash escapes (`\#`, `\@`).** They're literal authoring choices.
+5. **Never touch frontmatter `defaults:`** when editing a single task — you'll silently re-attribute every task in the file.
+6. **Never reorder bullet lines unless explicitly asked.** Task `line` numbers are part of task identity (the task panel's "scroll to task" uses them).
+7. **Don't introduce sigils not in the reference table.** Unknown tokens become text noise.
+8. **When in doubt, preserve the original line verbatim** and add a comment above saying what change was proposed but not applied. Filemark ignores regular `<!-- html comments -->` in prose.
+
+### Round-trip guarantee (`parseTaskLine` → `serializeTaskLine`)
+
+`@filemark/tasks` exposes a paired single-line parser + serializer: for any canonical-form line, `serializeTaskLine(parseTaskLine(line)) === line` (byte-identical). Non-canonical inputs (metadata in unusual order, extra whitespace, uppercase `X`) normalize to canonical on re-emit — that's the formatter pass, deliberately idempotent.
+
+Recipe for task-only edits that leave the rest of the file untouched:
+
+```ts
+import { extractTasks, serializeTaskLine } from "@filemark/tasks";
+
+const body = readFileSync(path, "utf8");
+const lines = body.split(/\r?\n/);
+const tasks = extractTasks(body);
+
+// Mutate only tasks you actually edit:
+for (const t of tasks) {
+  if (/* your condition */) {
+    /* mutate fields on `t` */
+    lines[t.line - 1] = serializeTaskLine(t);
+  }
+}
+
+writeFileSync(path, lines.join("\n"));
+```
+
+This leaves prose, other bullets, fenced code, frontmatter, and unmodified tasks bit-identical to the input. Agents should prefer this pattern over manual string surgery — it's the only round-trip guarantee the library gives.
+
 ## Patterns & recipes
 
 ### A dashboard top section

@@ -14,6 +14,7 @@ This is the file reader Chrome should have shipped with.
 - [What you can open](#what-you-can-open)
 - [Features that other viewers can't touch](#features-that-other-viewers-cant-touch)
 - [Install](#install)
+- [AI skill — teach your coding agent filemark syntax](#ai-skill--teach-your-coding-agent-filemark-syntax)
 - [Usage](#usage)
 - [Custom components in markdown](#custom-components-in-markdown)
 - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -130,6 +131,34 @@ To make Filemark take over when you navigate straight to a local file:
 1. On [`chrome://extensions`](chrome://extensions), click **Details** on Filemark
 2. Flip on **Allow access to file URLs**
 3. Visit `file:///Users/you/notes/README.md` — it renders automatically, and the URL becomes shareable
+
+## AI skill — teach your coding agent filemark syntax
+
+Filemark ships an [AI skill](./skills/filemark/SKILL.md) — a single Markdown file that teaches Claude Code, Cursor, Codex, or any `SKILL.md`-aware agent how to author filemark-rendered docs: the two HTML-in-markdown survival rules, every custom component (`<Callout>`, `<Tabs>`, `<Details>`, `<Stats>`, `<ADR>`, `<Datagrid>`, `<Chart>`, `<Kanban>`, `<TaskList>`, `<TaskStats>`, `<TaskTimeline>`), the full task-bullet sigil grammar, the filter DSL, and the gotchas that normally take a debugging session to discover.
+
+Install into any project with [skills.sh](https://skills.sh):
+
+```bash
+# From the root of the project you want the skill available in:
+curl -sL https://skills.sh | sh -s -- install \
+  https://github.com/thesatellite-ai/filemark/tree/main/skills/filemark
+```
+
+Or clone + symlink manually if you prefer:
+
+```bash
+# global Claude Code skill:
+mkdir -p ~/.claude/skills
+curl -sL https://raw.githubusercontent.com/thesatellite-ai/filemark/main/skills/filemark/SKILL.md \
+  -o ~/.claude/skills/filemark/SKILL.md
+
+# or per-project:
+mkdir -p .claude/skills/filemark
+curl -sL https://raw.githubusercontent.com/thesatellite-ai/filemark/main/skills/filemark/SKILL.md \
+  -o .claude/skills/filemark/SKILL.md
+```
+
+Once installed, the skill auto-loads the moment the agent is asked to edit a `.md` / `.mdx` file that will be viewed in filemark — no manual invocation needed.
 
 ## Usage
 
