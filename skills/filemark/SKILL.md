@@ -888,6 +888,52 @@ defaults:
 - [x] Project kickoff @alice =2026-04-22
 ```
 
+### One-source rule for plan docs — views on top, bullets at end
+
+For brainstorm / plan / spec docs that have multiple `<TaskList>` / `<Kanban md>` / `<TaskTimeline md>` views slicing the same task pool: **put every view on top, every source bullet in a single `## Source — all tasks` (or similar) section at the end.** Never repeat the bullets next to each view — `<TaskList filter="(tier-1)">` and the raw `- [ ] … (tier-1)` bullets right below it both render to the screen, so the reader sees the same tasks twice. Confusing, fixes nothing.
+
+❌ **Wrong** — view + source intermixed:
+
+```md
+## Tier 1
+
+<TaskList filter="(tier-1)" sort="priority:asc"></TaskList>
+
+- [ ] Resize panel !p1 (tier-1) ^task-resize
+- [ ] Full-screen mode !p1 (tier-1) ^task-fullscreen
+```
+
+✅ **Right** — views on top, source appendix at end:
+
+```md
+## Tier 1
+
+<TaskList filter="(tier-1)" sort="priority:asc"></TaskList>
+
+**Definition of done:** Tier 1 is shippable when every task above closes.
+
+## Tier 2
+
+<TaskList filter="(tier-2)" sort="priority:asc"></TaskList>
+
+---
+
+## Source — all tasks
+
+Single source of truth. Edit here; views above re-render automatically.
+
+### Tier 1 source
+
+- [ ] Resize panel !p1 (tier-1) ^task-resize
+- [ ] Full-screen mode !p1 (tier-1) ^task-fullscreen
+
+### Tier 2 source
+
+- [ ] Saved views !p2 (tier-2) ^task-saved-views
+```
+
+**When the inverse pattern is fine:** simple task-tracker docs (like a `TASKS.md` or `BACKLOG.md`) where bullets are organized under their own headings (milestones / sprints / sections) and views at the top use a *different* lens (`group-by="project"` while sections are by milestone). The two lenses don't collide — different organizing axis. The clash only happens when the view's filter and the bullet's grouping are the same dimension.
+
 ## Gotchas
 
 **Blank lines inside components.** See Rule 1 above. If you see markdown rendered literally inside a `<Callout>` / `<Tabs>` / `<Details>`, add blank lines above and below the content.
@@ -905,6 +951,8 @@ defaults:
 **MV3 CSP rules out `eval`.** No `@mdx-js/mdx` `evaluate`, no `gray-matter`, no libraries using `new Function()`. All components are pre-registered React components, not runtime MDX.
 
 **Recurrence does NOT auto-generate new bullets.** Filemark is a reader. The AI/human writes the next instance manually when rolling a routine forward. The 🔁 chip + `is:recurring` filter is the entire UX.
+
+**Don't render the same tasks twice.** Bullets always render with a checkbox (via `remark-gfm`), AND a `<TaskList>` view rendering those same bullets prints them again. So `<TaskList filter="(tier-1)">` followed immediately by the `- [ ] … (tier-1)` source bullets shows every task twice. Fix: in plan docs, hoist views to the top and put one canonical `## Source — all tasks` appendix at the end. See *Patterns & recipes → One-source rule for plan docs* above.
 
 ## Decision guide
 
