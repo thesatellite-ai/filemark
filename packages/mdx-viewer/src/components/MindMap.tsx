@@ -124,9 +124,13 @@ export function MindMap(
         // Merge author frontmatter on top of our base defaults. The
         // base override (`scrollForPan: false`) is still applied unless
         // the author explicitly opts back in via frontmatter.
+        // maxWidth: 320 caps node text width — without it, a single
+        // wide node (rendered KaTeX, long URL, code block) can balloon
+        // out and force markmap's auto-fit to shrink every other node
+        // to unreadable size. Author can override via frontmatter.
         const created = viewMod.Markmap.create(
           svg,
-          { scrollForPan: false, ...derivedOptions },
+          { scrollForPan: false, maxWidth: 320, ...derivedOptions },
           root
         );
         if (cancelled) {

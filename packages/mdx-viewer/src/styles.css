@@ -877,6 +877,26 @@
   display: inline-block;
 }
 
+/* KaTeX-inside-foreignObject fix.
+   KaTeX renders the radical sign as an SVG with width="400em" (the
+   visible portion is clipped by a parent span with min-width:0.853em).
+   Inside a markmap <foreignObject>, the browser measures the SVG's
+   intrinsic 400em width when sizing the parent — the foreignObject
+   ends up ~5600px wide, which destroys markmap's layout. Force every
+   KaTeX SVG to fit its parent box so measurement is sane. */
+.fv-mindmap .markmap-foreign .katex svg {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+}
+/* Re-allow the .katex root to size to its natural inline measurement
+   (the rendered formula's width) instead of being stretched to 100%
+   of the foreignObject. */
+.fv-mindmap .markmap-foreign .katex {
+  display: inline-block;
+  max-width: 100%;
+}
+
 .fv-mermaid-inner svg {
   max-width: 100%;
   max-height: 100%;

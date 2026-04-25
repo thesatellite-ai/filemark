@@ -111,15 +111,32 @@ Fenced code blocks inside a bullet render as inline code blocks within the node 
 
 ## 6. Math (KaTeX) inside nodes
 
-Inline math via `$…$` and display math via `$$…$$` render through markmap's built-in KaTeX plugin. Filemark pre-publishes the locally-bundled `katex` module to `window.katex` before markmap's parser runs, so math works under MV3 strict CSP without any CDN load — same `katex.min.css` the rest of the doc uses for display math.
+Inline math via `$…$` renders through markmap's built-in KaTeX plugin. Filemark pre-publishes the locally-bundled `katex` module to `window.katex` before markmap's parser runs, so math works under MV3 strict CSP without any CDN load.
 
-```mindmap Quadratic formula
-- $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
-  - Discriminant: $\Delta = b^2 - 4ac$
-    - $\Delta > 0$ — two real roots
-    - $\Delta = 0$ — one double root
-    - $\Delta < 0$ — two complex roots
-  - Vertex: $\left(-\frac{b}{2a}, c - \frac{b^2}{4a}\right)$
+**Layout caveat:** KaTeX-rendered fractions / `\sqrt` / matrices produce tall, wide foreignObject children. markmap's auto-fit then shrinks every other node to make room. Set `maxWidth` (and prefer single-line inline math) to keep the tree readable.
+
+```mindmap
+---
+markmap:
+  maxWidth: 360
+---
+
+# Quadratic formula
+
+## Statement
+
+- The roots of $ax^2 + bx + c = 0$ are given by $x = (-b \pm \sqrt{b^2 - 4ac}) / (2a)$
+
+## Discriminant — $\Delta = b^2 - 4ac$
+
+- $\Delta > 0$ → two real roots
+- $\Delta = 0$ → one double root
+- $\Delta < 0$ → two complex roots
+
+## Vertex
+
+- $x_v = -b / (2a)$
+- $y_v = c - b^2 / (4a)$
 ```
 
 ---
@@ -285,6 +302,7 @@ One diagram exercising the full set of supported features — frontmatter direct
 ---
 markmap:
   colorFreezeLevel: 2
+  maxWidth: 320
 ---
 
 # Filemark
