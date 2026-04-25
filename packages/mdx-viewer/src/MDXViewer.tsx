@@ -14,6 +14,22 @@ import { Tabs, Tab } from "./components/Tabs";
 import { Details } from "./components/Details";
 import { Stats, Stat } from "./components/Stats";
 import { ADR } from "./components/ADR";
+import { DocStatus } from "./components/DocStatus";
+import { Backlinks } from "./components/Backlinks";
+import { MindMap } from "./components/MindMap";
+import { OKRtree, Objective, KR } from "./components/OKRtree";
+import { DocBlock } from "./components/DocBlock";
+import {
+  WeightedScore,
+  Criterion,
+  Option as WSOption,
+} from "./components/WeightedScore";
+import { Matrix2x2, Item as MatrixItem } from "./components/Matrix2x2";
+import { Timeline, Event as TimelineEvent } from "./components/Timeline";
+import { ReadingTime } from "./components/ReadingTime";
+import { FiveWhys, Why } from "./components/FiveWhys";
+import { Roadmap, Lane } from "./components/Roadmap";
+import { DecisionTree, Branch } from "./components/DecisionTree";
 import { MDXTable } from "./components/MDXTable";
 import { TaskItem } from "./components/TaskItem";
 import { TaskList } from "./components/TaskList";
@@ -91,6 +107,27 @@ export function MDXViewer(props: ViewerProps) {
         stats: Stats,
         stat: Stat,
         adr: ADR,
+        docstatus: DocStatus,
+        backlinks: Backlinks,
+        mindmap: MindMap,
+        okrtree: OKRtree,
+        objective: Objective,
+        kr: KR,
+        docblock: DocBlock,
+        weightedscore: WeightedScore,
+        criterion: Criterion,
+        option: WSOption,
+        matrix2x2: Matrix2x2,
+        item: MatrixItem,
+        timeline: Timeline,
+        event: TimelineEvent,
+        readingtime: ReadingTime,
+        fivewhys: FiveWhys,
+        why: Why,
+        roadmap: Roadmap,
+        lane: Lane,
+        decisiontree: DecisionTree,
+        branch: Branch,
         // <Chart src="./metrics.csv" type="bar" x="region" y="revenue" />
         // Mirrors <Datagrid> — src-based; inline data uses a ```chart fence.
         chart: (p: Record<string, unknown>) => {
@@ -186,6 +223,22 @@ export function MDXViewer(props: ViewerProps) {
             | undefined;
           if (lang === "mermaid") {
             return <Mermaid source={raw.replace(/\n$/, "")} />;
+          }
+          // MindMap — fenced ```mindmap with bullet-list outline. Meta
+          // string can carry `height=560` (or `height=70vh`) plus a
+          // free-form title — anything that isn't a `key=value` pair is
+          // treated as the title.
+          if (lang === "mindmap") {
+            const { height: mmHeight, rest: mmTitle } = parseMindmapMeta(
+              meta
+            );
+            return (
+              <MindMap
+                source={raw.replace(/\n$/, "")}
+                title={mmTitle}
+                height={mmHeight}
+              />
+            );
           }
           // Schema blocks — parse via db-schema-toolkit (lazy), render as
           // Mermaid ER diagram. `schema` auto-detects (SQL-ish); `prisma`
@@ -535,4 +588,32 @@ function extractFrontmatter(content: string): {
     /* fall through — treat as body */
   }
   return { frontData: {}, body: content };
+}
+
+/**
+ * Parse the meta string after a fenced ```mindmap fence. Pulls out
+ * recognised key=value pairs (currently just `height=`); the rest is
+ * concatenated as a free-form title.
+ *
+ *     mindmap height=560 Quarterly themes
+ *     → { height: "560px", rest: "Quarterly themes" }
+ */
+function parseMindmapMeta(
+  meta: string | undefined
+): { height: string | undefined; rest: string } {
+  if (!meta) return { height: undefined, rest: "" };
+  const tokens = meta.trim().split(/\s+/);
+  const titleParts: string[] = [];
+  let height: string | undefined;
+  for (const t of tokens) {
+    const m = /^height=(.+)$/i.exec(t);
+    if (m) {
+      const v = m[1];
+      // Bare number → assume px
+      height = /^\d+$/.test(v) ? `${v}px` : v;
+    } else {
+      titleParts.push(t);
+    }
+  }
+  return { height, rest: titleParts.join(" ") };
 }

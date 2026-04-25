@@ -768,7 +768,6 @@
 .fv-toc a[aria-current="location"] {
   color: var(--foreground);
   font-weight: 600;
-  background: var(--fm-toc-active-bg, color-mix(in oklab, var(--primary) 12%, transparent));
 }
 
 /* Host gate: hide the TOC when the user toggles it off via
@@ -816,6 +815,68 @@
   place-items: center;
   will-change: transform;
 }
+/* ─── MindMap (markmap engine) ─────────────────────────────────────────── */
+/* Fullscreen styling — when the user hits the ⛶ button, the figure
+   element enters native browser fullscreen. We override the inherited
+   "rounded card with margin" look so the mindmap fills the viewport. */
+.fv-mindmap--fs,
+.fv-mindmap:fullscreen {
+  margin: 0;
+  border-radius: 0;
+  background: var(--background);
+}
+.fv-mindmap:fullscreen > div {
+  height: 100vh !important;
+}
+/* Belt-and-suspenders: markmap-view embeds these rules in its own <style>
+   tag inside the SVG, but Tailwind v4 preflight + class-merging can sometimes
+   override them. Repeating the critical rules here as a fallback. */
+.fv-mindmap .markmap {
+  --markmap-max-width: 9999px;
+  --markmap-a-color: var(--primary);
+  --markmap-a-hover-color: var(--primary);
+  --markmap-code-bg: var(--muted);
+  --markmap-code-color: var(--muted-foreground);
+  --markmap-highlight-bg: var(--accent);
+  --markmap-circle-open-bg: var(--background);
+  --markmap-text-color: var(--foreground);
+  --markmap-font: 300 14px/18px system-ui, sans-serif;
+  font: var(--markmap-font);
+  color: var(--markmap-text-color);
+}
+.fv-mindmap .markmap-link {
+  fill: none;
+  /* Stroke deliberately NOT set here — markmap sets `stroke="…"` inline
+     on every path with the per-branch colour; CSS would override that
+     and flatten everything to currentColor. */
+}
+.fv-mindmap .markmap-node > circle {
+  cursor: pointer;
+}
+.fv-mindmap .markmap-foreign {
+  display: inline-block;
+}
+.fv-mindmap .markmap-foreign p {
+  margin: 0;
+}
+.fv-mindmap .markmap-foreign a {
+  color: var(--markmap-a-color);
+}
+.fv-mindmap .markmap-foreign code {
+  padding: 0.25em;
+  font-size: calc(1em - 2px);
+  color: var(--markmap-code-color);
+  background: var(--markmap-code-bg);
+  border-radius: 2px;
+}
+.fv-mindmap .markmap-foreign > div {
+  width: var(--markmap-max-width);
+  text-align: left;
+}
+.fv-mindmap .markmap-foreign > div > div {
+  display: inline-block;
+}
+
 .fv-mermaid-inner svg {
   max-width: 100%;
   max-height: 100%;

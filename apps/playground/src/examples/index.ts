@@ -5,6 +5,10 @@ import tasksFull from "../../../../examples/tasks-full.md?raw";
 import datagridFull from "../../../../examples/datagrid-full.md?raw";
 import datagridIntro from "../../../../examples/datagrid.md?raw";
 import showcase from "../../../../examples/showcase.md?raw";
+import planningV2Full from "../../../../examples/planning-v2-full.md?raw";
+import planningV2Tier2 from "../../../../examples/planning-v2-tier2.md?raw";
+import planningV2Tier3 from "../../../../examples/planning-v2-tier3.md?raw";
+import mindmapFull from "../../../../examples/mindmap-full.md?raw";
 import schemaDbml from "../../../../examples/schema.dbml?raw";
 import schemaPrisma from "../../../../examples/schema.prisma?raw";
 import schemaSql from "../../../../examples/schema.sql?raw";
@@ -136,6 +140,38 @@ export const EXAMPLES: Example[] = [
       "Markdown-native task DSL — 6 statuses, inline metadata chips, links, subtasks, cascading defaults.",
     section: "Planning",
     content: tasksFull,
+  },
+  {
+    id: "planning-v2-full",
+    title: "Planning v2 — DocBlock (prfaq/rfc/pitch/postmortem/daily) / MindMap / OKR / DocStatus / Backlinks",
+    description:
+      "All M9 planning shapes in one doc — unified `<DocBlock kind=…>` for header-strip templates, knowledge connectivity, visual brainstorm, OKR scoring, daily journal.",
+    section: "Planning",
+    content: planningV2Full,
+  },
+  {
+    id: "planning-v2-tier2",
+    title: "Planning v2 Tier 2 — WeightedScore / DocBlock kind=meeting / Matrix2x2 / Timeline",
+    description:
+      "Decision frameworks + meeting capture (via unified DocBlock) + 2×2 prioritization + horizontal timeline with lanes.",
+    section: "Planning",
+    content: planningV2Tier2,
+  },
+  {
+    id: "planning-v2-tier3",
+    title: "Planning v2 Tier 3 — ReadingTime / FiveWhys / Roadmap / DecisionTree",
+    description:
+      "Quick-win additions: read-time chip, root-cause chain, now/next/later board, branching analysis.",
+    section: "Planning",
+    content: planningV2Tier3,
+  },
+  {
+    id: "mindmap-full",
+    title: "MindMap — full feature tour (markmap engine)",
+    description:
+      "Twelve patterns: bullets, headings, rich text, math, code, multi-line, frontmatter directives, mixed structure, deep chains, wide fan-outs, controlled height, legacy wrapper form.",
+    section: "Planning",
+    content: mindmapFull,
   },
   {
     id: "showcase",

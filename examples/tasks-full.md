@@ -9,7 +9,7 @@ default-priority: p1
 
 Filemark parses GFM task bullets with **inline sigil metadata** and renders every line as a rich row with chips for priority, owner, dates, tags, links, and more. Same markdown source → multiple views. Edit the file in any editor; filemark re-renders on auto-refresh.
 
-Spec: `docsi/TASKS_PLAN.md`.
+Full DSL reference in [`skills/filemark/SKILL.md`](../skills/filemark/SKILL.md).
 
 ---
 
@@ -229,7 +229,7 @@ Only counts p0 + p1 tasks. Use `in (…)` set syntax instead of `<=` — `<` in 
 
 <TaskList title="All open tasks" filter="is:open" sort="priority:asc,due:asc" limit="15"></TaskList>
 
-Predicate DSL (see `docsi/TASKS_PLAN.md §9.1`): `is:open` derives to `status != done AND status != cancelled`. Sort multi-key; limit caps rows.
+Predicate DSL (full grammar in `skills/filemark/SKILL.md` § Filter DSL): `is:open` derives to `status != done AND status != cancelled`. Sort multi-key; limit caps rows.
 
 ## 20. `<TaskList group-by="status">` — grouped list
 

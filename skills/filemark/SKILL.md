@@ -54,6 +54,33 @@ HTML5 does not self-close unknown elements. `<TaskStats md/>`, `<TaskList/>`, `<
 <TaskStats md></TaskStats>
 ```
 
+The same trap applies to marker children of components like `<WeightedScore>`, `<Matrix2x2>`, `<Timeline>`, `<Roadmap>`. Self-closing siblings (`<Criterion />`, `<Item />`, `<Event />`, `<Lane />`) get nested into each other by the parser. Filemark works around this with a recursive walker, but the failure mode if you copy a component into a different host is invisible (only the first marker registers). Prefer the paired form when in doubt: `<Criterion ...></Criterion>`.
+
+### Rule 3 — single-line opening tag (attrs all on one line)
+
+CommonMark's HTML-block detection requires the opening tag to **complete on the first line**. Wrapping a long attribute list across multiple lines makes the parser fall back to "inline HTML inside a paragraph" — which often eats your component or its body.
+
+```md
+<!-- BAD: parser doesn't recognize this as an HTML block -->
+<DocBlock kind="meeting"
+  title="Q3 sync"
+  date="2026-04-24"
+  attendees="aman,grace,linus">
+
+### Agenda
+
+</DocBlock>
+
+<!-- GOOD: opening tag (incl. closing >) on one line -->
+<DocBlock kind="meeting" title="Q3 sync" date="2026-04-24" attendees="aman,grace,linus">
+
+### Agenda
+
+</DocBlock>
+```
+
+Long attribute lines are fine — but they must NOT include a literal newline. If the opening tag is unwieldy, prefer fewer attributes (compose via children) over multi-line authoring.
+
 ## Components at a glance
 
 | Component | Source | What it does |
@@ -75,6 +102,20 @@ HTML5 does not self-close unknown elements. `<TaskStats md/>`, `<TaskList/>`, `<
 | `<TaskStats md>` | inline HTML | KPI tiles over parsed tasks |
 | `<TaskList>` | inline HTML | Flat or grouped task list |
 | `<TaskTimeline md>` | inline HTML | Gantt-lite timeline |
+| `<DocBlock kind="prfaq" \| "rfc" \| "pitch" \| "postmortem" \| "meeting" \| "daily">` | inline HTML | Single unified template wrapper with smart `kind=` presets — replaces the per-template `<PRFAQ>` / `<RFC>` / `<Pitch>` / `<PostMortem>` / `<MeetingNotes>` / `<DailyNote>` (all collapsed into `<DocBlock>`) |
+| `<DocStatus>` | inline HTML | Inline status pill — draft / review / approved / deprecated / archived |
+| fenced ```` ```mindmap ```` / `<MindMap>` | fence meta / inline HTML | Collapsible horizontal tree from a bullet outline (fenced form preferred) |
+| `<OKRtree>` + `<Objective>` + `<KR>` | inline HTML | Objective → key-results scorecard; KR scoring from manual `current/target` or `tasks="id1,id2"` |
+| `<Backlinks>` | inline HTML | Inbound `[[wikilink]]` references (host-supplied; chrome-ext wires it via `BacklinksProvider`) |
+| `<WeightedScore>` + `<Criterion>` + `<Option>` | inline HTML | Decision matrix; auto-ranks rows by Σ score × weight |
+| `<Matrix2x2>` + `<Item>` | inline HTML | 2×2 prioritization grid; positioned bubbles in Quick-wins / Big-bets / Time-sinks / Fillers quadrants |
+| `<Timeline>` + `<Event>` | inline HTML | Horizontal date axis; lanes; bars vs diamonds; today marker |
+| `<ReadingTime>` | inline HTML | Auto-counted "~N min read" chip |
+| `<FiveWhys>` + `<Why>` | inline HTML | Numbered root-cause chain; last Why styled as root cause |
+| `<Roadmap>` + `<Lane>` | inline HTML | Three-column now/next/later board with toned lanes |
+| `<DecisionTree>` + `<Branch>` | inline HTML | Recursive branching analysis with collapsible labels |
+
+> **Hands-on examples:** every component above has a worked example in `examples/`. Browse [`examples/INDEX.md`](../../examples/INDEX.md) for a per-component catalogue with one-line use cases, or open the playground gallery — every example doc is wired in.
 
 ## Callouts, Tabs, Details (the simple HTML trio)
 
@@ -168,6 +209,337 @@ What changes as a result.
 Valid `status=`: `proposed` · `accepted` · `rejected` · `deprecated` · `superseded`.
 
 Cross-link decisions with `supersedes="ADR-003"` and `superseded-by="ADR-009"`.
+
+## Planning v2 templates — PRFAQ, RFC, Pitch, PostMortem, DocStatus
+
+All header-strip-+-body planning templates (PRFAQ / RFC / Pitch / PostMortem / MeetingNotes / DailyNote) collapse into a single `<DocBlock>` component with smart `kind=` presets. One component, six recognisable shapes — pick the kind, pass the kind-specific attrs, get the right chip / meta / variant for free.
+
+### `<DocBlock kind="prfaq">` — Amazon press-release-first
+
+```md
+<DocBlock kind="prfaq" title="Filemark v1" subhead="Render any .md in Chrome — no DB, no server" date="2026-04-24" author="aman">
+
+### Press release
+
+### Summary
+
+### FAQ
+
+</DocBlock>
+```
+
+Use for product launches, project kickoffs, and "imagine we shipped it" exercises.
+
+### `<DocBlock kind="rfc">` — request for comments
+
+```md
+<DocBlock kind="rfc" status="proposed" id="RFC-0042" date="2026-04-24" title="Adopt filemark" author="aman">
+
+### Status
+### Context
+### Proposal
+### Alternatives
+### Risks
+### Decision
+
+</DocBlock>
+```
+
+Six statuses: `draft` · `proposed` · `accepted` · `rejected` · `withdrawn` · `implemented`.
+
+### `<DocBlock kind="pitch">` — Shape Up fat-marker
+
+```md
+<DocBlock kind="pitch" problem="Tabs reorder is clunky" appetite="2 days" owner="aman" title="Tab DnD">
+
+### Solution
+### Rabbit holes
+### No-gos
+
+</DocBlock>
+```
+
+`appetite` is the time budget (Shape Up's signature commitment) and renders as a pill in the header.
+
+### `<DocBlock kind="postmortem">` — incident retrospective
+
+```md
+<DocBlock kind="postmortem" severity="sev2" service="api" date="2026-04-22" duration="42m" title="API 5xx spike">
+
+### Summary
+### Timeline
+### Root cause
+### Contributing factors
+### Action items
+
+- [ ] Fix the deploy script @aman !p1 ~2026-05-01
+
+</DocBlock>
+```
+
+Sev tones: `sev1`=danger · `sev2`=warn · `sev3`=info · `sev4`=muted. Action items use task-bullet sigils so they flow into TaskPanel.
+
+### `<DocBlock kind="meeting">` — capture a single sync
+
+```md
+<DocBlock kind="meeting" title="Q3 sync" date="2026-04-24" time="14:00–15:00" facilitator="aman" attendees="aman,grace,linus">
+
+### Agenda
+### Discussion
+### Decisions
+### Action items
+
+- [ ] Draft RFC @grace !p1 ~2026-05-01
+
+</DocBlock>
+```
+
+`attendees` becomes initial-pill chips. (`kind="meetingnotes"` is also accepted as an alias.)
+
+### `<DocBlock kind="daily">` — date-stamped daily journal
+
+```md
+<DocBlock kind="daily" date="2026-04-24" yesterday="2026-04-23" tomorrow="2026-04-25" mood="focused" weather="rainy">
+
+## Plan for today
+
+- [ ] Ship M9 @aman !p0
+
+## Open from yesterday
+
+<TaskList filter="is:open" sort="priority:asc" limit="10"></TaskList>
+
+</DocBlock>
+```
+
+`date` defaults to today (locale-rendered). The wrapper provides a recognisable date billboard + day-of-week kicker + prev/next nav. (`kind="dailynote"` also accepted.) Convention: store as `daily/YYYY-MM-DD.md` for chronological sidebar order.
+
+### `<DocBlock>` without `kind=` — manual / one-off custom block
+
+When none of the presets fit, drop a plain `<DocBlock>` and fill the slots yourself:
+
+```md
+<DocBlock kicker="Spike" title="Inline AI hooks — feasibility" variant="dashed">
+
+Three vendors evaluated. Verdict: build adapter, defer SDK choice.
+
+</DocBlock>
+```
+
+Available manual props: `kicker` (small uppercase label), `title`, `titleAs="h2"|"h3"`, `subtitle`, `chip={tone,label}`, `meta=[{label,value,mono?,pill?}]`, `aside`, `variant="flat"|"gradient"|"dashed"`, `asArticle`. Manual props **override** any kind preset, so you can pick a `kind="rfc"` and still swap in your own `kicker=` if you want.
+
+### `<DocStatus>` — inline status chip (NOT collapsed into DocBlock)
+
+```md
+<DocStatus state="approved" owner="aman" updated="2026-04-24"></DocStatus>
+```
+
+States: `draft` · `review` · `approved` · `deprecated` · `archived`. DocStatus stays its own component because it's an *inline* chip, not a header-strip-+-body wrapper.
+
+## MindMap — real mindmap (markmap engine)
+
+Renders via [markmap](https://markmap.js.org/) — purpose-built `markdown-→-mindmap` engine used by HackMD. Curved branches, pan/zoom, signature mindmap aesthetic, themed via shadcn tokens. Lazy-loaded — only docs that actually contain a mindmap pull the markmap chunk.
+
+**Preferred — fenced ` ```mindmap ` block** (rock-solid, no markdown-block-edge gotchas):
+
+````md
+```mindmap Filemark component map
+- Filemark
+  - Visual
+    - Chart
+    - Kanban
+  - Decision
+    - ADR
+    - RFC
+```
+````
+
+Anything after `mindmap` on the fence line becomes the title.
+
+**Alternative — `<MindMap>` wrapping a markdown list** (works when react-markdown nests the `<ul>` inside the wrapper; can fail when blank-line block-splitting puts the list as a sibling):
+
+```md
+<MindMap title="Filemark component map">
+
+- Filemark
+  - Visual
+    - Chart
+  - Decision
+    - ADR
+
+</MindMap>
+```
+
+If the wrapper renders a fallback message ("needs a nested unordered list inside"), switch to the fenced form. Branch tones cycle by depth (primary / blue / emerald / amber / rose / violet); nodes collapse on click. Optional `<MindMap height="500px">` to control the rendered area (default 420px); `<MindMap title="…">` adds a header strip. If markmap fails to load (CSP blocked, network error), MindMap falls back to a CSS collapsible tree.
+
+**Why the fenced form is preferred — the markdown-block-edge gotcha:**
+
+CommonMark's HTML-block detection (type 7, used for any non-standard tag) ends the block at the **next blank line**. But Rule 1 above *requires* a blank line between the opening `<MindMap>` tag and the markdown content inside, otherwise the body is treated as raw HTML and the list is never parsed as a list. These two requirements collide:
+
+```
+<MindMap title="…">
+                          ← blank line: needed for Rule 1, also ENDS the HTML block
+- Filemark                ← parsed as a top-level markdown list, NOT inside <MindMap>
+  - Visual
+                          ← another blank line
+</MindMap>                ← parsed as its own HTML block (just a closing tag)
+```
+
+After parsing, the three pieces are *siblings* in the document tree — `<MindMap>` (empty), `<ul>…</ul>`, `</MindMap>`. rehype-raw re-stitches the HTML through parse5, but whether the list ends up nested inside `<MindMap>` (vs alongside it) depends on the rest of the document and whitespace placement.
+
+For wrapper components that just render `{children}` verbatim (PRFAQ, RFC, Pitch, ADR, MeetingNotes, …) the visual outcome is fine even if the parser splits the body — react-markdown still calls each registered component, the markdown still renders, and the eye reads the result as one block. **MindMap is different**: it needs to *programmatically extract* the `<ul>` from its children to build a tree. When the list ends up as a *sibling* instead of a child, MindMap finds nothing and renders the fallback.
+
+The fenced ` ```mindmap ` form sidesteps this entirely — code fences are first-class CommonMark blocks and their body is delivered to the lang handler as a single raw string, untouched by HTML-block edge cases. Same pattern as `chart`, `kanban`, `mermaid`, `csv`, etc. Use the fenced form for any future component that needs to read structured markdown content from its body.
+
+## OKRtree — objective + key-result scorecard
+
+```md
+<OKRtree>
+
+<Objective title="Q3: ship M9" owner="aman" due="2026-09-30">
+
+<KR title="Ship 6 components" tasks="task-m9-prfaq,task-m9-rfc,task-m9-pitch,task-m9-postmortem,task-m9-docstatus,task-m9-backlinks" />
+<KR title="10K WAU" current="6200" target="10000" />
+<KR title="<2% bounce" current="3.4" target="2" inverse />
+
+</Objective>
+
+</OKRtree>
+```
+
+KR scoring two ways:
+
+- `current` + `target` → bar fills `current/target`. Add `inverse` for "lower is better" (e.g. error rate).
+- `tasks="id1,id2,…"` → looks up each task `^id` in the doc's `useTasks()` context, counts `[x]` as done; bar fills `done/total`.
+
+Bar colour shifts emerald (≥100%) / blue (≥70%) / amber (≥30%) / rose (<30%).
+
+## WeightedScore — ranked decision matrix
+
+```md
+<WeightedScore title="Pick the next infra investment">
+
+<Criterion name="Effort"  weight="2" inverse />
+<Criterion name="Impact"  weight="3" />
+<Criterion name="Risk"    weight="1" inverse />
+
+<Option name="Refactor parser"  scores="3,4,2" />
+<Option name="Cache layer"      scores="2,3,1" />
+<Option name="Rewrite from 0"   scores="5,5,5" />
+
+</WeightedScore>
+```
+
+Score order in `scores=` matches criterion order. `inverse` on a criterion flips it ("lower is better"). Rows auto-rank; winner gets a primary border + 🏆.
+
+## Matrix2x2 — 2×2 prioritization grid
+
+```md
+<Matrix2x2 x-axis="Effort" y-axis="Impact" title="Roadmap candidates">
+
+<Item x="0.2" y="0.9">Quick win A</Item>
+<Item x="0.7" y="0.4">Time sink B</Item>
+<Item x="0.85" y="0.85">Big bet C</Item>
+
+</Matrix2x2>
+```
+
+Coords are 0..1 — `(0,0)` is bottom-left of the inner grid. Quadrants are coloured (emerald = quick wins, blue = big bets, zinc = fillers, rose = time sinks). Override the four labels with `quadrants="A,B,C,D"` (clockwise from top-left).
+
+## Timeline — horizontal date axis with lanes
+
+```md
+<Timeline title="Q3 plan" from="2026-07-01" to="2026-09-30">
+
+<Event date="2026-07-15" lane="design" title="Mocks final" />
+<Event date="2026-08-01" end="2026-08-22" lane="eng" title="Build phase" />
+<Event date="2026-09-15" lane="ship" title="GA launch" highlight />
+
+</Timeline>
+```
+
+Diamond markers for single-day events; bars for ranges (`date` + `end`). `highlight` promotes to primary colour. Today gets a vertical dashed line when within range. `from` / `to` set the visible window (auto-derived from event min/max if omitted).
+
+## ReadingTime · FiveWhys · Roadmap · DecisionTree (Tier 3)
+
+Four quick-win planning blocks.
+
+### `<ReadingTime>`
+
+```md
+<ReadingTime></ReadingTime>              <!-- auto-counts words from the article -->
+<ReadingTime words="2400"></ReadingTime>
+<ReadingTime words="500" wpm="180"></ReadingTime>
+```
+
+Default pace 230 wpm. Auto mode mounts a `MutationObserver` on the enclosing `.fv-mdx-body`, so it stays accurate as the doc updates.
+
+### `<FiveWhys>` — root-cause chain
+
+```md
+<FiveWhys problem="Deploy broke prod">
+
+<Why>The migration ran out of order.</Why>
+<Why>The deploy script doesn't sequence migrations against feature flags.</Why>
+<Why>Nobody owns the deploy script.</Why>
+<Why>It was inherited from the previous team.</Why>
+<Why>Tooling responsibilities were assumed instead of assigned.</Why>
+
+</FiveWhys>
+```
+
+Last Why is highlighted as the root cause. Doesn't enforce exactly five — pass any number.
+
+### `<Roadmap>` — now / next / later
+
+```md
+<Roadmap title="Q3 plan">
+
+<Lane name="Now" subtitle="this sprint">
+
+- Ship X
+- Polish Y
+
+</Lane>
+
+<Lane name="Next" subtitle="this quarter" tone="info">…</Lane>
+
+<Lane name="Later" subtitle="someday" tone="muted">…</Lane>
+
+</Roadmap>
+```
+
+Lane tones: `default` · `info` · `success` · `warn` · `danger` · `muted`. Author writes any markdown body inside each lane.
+
+### `<DecisionTree>` — recursive branching
+
+```md
+<DecisionTree question="Should we migrate?">
+
+<Branch label="yes">
+
+<DecisionTree question="Big-bang or incremental?">
+<Branch label="big-bang">Risky but fast.</Branch>
+<Branch label="incremental">Safer, takes a quarter.</Branch>
+</DecisionTree>
+
+</Branch>
+
+<Branch label="no">Stay on current platform.</Branch>
+
+</DecisionTree>
+```
+
+Branches collapse on click. Nest `<DecisionTree>` inside a `<Branch>` to drill deeper.
+
+## Backlinks — inbound wikilinks
+
+```md
+<Backlinks></Backlinks>
+<Backlinks title="Referenced from" empty="No inbound links yet."></Backlinks>
+```
+
+Reads inbound `[[Target]]` and `[[Target|anchor]]` references from other docs in the library (host-supplied via `BacklinksProvider` — wired in chrome-ext's `Viewer.tsx`). Renders nothing useful in pure-MDX previews; light up in chrome-ext where the link index is populated.
 
 ## Datagrid — fenced CSV with type hints
 
@@ -750,7 +1122,7 @@ for (const t of tasks) {
 writeFileSync("tasks.md", lines.join("\n"));
 ```
 
-`serializeTaskLine(task)` emits the canonical metadata order (see `docsi/TASKS_PLAN.md §12.1`). `serializeTask(task)` returns the same without the leading `- [x] ` — handy when you want to splice the body into an existing bullet structure.
+`serializeTaskLine(task)` emits the canonical metadata order. `serializeTask(task)` returns the same without the leading `- [x] ` — handy when you want to splice the body into an existing bullet structure.
 
 **Re-assign every task from @departed-user to @new-owner:**
 
@@ -969,10 +1341,8 @@ Single source of truth. Edit here; views above re-render automatically.
 
 ## More detail
 
-- Filemark repo: `chrome-extensions/filemark`
-- Canonical spec: `docsi/TASKS_PLAN.md` (sections 9 for filter DSL, 10 for recurrence)
-- Theming tokens: `docsi/THEMING.md` — 55 `--fm-*` CSS variables
-- Feature inventory + benchmark: `docsi/TASKS_INVENTORY.md`
-- Working example files: `examples/showcase.md`, `examples/tasks-full.md`, `examples/chart-full.md`, `examples/datagrid-full.md`, `examples/kanban-full.md`, `examples/stats-adr-full.md`
+- Filemark repo: <https://github.com/thesatellite-ai/filemark>
+- Component catalogue + per-component use cases: `examples/INDEX.md`
+- Working example files: `examples/showcase.md`, `examples/tasks-full.md`, `examples/chart-full.md`, `examples/datagrid-full.md`, `examples/kanban-full.md`, `examples/stats-adr-full.md`, `examples/mindmap-full.md`, `examples/planning-v2-full.md`, `examples/planning-v2-tier2.md`, `examples/planning-v2-tier3.md`
 
 Copy any example file into filemark to see the full syntax rendered.

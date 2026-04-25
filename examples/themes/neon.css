@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────────────────
  * Neon — a sample filemark theme.
  *
- * Demonstrates the theming contract documented in docsi/THEMING.md:
+ * Demonstrates the theming contract documented in the theming token catalog:
  *   - Redefines shadcn tokens (--background, --foreground, etc.) under
  *     html[data-theme="neon"] for the base palette.
  *   - Redefines filemark-specific --fm-* tokens to recolor chips, chip

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLibrary } from "../store";
 import { useTaskIndex } from "../taskIndex";
+import { useLinkIndex } from "../linkIndex";
 import { getRenderer } from "../registry";
 import { idbStorage } from "../adapters/idbStorage";
 import { createFSAAssetResolver } from "../adapters/fsaAssets";
 import { sessionHandles } from "../sessionHandles";
 import { readFileAsText } from "../fs";
-import { MDXViewer } from "@filemark/mdx";
+import { MDXViewer, BacklinksProvider, type Backlink } from "@filemark/mdx";
 import { WELCOME_DOC } from "../welcomeDoc";
 import { AlertCircle } from "lucide-react";
 import { RawView } from "./RawView";
@@ -26,6 +27,10 @@ export function Viewer() {
   const scrollTarget = useLibrary((s) => s.scrollTarget);
   const jsonSettings = useSettings((s) => s.settings.json);
   const indexFile = useTaskIndex((s) => s.indexFile);
+  const indexLinkFile = useLinkIndex((s) => s.indexFile);
+  const linkIndex = useLinkIndex((s) => s.index);
+  const backlinksFor = useLinkIndex((s) => s.backlinksFor);
+  const setActive = useLibrary((s) => s.setActive);
   const [content, setContent] = useState<string | null>(null);
   // Tracks which file the current `content` state is actually for.
   // Needed because file switches keep the previous file's `content`
@@ -188,7 +193,25 @@ export function Viewer() {
     const ext = file.ext.toLowerCase();
     if (ext !== "md" && ext !== "mdx" && ext !== "markdown") return;
     indexFile(file.id, content, file.name, file.path);
-  }, [file, content, indexFile]);
+    indexLinkFile(file.id, content, file.name, file.path);
+  }, [file, content, indexFile, indexLinkFile]);
+
+  // Compute inbound backlinks for the active file. Recomputes when the
+  // link index changes (any opened file's links update). The provider
+  // wraps MDXViewer so any <Backlinks /> element in the doc renders the
+  // up-to-date list. onOpen jumps to the source file.
+  const backlinksValue = useMemo(() => {
+    if (!file)
+      return { links: [] as Backlink[], onOpen: undefined as undefined };
+    const links = backlinksFor(file.id, file.name);
+    return {
+      links,
+      onOpen: (fromFileId: string) => {
+        void setActive(fromFileId);
+      },
+    };
+    // linkIndex referenced so memo invalidates when it mutates.
+  }, [file, backlinksFor, linkIndex, setActive]);
 
   // Scroll-to-line handler. When TaskPanel clicks a row,
   // library.openTaskLocation() bumps `scrollTarget`. If the target is
@@ -338,7 +361,9 @@ export function Viewer() {
   // about host-level UI state.
   return (
     <div className="px-6 pb-16 pt-8" data-toc={tocOpen ? "open" : "closed"}>
-      <Renderer {...rendererProps} />
+      <BacklinksProvider value={backlinksValue}>
+        <Renderer {...rendererProps} />
+      </BacklinksProvider>
     </div>
   );
 }

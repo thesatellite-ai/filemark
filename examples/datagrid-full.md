@@ -283,7 +283,7 @@ Falls back to initials if the image fails or is omitted.
 uuid,name,kind
 019db6fc-cc79-727c-84d0-387549d2af16,CLAUDE.md symlink,file
 019db6fc-cc8a-71a1-863f-3910a1be461d,docs symlink,dir
-019db6fe-334e-7203-86f4-3dca349d9783,docsi symlink,dir
+019db6fe-334e-7203-86f4-3dca349d9783,plans symlink,dir
 ```
 
 Long ids are elided (`019db6fc…`); click to copy the full value.

@@ -268,8 +268,8 @@ Prefer a component-style invocation:
 
 `src=` accepts relative paths (resolved via the folder handle) or
 absolute URLs (fetched directly — `host_permissions: ["<all_urls>"]`
-in the manifest bypasses CORS). See `docsi/DATAGRID.md` for the full
-info-string grammar.
+in the manifest bypasses CORS). See `examples/datagrid-full.md` for the full
+info-string grammar in worked examples.
 
 ### YAML frontmatter
 
@@ -284,6 +284,113 @@ tags: [getting-started, tutorial]
 ```
 
 Renders as a compact metadata card — title, subtitle, tag pills, and a grid for everything else.
+
+### Charts from CSV
+
+```md
+<Chart src="./metrics.csv" type="line" x="month" y="revenue,expenses" title="Q1 burn" />
+```
+
+Or fence a block with ` ```bar `, ` ```line `, ` ```pie `, ` ```area `, ` ```scatter `, ` ```funnel `, or ` ```radar `. Inline data, recharts under the hood, formatters + by-pivot + tags supported. See `examples/chart-full.md`.
+
+### Kanban boards from CSV (or from tasks)
+
+```md
+<Kanban src="./roadmap.csv" group-by="status" card-title="title" />
+```
+
+Or feed it a markdown task list with `<Kanban md group-by="status" />` — same data, no separate CSV. See `examples/kanban-full.md`.
+
+### Markdown-native tasks
+
+Every `- [ ]` bullet picks up filemark's task DSL:
+
+```md
+- [ ] Ship payments v2 @alice !p0 ~2026-05-10 (launch) #infra ^task-pay-v2
+- [/] Refactor parser @grace !p1 &2h
+- [x] Project kickoff @aman =2026-04-22
+```
+
+Sigils: `@owner` `!p0..p4` `~due` `^stable-id` `(project)` `#tag` `&estimate` `every:weekly` `after:^id`. Six statuses (`[ ]` `[/]` `[x]` `[!]` `[?]` `[-]`). Then project them into views:
+
+```md
+<TaskStats md></TaskStats>
+<TaskList filter="is:open AND priority<=p1" group-by="owner" sort="priority:asc"></TaskList>
+<Kanban md group-by="status"></Kanban>
+<TaskTimeline md lane="owner"></TaskTimeline>
+```
+
+Plus a cross-file **Task Panel** in the chrome extension (⌘T) that aggregates tasks across every opened doc with filter / group / scope / search. See `examples/tasks-full.md`.
+
+### Mindmaps (markmap engine)
+
+Fence any block with ` ```mindmap ` and get a real interactive mindmap — pan, zoom, fullscreen, KaTeX-in-nodes, frontmatter directives:
+
+````md
+```mindmap height=560 Quarterly themes
+- Q3 — Visualize
+  - Charts
+  - Kanban
+- Q3 — Plan
+  - DocBlock
+  - OKRtree
+```
+````
+
+Mouse wheel zooms, click-drag pans, `+` / `-` / `0` / `F` keyboard shortcuts. See `examples/mindmap-full.md` for 13 worked patterns.
+
+### Planning templates — one component, six shapes
+
+Single `<DocBlock>` with `kind=` smart presets covers PRFAQ / RFC / Pitch / PostMortem / MeetingNotes / DailyNote:
+
+```md
+<DocBlock kind="rfc" status="proposed" id="RFC-0042" date="2026-04-25" title="Adopt filemark for all planning docs">
+
+### Status
+### Context
+### Proposal
+### Alternatives
+### Risks
+### Decision
+
+</DocBlock>
+```
+
+`kind="prfaq"` for press-release-first, `kind="pitch"` for Shape-Up, `kind="postmortem"` (with `severity="sev2"`), `kind="meeting"` (with `attendees="alice,bob"`), `kind="daily"` (with `mood="focused"`), or no `kind=` for a custom block. See `examples/planning-v2-full.md`.
+
+### Decision frameworks
+
+```md
+<WeightedScore title="Pick the next infra investment">
+<Criterion name="Effort"  weight="2" inverse />
+<Criterion name="Impact"  weight="3" />
+<Option name="Refactor parser"  scores="3,4" />
+<Option name="Cache layer"      scores="2,3" />
+<Option name="Rewrite from 0"   scores="5,5" />
+</WeightedScore>
+
+<Matrix2x2 x-axis="Effort" y-axis="Impact" title="Roadmap candidates">
+<Item x="0.2" y="0.9">Quick win</Item>
+<Item x="0.85" y="0.85">Big bet</Item>
+</Matrix2x2>
+
+<DecisionTree question="Should we migrate?">
+<Branch label="yes">…</Branch>
+<Branch label="no">Stay on current platform.</Branch>
+</DecisionTree>
+
+<FiveWhys problem="The deploy on 2026-04-22 broke production">
+<Why>The migration ran out of order.</Why>
+<Why>The deploy script doesn't sequence migrations.</Why>
+…
+</FiveWhys>
+```
+
+Plus `<OKRtree>` (with task-derived progress %), `<Roadmap>` (now/next/later columns), `<Timeline>` (date axis with lanes), `<Backlinks>` (inbound `[[wikilink]]` panel), `<DocStatus>` (inline status pill), and `<ReadingTime>` (auto-counted minutes chip). See `examples/planning-v2-tier2.md` and `examples/planning-v2-tier3.md`.
+
+### Examples directory
+
+Every component above has a worked showcase in `examples/`. Open [`examples/INDEX.md`](./examples/INDEX.md) for the per-component catalogue with one-line use cases — or open the playground gallery (`apps/playground`) and pick from the sidebar.
 
 ## Keyboard shortcuts
 
