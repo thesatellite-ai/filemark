@@ -25,6 +25,9 @@ Single page that lists every example doc in this directory, every component each
 | [`planning-v2-tier2.md`](./planning-v2-tier2.md) | WeightedScore · DocBlock kind=meeting · Matrix2x2 · Timeline | Decision frameworks + 2×2 prioritisation + horizontal timeline |
 | [`planning-v2-tier3.md`](./planning-v2-tier3.md) | ReadingTime · FiveWhys · Roadmap · DecisionTree | Quick-win planning helpers |
 | [`mindmap-full.md`](./mindmap-full.md) | MindMap (markmap engine) — 13 sections | Every markmap feature, frontmatter directives, controls cheatsheet |
+| [`richdocs-tier1.md`](./richdocs-tier1.md) | Steps · Cards · APIEndpoint · VideoEmbed · Diff · Glossary · Badge · LastUpdated · EditThisPage | Tutorials, landing pages, dev reference, doc workflow chips |
+| [`richdocs-tier2.md`](./richdocs-tier2.md) | Heatmap · AnnotatedImage · PullQuote · Testimonials · Sparkline · Footnote | Activity grid, image hotspots, marketing quotes, inline trends, Tufte-style notes |
+| [`richdocs-tier3.md`](./richdocs-tier3.md) | PRCard · IssueCard · CommitCard · FileTree · EnvVarsTable · Lightbox · Carousel · Gauge · Treemap · Quiz · Poll · AISummary · CalloutWithAction · AuthorCard · PackageBadge | Niche additions for dev docs, tutorials, marketing, polls/quizzes |
 
 Schema-only (drop these directly without a markdown wrapper — filemark renders them as ER diagrams):
 
@@ -95,6 +98,48 @@ Every authorable component, the example doc that exercises it, and when to reach
 | `<Roadmap>` + `<Lane>` | `planning-v2-tier3.md` | Now / Next / Later three-column board |
 | `<DecisionTree>` + `<Branch>` | `planning-v2-tier3.md` | Recursive branching analysis with collapsible labels |
 
+### Rich docs (M14 — tutorials / landing / dev reference)
+
+| Component | Lives in | Use when |
+|---|---|---|
+| `<Steps>` + `<Step n= title=>` | `richdocs-tier1.md` | Numbered guided walkthrough — install / setup / how-to flows |
+| `<Cards cols=>` + `<DocCard icon= title= href= badge=>` | `richdocs-tier1.md` | Landing-page tile grid — features, getting started, related docs |
+| `<APIEndpoint method= path= auth= base=>` | `richdocs-tier1.md` | REST endpoint reference card with copy-curl button |
+| `<VideoEmbed src=>` | `richdocs-tier1.md` | Privacy-conscious YouTube / Vimeo / Loom iframe |
+| `<Diff>` wrapping before/after fenced blocks | `richdocs-tier1.md` | Migration guides, refactor PRs, before/after tutorials |
+| `<Define term=>` | `richdocs-tier1.md` | Glossary — define a term once; auto-popover on every later occurrence |
+| `<Badge tone=>` | `richdocs-tier1.md` | Inline tone pill next to a heading or feature name |
+| `<LastUpdated date= by=>` + `<EditThisPage repo= path=>` | `richdocs-tier1.md` | Doc workflow chips at top of any long doc |
+
+### Rich docs (M15 — Tier 2 power features)
+
+| Component | Lives in | Use when |
+|---|---|---|
+| `<Heatmap src= date= value=>` | `richdocs-tier2.md` | GitHub-style activity grid (53×7) from CSV |
+| `<AnnotatedImage src=>` + `<Hotspot x= y=>` | `richdocs-tier2.md` | Screenshot walkthrough — numbered pin overlays + popovers |
+| `<PullQuote author= role=>` | `richdocs-tier2.md` | Featured testimonial / quote block |
+| `<Testimonials cols=>` | `richdocs-tier2.md` | Marketing-style grid of pull quotes |
+| `<Sparkline data= type= color=>` | `richdocs-tier2.md` | Inline trend visual (line or bar) inside text or table cells |
+| `<Footnote>` | `richdocs-tier2.md` | Tufte-style numbered footnote with click-to-toggle popover |
+
+### Rich docs (M16 — Tier 3 niche)
+
+| Component | Lives in | Use when |
+|---|---|---|
+| `<PRCard>` / `<IssueCard>` / `<CommitCard>` | `richdocs-tier3.md` | GitHub artifacts as styled cards in changelogs / release notes |
+| `<FileTree>` | `richdocs-tier3.md` | Indented file/folder outline (folders end with `/`) |
+| `<EnvVarsTable>` + `<Env name= type= default= required secret>` | `richdocs-tier3.md` | Env var reference table with required + secret pills |
+| `<Lightbox>` | `richdocs-tier3.md` | Click-to-fullscreen image grid with arrow navigation |
+| `<Carousel>` + `<Slide>` | `richdocs-tier3.md` | Horizontal scroll-snap card row (no JS scroll listener) |
+| `<Gauge value= target= thresholds=>` | `richdocs-tier3.md` | Single-value semicircle dial with threshold colour bands |
+| `<Treemap>` (CSV: name,value[,group]) | `richdocs-tier3.md` | Nested rectangles sized by value, coloured by group |
+| `<Quiz question=>` + `<Choice correct?>` | `richdocs-tier3.md` | Multi-choice question with reveal-on-click |
+| `<Poll id= question=>` + `<PollOption>` | `richdocs-tier3.md` | Single-question vote, persisted via localStorage |
+| `<AISummary status=>` | `richdocs-tier3.md` | Placeholder slot for host-provided summariser |
+| `<CalloutWithAction tone= title= action= href=>` | `richdocs-tier3.md` | Callout variant with primary CTA button |
+| `<AuthorCard name= role= avatar= twitter= github=>` | `richdocs-tier3.md` | Inline author bio for blog posts / signed docs |
+| `<PackageBadge name= type= version= license= stars=>` | `richdocs-tier3.md` | npm-style package version + downloads chip |
+
 ---
 
 ## Use-case shortcuts
@@ -116,6 +161,19 @@ Picking the right component starts with the question you're answering:
 | "What's the long-term plan?" | `<Roadmap>` (now/next/later) + `<OKRtree>` |
 | "What's my plan for today?" | `<DocBlock kind="daily">` + `<TaskList filter="is:open AND due <= today">` |
 | "If we go with X, what then?" | `<DecisionTree>` |
+| "How do I install / set up X?" | `<Steps>` + `<Step>` (numbered walkthrough) |
+| "Show me the API" | `<APIEndpoint>` + `<EnvVarsTable>` |
+| "Before vs after this change" | `<Diff>` |
+| "What does this term mean?" | `<Define term=>` (auto-popover everywhere it appears) |
+| "How is X trending?" | `<Sparkline>` (inline) or `<Heatmap>` (year grid) |
+| "Where do I click in this UI?" | `<AnnotatedImage>` + numbered `<Hotspot>` overlays |
+| "What did GitHub say?" | `<PRCard>` / `<IssueCard>` / `<CommitCard>` |
+| "What's the file layout?" | `<FileTree>` |
+| "How do I score against this metric?" | `<Gauge value= target= thresholds=>` |
+| "What's the breakdown of X by Y?" | `<Treemap>` |
+| "Test the reader's understanding" | `<Quiz>` |
+| "Get a vote from readers" | `<Poll>` |
+| "Show off testimonials" | `<Testimonials>` of `<PullQuote>` |
 
 ---
 

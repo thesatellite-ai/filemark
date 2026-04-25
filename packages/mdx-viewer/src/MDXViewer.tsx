@@ -30,6 +30,34 @@ import { ReadingTime } from "./components/ReadingTime";
 import { FiveWhys, Why } from "./components/FiveWhys";
 import { Roadmap, Lane } from "./components/Roadmap";
 import { DecisionTree, Branch } from "./components/DecisionTree";
+import { Steps, Step } from "./components/Steps";
+import { Badge } from "./components/Badge";
+import { LastUpdated, EditThisPage } from "./components/DocMeta";
+import { VideoEmbed } from "./components/VideoEmbed";
+import { Cards, DocCard } from "./components/Cards";
+import { Diff } from "./components/Diff";
+import { APIEndpoint } from "./components/APIEndpoint";
+import { Define } from "./components/Glossary";
+import { Heatmap } from "./components/Heatmap";
+import { AnnotatedImage, Hotspot } from "./components/AnnotatedImage";
+import { PullQuote, Testimonials } from "./components/Quote";
+import { Sparkline } from "./components/Sparkline";
+import { Footnote } from "./components/Footnote";
+import { PRCard, IssueCard, CommitCard } from "./components/GitHubCards";
+import { FileTree } from "./components/FileTree";
+import { EnvVarsTable, Env } from "./components/EnvVarsTable";
+import { Lightbox } from "./components/Lightbox";
+import { Carousel, Slide } from "./components/Carousel";
+import { Gauge } from "./components/Gauge";
+import { Treemap } from "./components/Treemap";
+import { Quiz, Choice } from "./components/Quiz";
+import { Poll, PollOption } from "./components/Poll";
+import {
+  AISummary,
+  CalloutWithAction,
+  AuthorCard,
+  PackageBadge,
+} from "./components/MiscRich";
 import { MDXTable } from "./components/MDXTable";
 import { TaskItem } from "./components/TaskItem";
 import { TaskList } from "./components/TaskList";
@@ -128,6 +156,43 @@ export function MDXViewer(props: ViewerProps) {
         lane: Lane,
         decisiontree: DecisionTree,
         branch: Branch,
+        steps: Steps,
+        step: Step,
+        badge: Badge,
+        lastupdated: LastUpdated,
+        editthispage: EditThisPage,
+        videoembed: VideoEmbed,
+        cards: Cards,
+        doccard: DocCard,
+        diff: Diff,
+        apiendpoint: APIEndpoint,
+        define: Define,
+        heatmap: Heatmap,
+        annotatedimage: AnnotatedImage,
+        hotspot: Hotspot,
+        pullquote: PullQuote,
+        testimonials: Testimonials,
+        sparkline: Sparkline,
+        footnote: Footnote,
+        prcard: PRCard,
+        issuecard: IssueCard,
+        commitcard: CommitCard,
+        filetree: FileTree,
+        envvarstable: EnvVarsTable,
+        env: Env,
+        lightbox: Lightbox,
+        carousel: Carousel,
+        slide: Slide,
+        gauge: Gauge,
+        treemap: Treemap,
+        quiz: Quiz,
+        choice: Choice,
+        poll: Poll,
+        polloption: PollOption,
+        aisummary: AISummary,
+        calloutwithaction: CalloutWithAction,
+        authorcard: AuthorCard,
+        packagebadge: PackageBadge,
         // <Chart src="./metrics.csv" type="bar" x="region" y="revenue" />
         // Mirrors <Datagrid> — src-based; inline data uses a ```chart fence.
         chart: (p: Record<string, unknown>) => {

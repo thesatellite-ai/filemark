@@ -114,6 +114,32 @@ Long attribute lines are fine — but they must NOT include a literal newline. I
 | `<FiveWhys>` + `<Why>` | inline HTML | Numbered root-cause chain; last Why styled as root cause |
 | `<Roadmap>` + `<Lane>` | inline HTML | Three-column now/next/later board with toned lanes |
 | `<DecisionTree>` + `<Branch>` | inline HTML | Recursive branching analysis with collapsible labels |
+| `<Steps>` + `<Step n= title=>` | inline HTML | Numbered guided walkthrough — install / setup / how-to flows |
+| `<Cards cols=>` + `<DocCard icon= title= href= badge=>` | inline HTML | Landing-page card grid (responsive 1 / 2 / 3 / 4 cols) |
+| `<Badge tone=>` | inline HTML | Tiny inline tone pill — six tones via datagrid TONE_CLASS |
+| `<LastUpdated date= by=>` + `<EditThisPage repo= path= branch=>` | inline HTML | Doc workflow chips |
+| `<VideoEmbed src= title= aspect=>` | inline HTML | Safe iframe wrapper for YouTube / Vimeo / Loom (privacy-conscious) |
+| `<Diff>` wrapping `before` + `after` fenced blocks | inline HTML | Side-by-side before/after code blocks |
+| `<APIEndpoint method= path= auth= base=>` | inline HTML | REST endpoint card — method chip, copy-curl button, body |
+| `<Define term=>` | inline HTML | Glossary entry — every later occurrence in the doc gets a hover popover |
+| `<Heatmap src= date= value= year=>` | inline HTML | GitHub-style activity grid (53 weeks × 7 days) from CSV |
+| `<AnnotatedImage src=>` + `<Hotspot x= y= label=>` | inline HTML | Image with numbered hotspot overlays + popovers |
+| `<PullQuote author= role= avatar=>` + `<Testimonials cols=>` | inline HTML | Styled quote block / grid for marketing pages |
+| `<Sparkline data= type= color=>` | inline HTML | Tiny inline trend visual (line or bar) |
+| `<Footnote>` | inline HTML | Inline numbered footnote — click to toggle popover |
+| `<PRCard>` / `<IssueCard>` / `<CommitCard>` | inline HTML | GitHub artifacts as styled cards |
+| `<FileTree>` | inline HTML | Indented file/folder outline from fenced text |
+| `<EnvVarsTable>` + `<Env name= type= default= required secret>` | inline HTML | Env var reference table |
+| `<Lightbox>` | inline HTML | Click-to-fullscreen image (single or multi) |
+| `<Carousel>` + `<Slide title=>` | inline HTML | CSS scroll-snap card row |
+| `<Gauge value= target= thresholds= label= unit=>` | inline HTML | Single-value semicircle dial |
+| `<Treemap>` | inline HTML | Nested rectangles sized by value (CSV: name,value[,group]) |
+| `<Quiz question=>` + `<Choice correct?>` | inline HTML | Multi-choice question with reveal-on-click |
+| `<Poll id= question=>` + `<PollOption>` | inline HTML | Single-question vote, persisted via localStorage |
+| `<AISummary status=>` | inline HTML | Placeholder slot for host-provided summariser |
+| `<CalloutWithAction tone= title= action= href=>` | inline HTML | Callout variant with primary CTA button |
+| `<AuthorCard name= role= avatar= twitter= github=>` | inline HTML | Inline author bio |
+| `<PackageBadge name= type= version= downloads= license= stars=>` | inline HTML | npm-style package version + downloads + license + stars |
 
 > **Hands-on examples:** every component above has a worked example in `examples/`. Browse [`examples/INDEX.md`](../../examples/INDEX.md) for a per-component catalogue with one-line use cases, or open the playground gallery — every example doc is wired in.
 
@@ -531,6 +557,184 @@ Lane tones: `default` · `info` · `success` · `warn` · `danger` · `muted`. A
 ```
 
 Branches collapse on click. Nest `<DecisionTree>` inside a `<Branch>` to drill deeper.
+
+## Rich docs (M14–M16) — tutorials, landing, dev reference, marketing
+
+Twenty-six components added on top of the planning surface. Grouped by archetype.
+
+### Tutorials / how-to
+
+```md
+<Steps>
+
+<Step title="Install">…</Step>
+<Step title="Configure">…</Step>
+<Step title="Verify">…</Step>
+
+</Steps>
+```
+
+`<Diff>` wraps a `before` + `after` pair of fenced code blocks (mark with meta or just put them in order):
+
+````md
+<Diff>
+
+```ts before
+const x = items.map((i) => i.foo);
+```
+
+```ts after
+const x = items.flatMap((i) => i.foo ?? []);
+```
+
+</Diff>
+````
+
+### Landing / index pages
+
+```md
+<Cards cols="3">
+
+<DocCard icon="📦" title="Install" href="./install" badge="5 min">
+Drop the extension folder into chrome://extensions and load.
+</DocCard>
+
+<DocCard icon="🚀" title="Quick start" href="./quick-start">
+Open any local .md file in 30 seconds.
+</DocCard>
+
+</Cards>
+
+<VideoEmbed src="https://youtu.be/dQw4w9WgXcQ" title="Demo" />
+<Carousel><Slide title="A">…</Slide><Slide title="B">…</Slide></Carousel>
+<CalloutWithAction tone="info" title="Try it" action="Open playground" href="…">…</CalloutWithAction>
+```
+
+### Dev reference
+
+```md
+<APIEndpoint method="POST" path="/v1/orders" auth="bearer">
+
+### Body
+### Response 201
+### Errors
+
+</APIEndpoint>
+
+<EnvVarsTable>
+<Env name="DATABASE_URL" type="url" required secret>Postgres URL.</Env>
+<Env name="LOG_LEVEL" type="enum" default="info">debug / info / warn / error.</Env>
+</EnvVarsTable>
+
+<FileTree>
+src/
+  index.ts
+  components/
+    Steps.tsx
+</FileTree>
+
+<PackageBadge name="@filemark/mdx" type="npm" version="0.1.0" license="MIT" />
+```
+
+### Doc workflow chips
+
+```md
+<DocStatus state="approved" owner="aman" updated="2026-04-25"></DocStatus>
+<LastUpdated date="2026-04-25" by="aman" />
+<EditThisPage repo="thesatellite-ai/filemark" path="examples/showcase.md" branch="main" />
+<ReadingTime></ReadingTime>
+<Badge tone="warn">beta</Badge>
+```
+
+### Knowledge connectivity
+
+```md
+<Define term="filemark">A reader-first markdown renderer for Chrome.</Define>
+
+<!-- Now any later occurrence of "filemark" in this doc gets an `<abbr>`
+     popover with the definition. Single-doc only; cross-doc index TBD. -->
+
+<Footnote>Inline numbered footnote with a click-to-reveal popover.</Footnote>
+```
+
+### Marketing / engagement
+
+```md
+<PullQuote author="Linus Torvalds" role="creator of Linux">
+Talk is cheap. Show me the code.
+</PullQuote>
+
+<Testimonials cols="3">
+  <PullQuote …/>
+  <PullQuote …/>
+  <PullQuote …/>
+</Testimonials>
+
+<AuthorCard name="Ada Lovelace" role="founding engineer" avatar="…" twitter="ada" github="ada">
+Wrote the first version. Lives in markdown.
+</AuthorCard>
+
+<AISummary status="ready">
+One-paragraph overview goes here. Status="pending" shows a placeholder.
+</AISummary>
+```
+
+### Visual / data viz extensions
+
+```md
+<Heatmap title="Daily commits" year="2026">
+day,commits
+2026-01-04,3
+…
+</Heatmap>
+
+<AnnotatedImage src="./screenshot.png" alt="Filemark UI">
+<Hotspot x="0.18" y="0.42">Sidebar — files + tabs</Hotspot>
+<Hotspot x="0.62" y="0.78">Task panel — cross-file aggregator</Hotspot>
+</AnnotatedImage>
+
+<Sparkline data="3,5,4,7,6,8,9" />
+<Gauge value="72" label="Coverage" unit="%" target="80" thresholds="40,70" />
+<Treemap height="320">
+name,value,group
+React,4500,frontend
+Vue,2100,frontend
+Express,3200,backend
+</Treemap>
+
+<Lightbox>
+  <img src="./a.png" alt="A" />
+  <img src="./b.png" alt="B" />
+</Lightbox>
+```
+
+### Interactive
+
+```md
+<Quiz question="What does colorFreezeLevel:2 do?">
+<Choice>Limits the palette to 2 hues.</Choice>
+<Choice correct>Stops the per-depth colour cycle at depth 2.</Choice>
+<Choice>Disables panning.</Choice>
+</Quiz>
+
+<Poll id="favorite-tier" question="Which Tier excited you most?">
+<PollOption>Tier 1</PollOption>
+<PollOption>Tier 2</PollOption>
+<PollOption>Tier 3</PollOption>
+</Poll>
+```
+
+Poll counts persist via `localStorage` keyed by `id=` — local-only (no server / no cross-user aggregation).
+
+### GitHub artifact cards
+
+```md
+<PRCard repo="org/repo" number="42" state="merged" title="…" author="ada" />
+<IssueCard repo="org/repo" number="13" state="open" title="…" author="grace" />
+<CommitCard repo="org/repo" sha="a3f1c2d" date="2026-04-25" title="…" author="aman" />
+```
+
+State tones: PR `open` (emerald) / `merged` (violet) / `closed` (rose) / `draft` (zinc); Issue `open` / `closed`. Each card auto-builds its GitHub URL.
 
 ## Backlinks — inbound wikilinks
 

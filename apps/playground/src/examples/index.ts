@@ -9,6 +9,9 @@ import planningV2Full from "../../../../examples/planning-v2-full.md?raw";
 import planningV2Tier2 from "../../../../examples/planning-v2-tier2.md?raw";
 import planningV2Tier3 from "../../../../examples/planning-v2-tier3.md?raw";
 import mindmapFull from "../../../../examples/mindmap-full.md?raw";
+import richdocsTier1 from "../../../../examples/richdocs-tier1.md?raw";
+import richdocsTier2 from "../../../../examples/richdocs-tier2.md?raw";
+import richdocsTier3 from "../../../../examples/richdocs-tier3.md?raw";
 import schemaDbml from "../../../../examples/schema.dbml?raw";
 import schemaPrisma from "../../../../examples/schema.prisma?raw";
 import schemaSql from "../../../../examples/schema.sql?raw";
@@ -172,6 +175,30 @@ export const EXAMPLES: Example[] = [
       "Twelve patterns: bullets, headings, rich text, math, code, multi-line, frontmatter directives, mixed structure, deep chains, wide fan-outs, controlled height, legacy wrapper form.",
     section: "Planning",
     content: mindmapFull,
+  },
+  {
+    id: "richdocs-tier1",
+    title: "Rich docs Tier 1 — Steps / Cards / APIEndpoint / VideoEmbed / Diff / Glossary / LastUpdated / Badge",
+    description:
+      "Eight Tier 1 components covering tutorials, landing pages, dev reference, and doc workflow.",
+    section: "Rich docs",
+    content: richdocsTier1,
+  },
+  {
+    id: "richdocs-tier2",
+    title: "Rich docs Tier 2 — Heatmap / AnnotatedImage / PullQuote / Testimonials / Sparkline / Footnote",
+    description:
+      "Six Tier 2 components — activity grid, image hotspots, marketing pull quotes, inline trends, Tufte-style notes.",
+    section: "Rich docs",
+    content: richdocsTier2,
+  },
+  {
+    id: "richdocs-tier3",
+    title: "Rich docs Tier 3 — GitHub cards / FileTree / EnvVars / Lightbox / Carousel / Gauge / Treemap / Quiz / Poll / AISummary / CalloutWithAction / AuthorCard / PackageBadge",
+    description:
+      "Thirteen Tier 3 components — niche additions for dev docs, tutorials, marketing, and polls/quizzes.",
+    section: "Rich docs",
+    content: richdocsTier3,
   },
   {
     id: "showcase",

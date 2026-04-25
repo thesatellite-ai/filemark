@@ -815,6 +815,19 @@
   place-items: center;
   will-change: transform;
 }
+/* ─── CalloutWithAction button ─────────────────────────────────────────── */
+/* MDX prose styles add `a:hover { text-decoration: underline }` for body
+   links, which leaks to the CTA button inside CalloutWithAction. Force
+   no-underline at all states so the button stays clean. */
+.fv-callout-action a,
+.fv-callout-action a:hover,
+.fv-callout-action a:focus,
+.fv-callout-action a:active,
+.fv-callout-action a:visited,
+.fv-callout-action a span {
+  text-decoration: none !important;
+}
+
 /* ─── MindMap (markmap engine) ─────────────────────────────────────────── */
 /* Fullscreen styling — when the user hits the ⛶ button, the figure
    element enters native browser fullscreen. We override the inherited
