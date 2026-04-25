@@ -137,7 +137,7 @@ Long attribute lines are fine — but they must NOT include a literal newline. I
 | `<Quiz question=>` + `<Choice correct?>` | inline HTML | Multi-choice question with reveal-on-click |
 | `<Poll id= question=>` + `<PollOption>` | inline HTML | Single-question vote, persisted via localStorage |
 | `<AISummary status=>` | inline HTML | Placeholder slot for host-provided summariser |
-| `<CalloutWithAction tone= title= action= href=>` | inline HTML | Callout variant with primary CTA button |
+| `<CalloutWithAction tone= title= action= href=>` | inline HTML | Sleek callout w/ tone accent (left bar + icon chip) + inline arrow CTA link |
 | `<AuthorCard name= role= avatar= twitter= github=>` | inline HTML | Inline author bio |
 | `<PackageBadge name= type= version= downloads= license= stars=>` | inline HTML | npm-style package version + downloads + license + stars |
 

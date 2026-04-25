@@ -136,7 +136,7 @@ Every authorable component, the example doc that exercises it, and when to reach
 | `<Quiz question=>` + `<Choice correct?>` | `richdocs-tier3.md` | Multi-choice question with reveal-on-click |
 | `<Poll id= question=>` + `<PollOption>` | `richdocs-tier3.md` | Single-question vote, persisted via localStorage |
 | `<AISummary status=>` | `richdocs-tier3.md` | Placeholder slot for host-provided summariser |
-| `<CalloutWithAction tone= title= action= href=>` | `richdocs-tier3.md` | Callout variant with primary CTA button |
+| `<CalloutWithAction tone= title= action= href=>` | `richdocs-tier3.md` | Sleek callout w/ tone accent (left bar + icon chip) + inline arrow CTA link |
 | `<AuthorCard name= role= avatar= twitter= github=>` | `richdocs-tier3.md` | Inline author bio for blog posts / signed docs |
 | `<PackageBadge name= type= version= license= stars=>` | `richdocs-tier3.md` | npm-style package version + downloads chip |
 
