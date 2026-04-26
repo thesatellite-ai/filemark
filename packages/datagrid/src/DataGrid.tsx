@@ -496,7 +496,7 @@ export function DataGrid({
     getRowCanExpand: () => !!expandable,
     getSubRows: undefined,
     columnResizeMode: "onChange",
-    globalFilterFn: "includesString",
+    globalFilterFn: globalIncludesString,
     getRowId,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -570,7 +570,11 @@ export function DataGrid({
   const totalCount = rows.length;
   const shownCount = tableRows.length;
   const contentHeight = rowVirtualizer.getTotalSize();
-  const scrollHeight = height ?? 420;
+  // In fullscreen the wrapper is `fixed inset-4 flex flex-col`, so the
+  // scroll region needs to flex-grow to fill the remaining vertical
+  // space (toolbar above, optional footer below). Outside fullscreen we
+  // honour the author-supplied height or fall back to a fixed 420px.
+  const scrollHeight: number | string = fullscreen ? "100%" : (height ?? 420);
 
   const hasAnyFilter =
     columnFilters.length > 0 || globalFilter.trim().length > 0;
@@ -746,6 +750,17 @@ export function DataGrid({
           />
           <IconButton
             onClick={() =>
+              exportCSV(
+                tableRows.map((r) => r.original),
+                visibleUserColumns,
+                title,
+              )
+            }
+            title="Download filtered + sorted rows as CSV"
+            icon={<IconDownload label="CSV" />}
+          />
+          <IconButton
+            onClick={() =>
               exportJSON(
                 tableRows.map((r) => r.original),
                 visibleUserColumns,
@@ -823,8 +838,12 @@ export function DataGrid({
 
       <div
         ref={scrollRef}
-        className="relative overflow-auto outline-none"
-        style={{ height: scrollHeight }}
+        className={
+          fullscreen
+            ? "relative min-h-0 flex-1 overflow-auto outline-none"
+            : "relative overflow-auto outline-none"
+        }
+        style={fullscreen ? undefined : { height: scrollHeight }}
         tabIndex={0}
         role="grid"
         aria-rowcount={tableRows.length}
@@ -1308,6 +1327,33 @@ function filterValueToTerm(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 
+/**
+ * Global "search" filter — case-insensitive substring match across the cell
+ * value, with bool-friendly stringification. Booleans are coerced to BOTH
+ * `"yes" / "no"` AND `"true" / "false"` so a user typing either spelling
+ * matches a column inferred as bool (which stores actual `true` / `false`
+ * primitives, not the original yes/no string).
+ *
+ * TanStack's built-in "includesString" stringifies bool to "true" / "false"
+ * only, so a search for "yes" against a yes/no-inferred column missed every
+ * row.
+ */
+function globalIncludesString(
+  row: { getValue: (id: string) => unknown },
+  columnId: string,
+  filterValue: unknown,
+): boolean {
+  const term = String(filterValue ?? "").toLowerCase().trim();
+  if (!term) return true;
+  const v = row.getValue(columnId);
+  if (v === null || v === undefined) return false;
+  if (typeof v === "boolean") {
+    const haystack = v ? "yes true y 1" : "no false n 0";
+    return haystack.split(" ").some((w) => w.includes(term));
+  }
+  return String(v).toLowerCase().includes(term);
+}
+
 function autoSizeColumns(
   cols: Column[],
   rows: Row[],
@@ -1333,6 +1379,12 @@ function cycleDensity(d: Density, set: (d: Density) => void) {
   const order: Density[] = ["compact", "comfy", "relaxed"];
   const next = order[(order.indexOf(d) + 1) % order.length]!;
   set(next);
+}
+
+function exportCSV(rows: Row[], cols: Column[], title?: string) {
+  const out = formatRows(rows, cols, "csv", title);
+  const blob = new Blob([out], { type: "text/csv;charset=utf-8" });
+  downloadBlob(blob, `${safeFilename(title)}.csv`);
 }
 
 function exportJSON(rows: Row[], cols: Column[], title?: string) {

@@ -1,12 +1,18 @@
 import type { LibraryFile } from "./store";
 
 /**
- * Pick up an intercepted file from `chrome.storage.session` and materialize
- * it as a one-off drop-file. The content script redirects here with
- * `?intercept=<key>` after capturing the raw text from a file:// page.
+ * Pick up an intercepted file and materialize it as a one-off drop-file.
+ * Three intake paths:
  *
- * Also handles the `#fv-inline=<b64>` fallback for browsers where
- * `chrome.storage.session` isn't available.
+ *   1. `?intercept=<key>` — content script (handler.ts) captured raw text
+ *      from a file:// page Chrome rendered, stashed it in
+ *      chrome.storage.session under <key>, and redirected here.
+ *   2. `#fv-inline=<b64>` — same as above but inline-encoded fallback for
+ *      browsers where chrome.storage.session is unavailable.
+ *   3. `?openFile=<file-url>` — declarativeNetRequest rule redirected a
+ *      file:// URL Chrome would otherwise download (CSV/TSV) here. We
+ *      fetch the content ourselves using <all_urls> host permission.
+ *      Requires "Allow access to file URLs" enabled on the extension.
  */
 export async function pickupIntercept(): Promise<LibraryFile | null> {
   // Hash fallback first — doesn't require chrome APIs
@@ -23,6 +29,26 @@ export async function pickupIntercept(): Promise<LibraryFile | null> {
   }
 
   const params = new URLSearchParams(location.search);
+
+  // openFile intake — DNR redirected a file:// URL here. We own the fetch.
+  const openFile = params.get("openFile");
+  if (openFile) {
+    try {
+      const r = await fetch(openFile);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const content = await r.text();
+      history.replaceState(null, "", location.pathname);
+      return buildFile(openFile, content);
+    } catch (e) {
+      console.error(
+        "Filemark: openFile fetch failed — is 'Allow access to file URLs' enabled on the extension?",
+        e,
+      );
+      history.replaceState(null, "", location.pathname);
+      return null;
+    }
+  }
+
   const key = params.get("intercept");
   if (!key) return null;
 

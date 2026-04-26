@@ -5,7 +5,7 @@ description: Author beautiful interactive markdown docs that filemark renders �
 
 # filemark — skill
 
-Filemark renders `.md` / `.mdx` / `.json` / `.sql` / `.prisma` / `.dbml` files in Chrome with rich **interactive** components — no eval, no server, no DB. The markdown file is always the source of truth. AI writes it, filemark visualizes it, humans grep it.
+Filemark renders `.md` / `.mdx` / `.json` / `.csv` / `.tsv` / `.sql` / `.prisma` / `.dbml` files in Chrome with rich **interactive** components — no eval, no server, no DB. The markdown file is always the source of truth. AI writes it, filemark visualizes it, humans grep it.
 
 **Use this skill when:**
 

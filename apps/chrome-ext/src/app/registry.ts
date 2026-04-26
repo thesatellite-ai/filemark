@@ -1,6 +1,7 @@
 import { MDXViewer } from "@filemark/mdx";
 import { JSONViewer } from "@filemark/json";
 import { SchemaViewer } from "@filemark/schema";
+import { CSVViewer } from "@filemark/csv";
 import type { Renderer } from "@filemark/core";
 
 const EXT_MAP: Record<string, Renderer> = {
@@ -10,6 +11,9 @@ const EXT_MAP: Record<string, Renderer> = {
 
   json: JSONViewer,
   jsonc: JSONViewer,
+
+  csv: CSVViewer,
+  tsv: CSVViewer,
 
   sql: SchemaViewer,
   prisma: SchemaViewer,

@@ -41,7 +41,7 @@ Filemark was built because reading beautifully formatted documents locally shoul
 
 ## What you can open
 
-One extension. Seven formats. Every format with its own first-class renderer — not a fallback to highlighted text.
+One extension. Nine formats. Every format with its own first-class renderer — not a fallback to highlighted text.
 
 | Format | Extensions | What you get |
 | --- | --- | --- |
@@ -49,6 +49,8 @@ One extension. Seven formats. Every format with its own first-class renderer —
 | **MDX** | `.mdx` | Markdown plus HTML-style components — Callouts, Tabs, Details, database diagrams — without any JavaScript evaluation trickery |
 | **JSON** | `.json` | A real, interactive tree viewer — not a prettified blob. Collapse, expand, click-to-copy, nine themes, handles multi-megabyte files |
 | **JSONC** | `.jsonc` | Like JSON but with comments and trailing commas. Parse errors pinpointed to the line and column |
+| **CSV** | `.csv` | An interactive sortable + filterable grid with type inference, delimiter autodetect, and copy-as-CSV/MD/JSON — not a wall of comma-separated text |
+| **TSV** | `.tsv` | Same engine as CSV, with tab as the default delimiter |
 | **SQL** | `.sql` | Drop any Postgres, MySQL, SQLite, Supabase, CockroachDB, ClickHouse, BigQuery, Snowflake, or MariaDB schema — get an interactive ER diagram |
 | **Prisma** | `.prisma` | Your Prisma schema, rendered as a live ER diagram. Models, enums, relations, indexes — all visible at a glance |
 | **DBML** | `.dbml` | The clean schema DSL from dbdiagram.io — now right in your browser |

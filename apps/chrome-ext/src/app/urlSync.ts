@@ -44,9 +44,10 @@ export function useUrlSync() {
     } else {
       url.searchParams.delete("file");
     }
-    // Strip any transient intercept key — once we have a library file, the
+    // Strip any transient intake params — once we have a library file, the
     // URL should look like a plain ?file=<id> link.
     url.searchParams.delete("intercept");
+    url.searchParams.delete("openFile");
     const target = url.pathname + url.search + url.hash;
     if (target !== location.pathname + location.search + location.hash) {
       history.replaceState(null, "", target);

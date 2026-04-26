@@ -14,7 +14,7 @@
     "service_worker": "service-worker.js",
     "type": "module"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "declarativeNetRequest"],
   "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {

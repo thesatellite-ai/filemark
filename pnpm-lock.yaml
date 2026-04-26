@@ -16,6 +16,12 @@ importers:
       '@filemark/core':
         specifier: workspace:*
         version: link:../../packages/viewer-core
+      '@filemark/csv':
+        specifier: workspace:*
+        version: link:../../packages/csv-viewer
+      '@filemark/datagrid':
+        specifier: workspace:*
+        version: link:../../packages/datagrid
       '@filemark/json':
         specifier: workspace:*
         version: link:../../packages/json-viewer
@@ -159,6 +165,34 @@ importers:
       recharts:
         specifier: ^2.15.0
         version: 2.15.4(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.5
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.5(react@19.2.5)
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.10)(typescript@5.9.3)(yaml@2.8.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/csv-viewer:
+    dependencies:
+      '@filemark/core':
+        specifier: workspace:*
+        version: link:../viewer-core
+      '@filemark/datagrid':
+        specifier: workspace:*
+        version: link:../datagrid
     devDependencies:
       '@types/react':
         specifier: ^19.0.0

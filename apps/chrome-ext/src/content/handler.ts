@@ -14,6 +14,8 @@ const ALL_FORMATS = [
   "markdown",
   "json",
   "jsonc",
+  "csv",
+  "tsv",
   "sql",
   "prisma",
   "dbml",
