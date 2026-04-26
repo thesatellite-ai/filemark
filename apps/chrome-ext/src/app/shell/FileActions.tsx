@@ -1,14 +1,17 @@
 import {
   Check,
   ClipboardCopy,
+  ExternalLink,
   Eye,
   FileCode2,
   FolderOpen,
   MoreHorizontal,
+  Share2,
   Sparkles,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useLibrary, type LibraryFile } from "../store";
+import { readFileContent } from "../fs";
 import {
   Popover,
   PopoverContent,
@@ -36,9 +39,13 @@ export function FileActions({ file }: { file: LibraryFile }) {
   );
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  const [shareState, setShareState] = useState<
+    "idle" | "encoding" | "copied" | "too-large" | "error"
+  >("idle");
 
   const absolutePath = resolveAbsolutePath(file, folder?.rootPath);
   const hasAbsolute = absolutePath !== null;
+  const isMarkdown = ["md", "mdx", "markdown"].includes(file.ext.toLowerCase());
 
   const close = () => setOpen(false);
 
@@ -50,6 +57,46 @@ export function FileActions({ file }: { file: LibraryFile }) {
       setTimeout(() => setCopied(false), 1500);
     } catch {
       /* ignore */
+    }
+  };
+
+  // Encode the file content into a playground URL. Two formats, picked by
+  // size: `?src=<raw-base64>` for small docs (legacy, human-readable in
+  // logs), `?srcz=<gzipped-base64>` for everything else. Markdown
+  // typically compresses 3–5x, so 100KB docs end up ~25KB encoded.
+  // URLs over ~28KB still exceed Chrome's address-bar limit in some
+  // places, so we keep the explicit guard.
+  const PLAYGROUND_BASE = "https://filemark-playground-drab.vercel.app";
+  const SHARE_URL_LIMIT = 28_000;
+  const shareToPlayground = async () => {
+    setShareState("encoding");
+    try {
+      const content = await readFileContent(file);
+      if (content == null) {
+        setShareState("error");
+        setTimeout(() => setShareState("idle"), 2500);
+        return;
+      }
+      const url = await buildShareUrl(PLAYGROUND_BASE, content);
+      if (url.length > SHARE_URL_LIMIT) {
+        setShareState("too-large");
+        setTimeout(() => setShareState("idle"), 2500);
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        /* clipboard may be unavailable; tab still opens */
+      }
+      window.open(url, "_blank", "noopener,noreferrer");
+      setShareState("copied");
+      setTimeout(() => {
+        setShareState("idle");
+        close();
+      }, 1500);
+    } catch {
+      setShareState("error");
+      setTimeout(() => setShareState("idle"), 2500);
     }
   };
 
@@ -104,6 +151,40 @@ export function FileActions({ file }: { file: LibraryFile }) {
         >
           {copied ? "Copied" : `Copy ${absolutePath ? "path" : "name"}`}
         </ActionRow>
+
+        {isMarkdown && (
+          <>
+            <Separator className="my-1" />
+            <ActionRow
+              icon={
+                shareState === "copied" ? (
+                  <Check className="size-4 text-green-500" />
+                ) : shareState === "too-large" || shareState === "error" ? (
+                  <Eye className="size-4 text-amber-500" />
+                ) : (
+                  <Share2 className="size-4" />
+                )
+              }
+              onClick={shareToPlayground}
+              disabled={shareState === "encoding"}
+            >
+              <span className="flex flex-1 items-center gap-1.5">
+                {shareState === "copied"
+                  ? "URL copied + tab opened"
+                  : shareState === "too-large"
+                    ? "Too large to share via URL"
+                    : shareState === "error"
+                      ? "Couldn't read file"
+                      : shareState === "encoding"
+                        ? "Encoding…"
+                        : "Open in playground"}
+                {shareState === "idle" && (
+                  <ExternalLink className="text-muted-foreground size-3" />
+                )}
+              </span>
+            </ActionRow>
+          </>
+        )}
 
         <Separator className="my-1" />
         <SectionLabel>Open in editor</SectionLabel>
@@ -174,6 +255,32 @@ function ActionRow({
       {children}
     </button>
   );
+}
+
+/**
+ * Build a playground share URL for the given content, preferring gzip when
+ * it actually shrinks the payload. Try both encodings and pick the shorter
+ * URL, so tiny docs stay human-readable and big docs squeeze through.
+ */
+async function buildShareUrl(
+  base: string,
+  content: string,
+): Promise<string> {
+  const raw = btoa(encodeURIComponent(content));
+  const rawUrl = `${base}/?src=${raw}#/play`;
+  try {
+    const stream = new Response(content).body!.pipeThrough(
+      new CompressionStream("gzip"),
+    );
+    const buf = new Uint8Array(await new Response(stream).arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]!);
+    const gz = btoa(bin);
+    const gzUrl = `${base}/?srcz=${gz}#/play`;
+    return gzUrl.length < rawUrl.length ? gzUrl : rawUrl;
+  } catch {
+    return rawUrl;
+  }
 }
 
 function resolveAbsolutePath(

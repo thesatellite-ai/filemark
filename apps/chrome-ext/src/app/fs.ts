@@ -1,5 +1,6 @@
 import { SUPPORTED_EXTS } from "./registry";
 import { idbStorage } from "./adapters/idbStorage";
+import { sessionHandles } from "./sessionHandles";
 import type { LibraryFile, LibraryFolder } from "./store";
 
 const HANDLE_KEY = (id: string) => `fsa:handle:${id}`;
@@ -186,6 +187,50 @@ export async function restoreFolder(folder: LibraryFolder): Promise<{
     fileHandles.set(fid, e.handle);
   }
   return { handle, fileHandles };
+}
+
+/**
+ * Read the current bytes of a library file from the freshest available
+ * source. Mirrors Viewer.tsx's load() priority:
+ *   1. FSA folder file handle (if folderId + sessionHandles entry)
+ *   2. Loose single-file FSA handle (if no folderId)
+ *   3. file:// sourceUrl fetch (intercepted files)
+ *   4. cached `file.content` (drops without a handle)
+ * Returns null if nothing is reachable. Used by callers outside the
+ * Viewer (FileActions copy / share) that need the live document text.
+ */
+export async function readFileContent(
+  file: LibraryFile
+): Promise<string | null> {
+  if (file.folderId) {
+    const handle = sessionHandles.getFile(file.folderId, file.id);
+    if (handle) {
+      try {
+        return await readFileAsText(handle);
+      } catch {
+        /* fall through to other paths */
+      }
+    }
+  }
+  if (!file.folderId) {
+    const looseHandle = sessionHandles.getLoose(file.id);
+    if (looseHandle) {
+      try {
+        return await readFileAsText(looseHandle);
+      } catch {
+        /* fall through */
+      }
+    }
+  }
+  if (file.sourceUrl && file.sourceUrl.startsWith("file://")) {
+    try {
+      const r = await fetch(file.sourceUrl);
+      if (r.ok) return await r.text();
+    } catch {
+      /* fall through */
+    }
+  }
+  return file.content ?? null;
 }
 
 export async function readDroppedFile(

@@ -5,6 +5,7 @@ import { MonacoPane } from "./MonacoPane";
 
 const DEFAULT_ID = "playground-starter";
 const URL_PARAM = "src";
+const URL_PARAM_GZ = "srcz";
 
 export function Playground() {
   const [source, setSource] = useState<string>(() => readInitial());
@@ -14,6 +15,31 @@ export function Playground() {
   const [mobilePane, setMobilePane] = useState<"source" | "preview">(
     "preview",
   );
+
+  // Gzip URL-param decode runs once on mount (DecompressionStream is async).
+  // Overrides the initial source when ?srcz= is present, then strips the
+  // param so subsequent edits (which write `?src=`) take precedence on
+  // reload — otherwise srcz would win forever and the editor's changes
+  // would silently revert.
+  useEffect(() => {
+    let cancelled = false;
+    decodeGzipParam().then((text) => {
+      if (cancelled) return;
+      if (text != null) {
+        setSource(text);
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete(URL_PARAM_GZ);
+          history.replaceState(null, "", url.toString());
+        } catch {
+          /* URL mutation is best-effort */
+        }
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Debounced URL sync — updates `?src=<base64>` without spamming history.
   useEffect(() => {
@@ -141,7 +167,19 @@ function readInitial(): string {
   if (typeof window === "undefined") {
     return getExample(DEFAULT_ID)?.content ?? "";
   }
-  const encoded = new URL(window.location.href).searchParams.get(URL_PARAM);
+  const params = new URL(window.location.href).searchParams;
+
+  // Gzipped variant — preferred when present (handles much larger docs).
+  // The compressed bytes arrive as URL-safe base64; we decode + inflate
+  // synchronously-ish via DecompressionStream in a microtask. We can't
+  // make readInitial async without restructuring useState init, so the
+  // gzip path schedules a setSource() through the parent. Instead we
+  // do a sync/blocking decode using DecompressionStream + Response —
+  // the extracted promise resolves in the same render frame for typical
+  // docs, but to keep readInitial sync we fall back to a separate effect.
+  // See decodeGzipParam called from useEffect below for the real wiring.
+
+  const encoded = params.get(URL_PARAM);
   if (encoded) {
     try {
       return decodeURIComponent(atob(encoded));
@@ -150,4 +188,24 @@ function readInitial(): string {
     }
   }
   return getExample(DEFAULT_ID)?.content ?? "";
+}
+
+/** Decode a `?srcz=<base64-gzip>` payload back to text. Async — gzip can't
+ *  be inflated synchronously. Returns null when no param OR decode fails. */
+async function decodeGzipParam(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const params = new URL(window.location.href).searchParams;
+  const encoded = params.get(URL_PARAM_GZ);
+  if (!encoded) return null;
+  try {
+    const binStr = atob(encoded);
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+    const stream = new Response(bytes).body!.pipeThrough(
+      new DecompressionStream("gzip"),
+    );
+    return await new Response(stream).text();
+  } catch {
+    return null;
+  }
 }
