@@ -3,6 +3,7 @@ import { idbStorage } from "./adapters/idbStorage";
 import type { LibraryFile, LibraryFolder } from "./store";
 
 const HANDLE_KEY = (id: string) => `fsa:handle:${id}`;
+const LOOSE_KEY = (fileId: string) => `fsa:loose:${fileId}`;
 
 function fileExt(name: string): string {
   const i = name.lastIndexOf(".");
@@ -48,6 +49,25 @@ export async function loadDirHandle(
   id: string
 ): Promise<FileSystemDirectoryHandle | null> {
   return (await idbStorage.get<FileSystemDirectoryHandle>(HANDLE_KEY(id))) ?? null;
+}
+
+export async function saveLooseFileHandle(
+  fileId: string,
+  handle: FileSystemFileHandle
+): Promise<void> {
+  await idbStorage.set(LOOSE_KEY(fileId), handle);
+}
+
+export async function loadLooseFileHandle(
+  fileId: string
+): Promise<FileSystemFileHandle | null> {
+  return (
+    (await idbStorage.get<FileSystemFileHandle>(LOOSE_KEY(fileId))) ?? null
+  );
+}
+
+export async function deleteLooseFileHandle(fileId: string): Promise<void> {
+  await idbStorage.delete(LOOSE_KEY(fileId));
 }
 
 export async function queryPermissionState(
@@ -170,10 +190,21 @@ export async function restoreFolder(folder: LibraryFolder): Promise<{
 
 export async function readDroppedFile(
   file: File,
-  sourceUrl?: string
+  sourceUrl?: string,
+  handle?: FileSystemFileHandle | null
 ): Promise<LibraryFile & { content: string }> {
   const content = await file.text();
   const id = sourceUrl ? `intercept:${sourceUrl}` : `drop:${crypto.randomUUID()}`;
+  // If the drop event resolved a FileSystemFileHandle for this loose file,
+  // persist it to IDB so the Viewer can re-read live bytes after a page
+  // reload (silently if Chrome still considers the permission granted).
+  if (handle) {
+    try {
+      await saveLooseFileHandle(id, handle);
+    } catch {
+      /* persistence is best-effort; cached content keeps the file viewable */
+    }
+  }
   return {
     id,
     name: file.name,

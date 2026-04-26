@@ -21,6 +21,19 @@ Filemark renders `.md` / `.mdx` / `.json` / `.csv` / `.tsv` / `.sql` / `.prisma`
 - Extending filemark itself — the source is at `chrome-extensions/filemark/packages/**`, use repo conventions
 - VS Code / GitHub rendering — filemark-specific syntax (Callout, Tabs, TaskList, `::` fence) does not render there
 
+## File formats Filemark opens
+
+The skill below is about **authoring `.md` / `.mdx` docs** — the rest of these are file viewers the extension ships, not authoring targets. Listed here so you know what you can link to / drag into Filemark:
+
+| Ext | Viewer | What you get |
+|---|---|---|
+| `.md` / `.mdx` / `.markdown` | `@filemark/mdx` | Full GFM + every component documented in this skill |
+| `.json` / `.jsonc` | `@filemark/json` | Interactive collapsible tree, 9 themes, parse-issue pinpoints, copy/download |
+| `.csv` / `.tsv` | `@filemark/csv` | Sortable + filterable grid (delimiter autodetect, type inference, CSV/MD/JSON export, fullscreen). Auto-intercept on file:// via declarativeNetRequest — Chrome would otherwise download |
+| `.sql` / `.prisma` / `.dbml` | `@filemark/schema` | Interactive ER diagram |
+
+When the user disables a format in the extension's options page, Filemark removes itself from that file type — Chrome's default behavior takes over (so disabling CSV → CSVs download as normal again).
+
 ## The two rules that prevent 90% of breakage
 
 Both come from CommonMark + HTML-in-markdown semantics. Filemark can't work around them — learn them once.
@@ -128,7 +141,7 @@ Long attribute lines are fine — but they must NOT include a literal newline. I
 | `<Sparkline data= type= color=>` | inline HTML | Tiny inline trend visual (line or bar) |
 | `<Footnote>` | inline HTML | Inline numbered footnote — click to toggle popover |
 | `<PRCard>` / `<IssueCard>` / `<CommitCard>` | inline HTML | GitHub artifacts as styled cards |
-| `<FileTree>` | inline HTML | Indented file/folder outline from fenced text |
+| `<FileTree>` | inline HTML | Indented file/folder outline from fenced text — also serves as the project's general tree-view primitive (any hierarchical data: menus, nested categories, org chart). Powered by `@pierre/trees` web components |
 | `<EnvVarsTable>` + `<Env name= type= default= required secret>` | inline HTML | Env var reference table |
 | `<Lightbox>` | inline HTML | Click-to-fullscreen image (single or multi) |
 | `<Carousel>` + `<Slide title=>` | inline HTML | CSS scroll-snap card row |

@@ -57,20 +57,6 @@ export function Viewer() {
       setError(null);
       return;
     }
-    // Drag-drop-only files cache content directly.
-    //
-    // Every `setContent(...)` call site also updates `setContentFileId`
-    // so the scroll-to-line effect can tell whether the DOM it's about
-    // to query is actually rendered from the target file's content or
-    // still showing the previous file's bytes. Paired-invariant: if
-    // you add another `setContent(...)` call, also `setContentFileId`.
-    if (file.content !== undefined && !file.folderId && !file.sourceUrl) {
-      setContent(file.content);
-      setContentFileId(file.id);
-      setError(null);
-      return;
-    }
-
     let cancelled = false;
 
     const load = async () => {
@@ -89,6 +75,26 @@ export function Viewer() {
           } catch (e) {
             if (!cancelled) setError(String((e as Error)?.message ?? e));
             return;
+          }
+        }
+      }
+
+      // Loose single-file drop with a live handle (set at drop time + after
+      // hydrate's silent restore) — re-read from disk every load so saves
+      // outside Filemark are picked up after a page reload.
+      if (!file.folderId) {
+        const looseHandle = sessionHandles.getLoose(file.id);
+        if (looseHandle) {
+          try {
+            const text = await readFileAsText(looseHandle);
+            if (!cancelled) {
+              setContent(text);
+              setContentFileId(file.id);
+              setError(null);
+            }
+            return;
+          } catch {
+            /* fall through to other intake paths */
           }
         }
       }
@@ -113,6 +119,7 @@ export function Viewer() {
       }
 
       // Fallback: cached in-memory content if we already have it.
+      // (Drop files with no handle land here — frozen at drop time.)
       if (file.content !== undefined) {
         if (!cancelled) {
           setContent(file.content);
@@ -182,6 +189,43 @@ export function Viewer() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh, autoRefreshMs, file?.id, sessionRev]);
+
+  // Re-read the active file whenever the user tabs back to Filemark.
+  // Independent of the autoRefresh setting (no polling overhead while
+  // idle, but always fresh on focus). Common workflow: edit doc in
+  // VS Code -> save -> ⌘-tab back to Filemark -> see the change without
+  // having to drop the file again.
+  useEffect(() => {
+    if (!file) return;
+    if (!fileIsRefreshable(file, sessionHandles)) return;
+
+    let cancelled = false;
+    const reread = async () => {
+      try {
+        const next = await readLatest(file);
+        if (cancelled || next === null) return;
+        if (next !== contentRef.current) {
+          setContent(next);
+          setContentFileId(file.id);
+        }
+      } catch {
+        /* swallow — focus-driven re-read failures shouldn't surface */
+      }
+    };
+
+    const onFocus = () => void reread();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void reread();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file?.id]);
 
   // Feed the cross-file task index every time content changes for this
   // file. The index dedupes by content hash so repeated calls with the
@@ -390,12 +434,17 @@ function StateBlock({ children }: { children: React.ReactNode }) {
 }
 
 /** A file is refreshable if we can read its current on-disk content from
- *  here — either through a live FSA handle or a file:// URL. */
+ *  here — through a live FSA folder handle, a loose-file FSA handle, or a
+ *  file:// URL. */
 export function fileIsRefreshable(
   file: { folderId?: string | null; id: string; sourceUrl?: string },
-  handles: { getFile: (folderId: string, fileId: string) => unknown }
+  handles: {
+    getFile: (folderId: string, fileId: string) => unknown;
+    getLoose: (fileId: string) => unknown;
+  }
 ): boolean {
   if (file.folderId && handles.getFile(file.folderId, file.id)) return true;
+  if (!file.folderId && handles.getLoose(file.id)) return true;
   if (file.sourceUrl && file.sourceUrl.startsWith("file://")) return true;
   return false;
 }
@@ -408,6 +457,10 @@ async function readLatest(file: {
   if (file.folderId) {
     const handle = sessionHandles.getFile(file.folderId, file.id);
     if (handle) return await readFileAsText(handle);
+  }
+  if (!file.folderId) {
+    const looseHandle = sessionHandles.getLoose(file.id);
+    if (looseHandle) return await readFileAsText(looseHandle);
   }
   if (file.sourceUrl && file.sourceUrl.startsWith("file://")) {
     const r = await fetch(file.sourceUrl);

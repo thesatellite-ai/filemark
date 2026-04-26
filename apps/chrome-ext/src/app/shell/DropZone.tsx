@@ -164,15 +164,35 @@ export function DropZone() {
       }
 
       // --- Loose file drops ----------------------------------------------
+      // Iterate `looseFiles` (= dataTransfer.files) directly — same shape as
+      // the pre-handle implementation, no fragile index-alignment with
+      // `items` (which can include folders that don't appear in `files`).
+      // Match each file to its FileSystemFileHandle by file name when one
+      // is available; ties on duplicate names are rare for drag-drop.
+      const looseHandlesByName = new Map<string, FileSystemFileHandle>();
+      for (const h of resolvedHandles) {
+        if (h && h.kind === "file") {
+          looseHandlesByName.set(h.name, h as FileSystemFileHandle);
+        }
+      }
+
       if (looseFiles.length > 0) {
         const supported = looseFiles.filter((f) => acceptExt(extOf(f.name)));
         const parsed = await Promise.all(
           supported.map((file) =>
-            readDroppedFile(file, uriMatch(uriList, file.name))
-          )
+            readDroppedFile(
+              file,
+              uriMatch(uriList, file.name),
+              looseHandlesByName.get(file.name) ?? null,
+            ),
+          ),
         );
         if (parsed.length > 0) {
           await addFiles(parsed);
+          for (const lf of parsed) {
+            const h = looseHandlesByName.get(lf.name);
+            if (h) sessionHandles.registerLoose(lf.id, h);
+          }
           if (!firstActiveId) firstActiveId = parsed[0].id;
         }
       }

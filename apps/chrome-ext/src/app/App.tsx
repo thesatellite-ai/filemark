@@ -5,7 +5,11 @@ import { useSettings } from "./settings";
 import { Shell } from "./shell/Shell";
 import { ComponentsDemo } from "./shell/ComponentsDemo";
 import { pickupIntercept } from "./intercept";
-import { trySilentRestore } from "./fs";
+import {
+  trySilentRestore,
+  loadLooseFileHandle,
+  queryPermissionState,
+} from "./fs";
 import { sessionHandles } from "./sessionHandles";
 
 export default function App() {
@@ -37,6 +41,27 @@ export default function App() {
           }
         })
       );
+
+      // Same silent restore for loose single-file drops. Handle was persisted
+      // to IDB at drop time; if Chrome still reports permission as "granted"
+      // we re-register without a user gesture so the Viewer reads live bytes.
+      const looseFiles = Object.values(useLibrary.getState().files).filter(
+        (f) => !f.folderId
+      );
+      await Promise.all(
+        looseFiles.map(async (f) => {
+          try {
+            const handle = await loadLooseFileHandle(f.id);
+            if (!handle) return;
+            const state = await queryPermissionState(handle, "read");
+            if (state !== "granted") return;
+            sessionHandles.registerLoose(f.id, handle);
+          } catch {
+            /* per-file failure shouldn't block others */
+          }
+        })
+      );
+
       // Nudge subscribers (Sidebar, Viewer) to re-check sessionHandles.
       useLibrary.setState((s) => ({ sessionRev: s.sessionRev + 1 }));
 
