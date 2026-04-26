@@ -1,12 +1,35 @@
 import { useMemo, useState, useEffect } from "react";
-import { ChevronRight, ChevronsDownUp, ChevronsUpDown, FileText, RotateCw, Search, Star, Trash2, X } from "lucide-react";
-import { useLibrary, type LibraryFile } from "../store";
+import {
+  Check,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  ClipboardCopy,
+  FileText,
+  MoreHorizontal,
+  RotateCw,
+  Search,
+  Star,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  useLibrary,
+  SIDEBAR_MIN_WIDTH,
+  SIDEBAR_MAX_WIDTH,
+  type LibraryFile,
+} from "../store";
 import { restoreFolder } from "../fs";
 import { sessionHandles } from "../sessionHandles";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { FolderRootPath } from "./FolderRootPath";
 import { cn } from "@/lib/utils";
 
@@ -215,10 +238,18 @@ export function Sidebar() {
     setSidebarCollapseState(nextSection, nextCollapsed);
   };
 
+  const sidebarWidth = useLibrary((s) => s.sidebarWidth);
+
   return (
-    <aside className="bg-sidebar text-sidebar-foreground flex h-full w-64 shrink-0 flex-col overflow-hidden">
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-0.5 py-2">
+    <aside
+      className="bg-sidebar text-sidebar-foreground flex h-full shrink-0 flex-col overflow-hidden"
+      style={{ width: sidebarWidth, minWidth: SIDEBAR_MIN_WIDTH, maxWidth: SIDEBAR_MAX_WIDTH }}
+    >
+      <ScrollArea className="min-h-0 w-full min-w-0 flex-1">
+        <div
+          className="flex w-full min-w-0 flex-col gap-0.5 py-2"
+          style={{ maxWidth: sidebarWidth }}
+        >
           {isEmpty && (
             <div className="text-muted-foreground px-3 py-4 text-xs leading-relaxed">
               <div className="text-sidebar-foreground mb-1 text-[13px] font-medium">
@@ -520,11 +551,12 @@ function Section({
     else setUncontrolledOpen((v) => !v);
   };
   return (
-    <div className="group/section mb-1">
-      <div className="hover:text-sidebar-foreground text-muted-foreground flex w-full items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider">
+    <div className="group/section mb-1 w-full min-w-0">
+      <div className="hover:text-sidebar-foreground text-muted-foreground flex w-full min-w-0 items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider">
         <button
           className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
           onClick={toggle}
+          title={title}
         >
           <ChevronRight
             className={cn(
@@ -583,19 +615,33 @@ function FileRow({
   /** Optional subtitle — shown below the name in filter mode. */
   subtitle?: string;
 }) {
+  const folder = useLibrary((s) =>
+    file.folderId ? s.folders[file.folderId] : null
+  );
+  const [menuOpen, setMenuOpen] = useState(false);
+  const fullTitle =
+    file.path && file.path !== file.name
+      ? `${file.name}\n${file.path}`
+      : file.name;
+
   return (
     <div
       data-file-id={file.id}
       className={cn(
-        "group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 items-center gap-1.5 rounded-sm pr-1 text-[13px] leading-tight transition-colors",
+        "group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 min-w-0 w-full items-center gap-1.5 rounded-sm pr-1 text-[13px] leading-tight transition-colors",
         active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
       )}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setMenuOpen(true);
+      }}
+      title={fullTitle}
     >
       <button
         className="flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left"
         style={{ paddingLeft: 8 + depth * 12 }}
         onClick={onClick}
-        title={file.path}
+        title={fullTitle}
       >
         <FileText
           className={cn(
@@ -606,9 +652,14 @@ function FileRow({
           )}
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate">{file.name}</span>
+          <span className="truncate" title={fullTitle}>
+            {file.name}
+          </span>
           {subtitle && (
-            <span className="text-muted-foreground truncate text-[10px] leading-tight">
+            <span
+              className="text-muted-foreground truncate text-[10px] leading-tight"
+              title={subtitle}
+            >
               {subtitle}
             </span>
           )}
@@ -617,20 +668,131 @@ function FileRow({
           <Star className="size-3 shrink-0 fill-yellow-400 text-yellow-400" />
         )}
       </button>
-      {onRemove && (
-        <button
-          className="hover:bg-destructive/20 hover:text-destructive text-muted-foreground flex size-5 shrink-0 items-center justify-center rounded-sm opacity-0 transition-opacity group-hover/row:opacity-100"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          aria-label={`Remove ${file.name}`}
-          title={`Remove ${file.name} from library`}
+      <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+        <PopoverTrigger
+          className={cn(
+            "hover:bg-accent hover:text-accent-foreground text-muted-foreground flex size-5 shrink-0 items-center justify-center rounded-sm transition-opacity",
+            menuOpen
+              ? "opacity-100"
+              : "opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100"
+          )}
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Actions for ${file.name}`}
+          title="More actions (right-click for menu)"
         >
-          <Trash2 className="size-3" />
-        </button>
-      )}
+          <MoreHorizontal className="size-3.5" />
+        </PopoverTrigger>
+        <PopoverContent className="w-60 p-1" align="end">
+          <div className="text-foreground/90 px-2 py-1.5 text-[12px] font-medium">
+            <div className="break-words">{file.name}</div>
+            {file.path && file.path !== file.name && (
+              <div
+                className="text-muted-foreground mt-0.5 break-all text-[10.5px] font-normal"
+                title={file.path}
+              >
+                {file.path}
+              </div>
+            )}
+          </div>
+          <Separator className="my-1" />
+          <CopyRow
+            label="Copy name"
+            value={file.name}
+            onClose={() => setMenuOpen(false)}
+          />
+          {file.path && file.path !== file.name && (
+            <CopyRow
+              label="Copy relative path"
+              value={file.path}
+              onClose={() => setMenuOpen(false)}
+            />
+          )}
+          {(() => {
+            const abs = resolveAbsolutePath(file, folder?.rootPath);
+            if (!abs) return null;
+            return (
+              <CopyRow
+                label="Copy full path"
+                value={abs}
+                onClose={() => setMenuOpen(false)}
+              />
+            );
+          })()}
+          {onRemove && (
+            <>
+              <Separator className="my-1" />
+              <button
+                type="button"
+                className="hover:bg-destructive/15 hover:text-destructive text-muted-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-[12px] outline-none transition-colors"
+                onClick={() => {
+                  onRemove();
+                  setMenuOpen(false);
+                }}
+              >
+                <Trash2 className="size-3.5" />
+                Remove from library
+              </button>
+            </>
+          )}
+        </PopoverContent>
+      </Popover>
     </div>
+  );
+}
+
+function resolveAbsolutePath(
+  file: LibraryFile,
+  rootPath?: string
+): string | null {
+  if (file.sourceUrl?.startsWith("file://")) {
+    try {
+      return decodeURIComponent(new URL(file.sourceUrl).pathname);
+    } catch {
+      /* fall through */
+    }
+  }
+  if (rootPath && file.path) {
+    const trimmed = rootPath.replace(/\/+$/, "");
+    return `${trimmed}/${file.path}`;
+  }
+  return null;
+}
+
+function CopyRow({
+  label,
+  value,
+  onClose,
+}: {
+  label: string;
+  value: string;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+        onClose();
+      }, 700);
+    } catch {
+      onClose();
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-[12px] outline-none transition-colors"
+    >
+      {copied ? (
+        <Check className="size-3.5 text-emerald-500" />
+      ) : (
+        <ClipboardCopy className="size-3.5" />
+      )}
+      <span className="flex-1 truncate">{copied ? "Copied" : label}</span>
+    </button>
   );
 }
 
@@ -669,6 +831,7 @@ function TreeRow({
         className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-6 w-full items-center gap-1.5 rounded-sm py-1 pr-2 text-left text-[12px] leading-tight transition-colors"
         style={{ paddingLeft: 8 + depth * 12 }}
         onClick={() => onToggle(node.path)}
+        title={node.path}
       >
         <ChevronRight
           className={cn(

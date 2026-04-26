@@ -56,6 +56,10 @@ export interface LibraryState {
   selectedTag: string | null;
   theme: ThemeSettings;
   sidebarOpen: boolean;
+  /** Sidebar pixel width — drag the resize handle on the right edge to
+   *  adjust. Persisted across reloads. Clamped to
+   *  [SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH] on every set. */
+  sidebarWidth: number;
   tocOpen: boolean;
   hydrated: boolean;
   /** Incremented whenever live FSA handles come online or go away.
@@ -111,6 +115,7 @@ export interface LibraryState {
   setTheme(patch: Partial<ThemeSettings>): Promise<void>;
   resetTheme(): Promise<void>;
   toggleSidebar(): void;
+  setSidebarWidth(px: number): void;
   toggleToc(): void;
   toggleFullscreen(): void;
   toggleAutoRefresh(): void;
@@ -152,6 +157,7 @@ const KEYS = {
 
 interface UIPrefs {
   sidebarOpen: boolean;
+  sidebarWidth?: number;
   tocOpen: boolean;
   fullscreen: boolean;
   autoRefresh?: boolean;
@@ -163,6 +169,7 @@ interface UIPrefs {
 
 function persistUI(s: {
   sidebarOpen: boolean;
+  sidebarWidth: number;
   tocOpen: boolean;
   fullscreen: boolean;
   autoRefresh: boolean;
@@ -174,6 +181,7 @@ function persistUI(s: {
   idbStorage
     .set(KEYS.ui, {
       sidebarOpen: s.sidebarOpen,
+      sidebarWidth: s.sidebarWidth,
       tocOpen: s.tocOpen,
       fullscreen: s.fullscreen,
       autoRefresh: s.autoRefresh,
@@ -183,6 +191,15 @@ function persistUI(s: {
       tasksOpen: s.tasksOpen,
     })
     .catch(() => {});
+}
+
+export const SIDEBAR_MIN_WIDTH = 180;
+export const SIDEBAR_MAX_WIDTH = 600;
+export const SIDEBAR_DEFAULT_WIDTH = 256;
+
+function clampSidebarWidth(px: number): number {
+  if (!Number.isFinite(px)) return SIDEBAR_DEFAULT_WIDTH;
+  return Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, Math.round(px)));
 }
 
 export const useLibrary = create<LibraryState>((set, get) => ({
@@ -195,6 +212,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   selectedTag: null,
   theme: DEFAULT_THEME,
   sidebarOpen: true,
+  sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
   tocOpen: true,
   hydrated: false,
   sessionRev: 0,
@@ -237,6 +255,9 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       activeFileId: savedActive,
       openTabs,
       sidebarOpen: ui?.sidebarOpen ?? true,
+      sidebarWidth: clampSidebarWidth(
+        ui?.sidebarWidth ?? SIDEBAR_DEFAULT_WIDTH,
+      ),
       tocOpen: ui?.tocOpen ?? true,
       fullscreen: ui?.fullscreen ?? false,
       autoRefresh: ui?.autoRefresh ?? false,
@@ -562,6 +583,13 @@ export const useLibrary = create<LibraryState>((set, get) => ({
 
   toggleSidebar() {
     set((s) => ({ sidebarOpen: !s.sidebarOpen }));
+    persistUI(get());
+  },
+
+  setSidebarWidth(px) {
+    const next = clampSidebarWidth(px);
+    if (next === get().sidebarWidth) return;
+    set({ sidebarWidth: next });
     persistUI(get());
   },
 

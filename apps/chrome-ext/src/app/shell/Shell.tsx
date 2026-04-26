@@ -4,6 +4,7 @@ import { useSettings, isShortcutEnabled } from "../settings";
 import { useUrlSync } from "../urlSync";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
+import { SidebarResizer } from "./SidebarResizer";
 import { Viewer } from "./Viewer";
 import { DropZone } from "./DropZone";
 import { SearchPalette } from "./SearchPalette";
@@ -166,7 +167,7 @@ export function Shell() {
         {sidebarOpen && !fullscreen && (
           <>
             <Sidebar />
-            <Separator orientation="vertical" />
+            <SidebarResizer />
           </>
         )}
         <main className="relative flex min-w-0 flex-1 flex-col">
