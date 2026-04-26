@@ -19,7 +19,12 @@ export function Gallery({
   const [activeId, setActiveId] = useState(initialId);
   const [mode, setMode] = useState<ViewMode>("rendered");
   const [copied, setCopied] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   useEffect(() => setActiveId(initialId), [initialId]);
+  // Auto-close the example drawer when the user picks something on mobile.
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [activeId]);
 
   const activeExample = useMemo(() => getExample(activeId), [activeId]);
   const groups = useMemo(() => groupedExamples(), []);
@@ -46,8 +51,23 @@ export function Gallery({
   }, [currentContent]);
 
   return (
-    <div className="flex h-full min-h-0 gap-px bg-border">
-      <aside className="flex w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
+    <div className="relative flex h-full min-h-0 gap-px bg-border">
+      {drawerOpen && (
+        <button
+          type="button"
+          aria-label="Close examples drawer"
+          onClick={() => setDrawerOpen(false)}
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+        />
+      )}
+      <aside
+        className={[
+          "flex flex-col bg-sidebar text-sidebar-foreground shrink-0",
+          "md:w-60 md:relative md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-72 transition-transform duration-200 md:transition-none",
+          drawerOpen ? "translate-x-0 shadow-xl" : "-translate-x-full",
+        ].join(" ")}
+      >
         <div className="flex-1 overflow-auto py-1">
           {groups.map((group, gi) => (
             <div key={group.section} className={gi === 0 ? "" : "mt-2"}>
@@ -110,10 +130,31 @@ export function Gallery({
         {(showingUser || activeExample) && (
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-1.5 text-[11.5px]">
             <div className="flex items-center gap-2 min-w-0">
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Open examples"
+                className="md:hidden inline-flex size-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:text-foreground"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-4"
+                  aria-hidden
+                >
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
               <span className="truncate font-medium text-foreground/80">
                 {showingUser && userDoc ? userDoc.name : activeExample?.title}
               </span>
-              <span className="font-mono text-[10.5px] text-muted-foreground truncate">
+              <span className="font-mono text-[10.5px] text-muted-foreground truncate hidden sm:inline">
                 {currentName}
               </span>
             </div>

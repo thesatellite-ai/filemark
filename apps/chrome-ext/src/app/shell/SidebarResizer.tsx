@@ -61,7 +61,7 @@ export function SidebarResizer() {
       title="Drag to resize · double-click to reset"
       onPointerDown={onPointerDown}
       onDoubleClick={onDoubleClick}
-      className="group/resizer relative z-10 flex w-px shrink-0 cursor-col-resize touch-none select-none bg-border hover:bg-primary/40 active:bg-primary/60"
+      className="group/resizer relative z-10 hidden w-px shrink-0 cursor-col-resize touch-none select-none bg-border hover:bg-primary/40 active:bg-primary/60 md:flex"
     >
       {/* Wider invisible hit zone on the right side so the user doesn't
           have to pixel-target the 1px line. */}

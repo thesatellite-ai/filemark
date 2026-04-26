@@ -779,6 +779,18 @@
   max-width: var(--fm-prose-max-width, var(--fv-content-width, 760px));
 }
 
+/* Mobile: the 220px TOC rail eats the prose body — hide it below 900px
+   regardless of the host's data-toc attribute. The full doc is still
+   navigable by scrolling; on small screens the TOC was unusable
+   alongside narrow body text anyway. */
+@media (max-width: 900px) {
+  .fv-toc { display: none; }
+  .fv-mdx-root {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: var(--fm-prose-max-width, var(--fv-content-width, 760px));
+  }
+}
+
 
 /* ─── Mermaid diagrams ───────────────────────────────────────────────── */
 

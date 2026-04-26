@@ -47,6 +47,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   };
 
   const onPickFolder = async () => {
+    if (!hasDirectoryPicker()) return;
     try {
       const result = await pickFolder();
       if (!result) return;
@@ -74,7 +75,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         </IconBtn>
         <span className="flex items-center gap-1.5 px-1.5 text-sm font-semibold tracking-tight">
           <BookOpenText className="text-primary size-4" />
-          Filemark
+          <span className="hidden sm:inline">Filemark</span>
         </span>
       </div>
 
@@ -82,7 +83,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         {activeFile && (
           <>
             <span
-              className="text-muted-foreground max-w-[520px] truncate text-xs"
+              className="text-muted-foreground hidden max-w-[520px] truncate text-xs sm:inline"
               title={activeFile.path}
             >
               {activeFile.path}
@@ -105,14 +106,19 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
       </div>
 
       <div className="flex items-center gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 px-2 text-xs font-normal"
-          onClick={onPickFolder}
-        >
-          <FolderOpen className="size-3.5" /> Open Folder
-        </Button>
+        {hasDirectoryPicker() && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden h-7 px-2 text-xs font-normal sm:inline-flex"
+            onClick={onPickFolder}
+            aria-label="Open Folder"
+            title="Open Folder"
+          >
+            <FolderOpen className="size-3.5" />
+            <span className="hidden sm:inline"> Open Folder</span>
+          </Button>
+        )}
         <IconBtn
           onClick={toggleAutoRefresh}
           title={
@@ -133,7 +139,12 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         <IconBtn onClick={onOpenSearch} title="Search (⌘K)" aria-label="Search">
           <Search className="size-4" />
         </IconBtn>
-        <IconBtn onClick={toggleToc} title="Table of contents" aria-label="TOC">
+        <IconBtn
+          onClick={toggleToc}
+          title="Table of contents"
+          aria-label="TOC"
+          className="hidden md:inline-flex"
+        >
           <List className="size-4" />
         </IconBtn>
         {activeFile && (
@@ -141,6 +152,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             onClick={revealActiveInSidebar}
             title="Reveal current file in sidebar"
             aria-label="Reveal in sidebar"
+            className="hidden md:inline-flex"
           >
             <Crosshair className="size-4" />
           </IconBtn>
@@ -206,5 +218,16 @@ function IconBtn({
     >
       {children}
     </Button>
+  );
+}
+
+/** Feature-detect File System Access — desktop Chromium / Edge only. Mobile
+ *  Chrome lacks `showDirectoryPicker`, so we hide the Open Folder button
+ *  there (drag-drop in DropZone still works on touch). */
+function hasDirectoryPicker(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    typeof (window as unknown as { showDirectoryPicker?: unknown })
+      .showDirectoryPicker === "function"
   );
 }

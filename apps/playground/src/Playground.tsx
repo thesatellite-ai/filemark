@@ -9,6 +9,11 @@ const URL_PARAM = "src";
 export function Playground() {
   const [source, setSource] = useState<string>(() => readInitial());
   const [copied, setCopied] = useState(false);
+  // On small screens we show one pane at a time (toggle). On md+ both panes
+  // are visible side-by-side and this state is ignored.
+  const [mobilePane, setMobilePane] = useState<"source" | "preview">(
+    "preview",
+  );
 
   // Debounced URL sync — updates `?src=<base64>` without spamming history.
   useEffect(() => {
@@ -51,12 +56,29 @@ export function Playground() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-1.5 text-[12px]">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-1.5 text-[12px]">
+        <div className="flex items-center gap-3 min-w-0">
           <span className="font-semibold">Playground</span>
-          <span className="text-muted-foreground">
+          <span className="text-muted-foreground hidden sm:inline">
             edit the markdown on the left · live preview on the right
           </span>
+          {/* Mobile-only Source/Preview toggle */}
+          <div className="md:hidden inline-flex rounded-md border border-border bg-background p-0.5">
+            <button
+              type="button"
+              onClick={() => setMobilePane("source")}
+              className={mobileTab(mobilePane === "source")}
+            >
+              Source
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobilePane("preview")}
+              className={mobileTab(mobilePane === "preview")}
+            >
+              Preview
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
           <button
@@ -78,19 +100,41 @@ export function Playground() {
         </div>
       </div>
       <div className="grid flex-1 min-h-0 gap-px bg-border md:grid-cols-2">
-        <div className="h-full min-h-0 bg-background">
+        <div
+          className={[
+            "h-full min-h-0 bg-background",
+            // On <md, only show one pane at a time. md+ shows both.
+            mobilePane === "source" ? "block" : "hidden",
+            "md:block",
+          ].join(" ")}
+        >
           <MonacoPane
             value={source}
             onChange={setSource}
             language="markdown"
           />
         </div>
-        <div className="h-full min-h-0 overflow-auto bg-background">
+        <div
+          className={[
+            "h-full min-h-0 overflow-auto bg-background",
+            mobilePane === "preview" ? "block" : "hidden",
+            "md:block",
+          ].join(" ")}
+        >
           <RenderedDoc content={source} fileId="playground" name="playground.md" />
         </div>
       </div>
     </div>
   );
+}
+
+function mobileTab(active: boolean): string {
+  return [
+    "rounded px-2.5 py-0.5 text-[11px] font-medium transition-colors",
+    active
+      ? "bg-primary text-primary-foreground"
+      : "text-muted-foreground hover:text-foreground",
+  ].join(" ");
 }
 
 function readInitial(): string {

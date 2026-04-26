@@ -127,13 +127,18 @@ export function TabStrip() {
                     : "text-muted-foreground"
               )}
             />
-            <span className="max-w-[220px] truncate">{f.name}</span>
+            <span className="max-w-[160px] truncate sm:max-w-[220px]">{f.name}</span>
             <button
               type="button"
               className={cn(
-                "ml-1 flex size-4 items-center justify-center rounded-sm transition-opacity",
+                "ml-1 flex size-5 items-center justify-center rounded-sm transition-opacity sm:size-4",
                 "hover:bg-accent hover:text-accent-foreground",
-                isActive ? "opacity-60 hover:opacity-100" : "opacity-0 group-hover/tab:opacity-60 group-hover/tab:hover:opacity-100"
+                // Mobile + touch: always visible (no hover state). Desktop:
+                // keep the original hover-revealed behavior so non-active
+                // tabs stay visually quiet.
+                isActive
+                  ? "opacity-60 hover:opacity-100"
+                  : "opacity-60 sm:opacity-0 group-hover/tab:opacity-60 group-hover/tab:hover:opacity-100"
               )}
               onClick={(e) => {
                 e.stopPropagation();

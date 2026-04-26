@@ -36,6 +36,19 @@ export function Shell() {
 
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Auto-collapse the sidebar drawer when the active file changes on a
+  // mobile-width viewport (so picking a file from the slide-over closes
+  // it and reveals the viewer underneath). No-op on md+ where sidebar
+  // is in-flow next to the viewer.
+  useEffect(() => {
+    if (!sidebarOpen || !activeId) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(min-width: 768px)").matches) return;
+    toggleSidebar();
+    // Run only when the active file id changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Esc exits fullscreen regardless of shortcut settings — always safe.
@@ -163,11 +176,21 @@ export function Shell() {
           <Separator />
         </>
       )}
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         {sidebarOpen && !fullscreen && (
           <>
-            <Sidebar />
-            <SidebarResizer />
+            {/* Mobile backdrop — clicking it closes the slide-over sidebar. */}
+            <button
+              type="button"
+              aria-label="Close sidebar"
+              onClick={toggleSidebar}
+              className="fixed inset-0 z-30 bg-black/40 md:hidden"
+            />
+            {/* Sidebar: fixed slide-over below md, in-flow on md+. */}
+            <div className="fixed inset-y-0 left-0 z-40 flex shadow-xl md:static md:z-auto md:shadow-none">
+              <Sidebar />
+              <SidebarResizer />
+            </div>
           </>
         )}
         <main className="relative flex min-w-0 flex-1 flex-col">
@@ -202,8 +225,16 @@ export function Shell() {
         </main>
         {tasksOpen && !fullscreen && (
           <>
-            <Separator orientation="vertical" />
-            <TaskPanel />
+            <button
+              type="button"
+              aria-label="Close tasks panel"
+              onClick={toggleTasksPanel}
+              className="fixed inset-0 z-30 bg-black/40 md:hidden"
+            />
+            <div className="fixed inset-y-0 right-0 z-40 flex shadow-xl md:static md:z-auto md:shadow-none">
+              <Separator orientation="vertical" />
+              <TaskPanel />
+            </div>
           </>
         )}
       </div>
