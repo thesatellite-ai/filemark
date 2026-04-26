@@ -497,6 +497,14 @@ export function DataGrid({
     getSubRows: undefined,
     columnResizeMode: "onChange",
     globalFilterFn: globalIncludesString,
+    // TanStack's default `getColumnCanGlobalFilter` peeks at the first
+    // cell's value and only opts the column in if it's a string or
+    // number — bool columns (used_by_admin = true/false) get silently
+    // skipped, so the global search box never sees them. Force every
+    // column to participate; our custom `globalIncludesString` knows
+    // how to stringify booleans (and anything else) into search-friendly
+    // tokens.
+    getColumnCanGlobalFilter: () => true,
     getRowId,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
