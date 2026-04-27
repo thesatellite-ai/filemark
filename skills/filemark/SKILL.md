@@ -125,7 +125,7 @@ Long attribute lines are fine — but they must NOT include a literal newline. I
 | `<Timeline>` + `<Event>` | inline HTML | Horizontal date axis; lanes; bars vs diamonds; today marker |
 | `<ReadingTime>` | inline HTML | Auto-counted "~N min read" chip |
 | `<FiveWhys>` + `<Why>` | inline HTML | Numbered root-cause chain; last Why styled as root cause |
-| `<Roadmap>` + `<Lane>` | inline HTML | Three-column now/next/later board with toned lanes |
+| `<Roadmap cols= laneMinWidth= scroll>` + `<Lane>` | inline HTML | Multi-lane now/next/later board with toned lanes. `laneMinWidth=300` (or `scroll`) switches to a horizontally-scrollable layout — use when lanes hold dense widgets (nested `<TaskList>` / `<Datagrid>`) that need real width |
 | `<DecisionTree>` + `<Branch>` | inline HTML | Recursive branching analysis with collapsible labels |
 | `<Steps>` + `<Step n= title=>` | inline HTML | Numbered guided walkthrough — install / setup / how-to flows |
 | `<Cards cols=>` + `<DocCard icon= title= href= badge=>` | inline HTML | Landing-page card grid (responsive 1 / 2 / 3 / 4 cols) |
@@ -549,6 +549,29 @@ Last Why is highlighted as the root cause. Doesn't enforce exactly five — pass
 ```
 
 Lane tones: `default` · `info` · `success` · `warn` · `danger` · `muted`. Author writes any markdown body inside each lane.
+
+**Layout modes:**
+
+- Default (no extra props): responsive grid — vertical stack on mobile, equal columns on `sm+`. Best for short bullets.
+- `cols=4` (1–6): override the desktop column count. Ignored when scrolling.
+- `laneMinWidth=300` (px): each lane gets at least this width; container scrolls horizontally when `lanes × minWidth > viewport`. Use when lanes hold dense widgets like nested `<TaskList>` / `<Datagrid>` that get squeezed into per-character wrapping in narrow columns.
+- `scroll` (no value): shorthand for `laneMinWidth=300`.
+
+```md
+<Roadmap title="Implementation" laneMinWidth="320">
+
+<Lane name="Phase 0">
+
+<TaskList filter="(phase-0)" group-by="project"></TaskList>
+
+</Lane>
+
+<Lane name="Phase 1" tone="info">…</Lane>
+<Lane name="Phase 2" tone="info">…</Lane>
+<Lane name="Phase 3" tone="muted">…</Lane>
+
+</Roadmap>
+```
 
 ### `<DecisionTree>` — recursive branching
 

@@ -1087,3 +1087,31 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+
+/* ─── Roadmap lane body — narrow-column overrides ───────────────────────
+ * Inside a Roadmap lane (~200–250px wide) the default TaskList row layout
+ * (flex: status | title flex-1 | chips) gives the chips column too much
+ * minimum width (set by the widest single chip), starving the title to
+ * 1ch and forcing per-character wrapping. Force the chips to flow onto a
+ * new line below the title so the title gets the full lane width.
+ * ─────────────────────────────────────────────────────────────────── */
+
+.fv-roadmap-body .fv-tasklist-row {
+  flex-wrap: wrap;
+}
+.fv-roadmap-body .fv-tasklist-row > .fv-task-chips {
+  flex-basis: 100%;
+  margin-left: 28px;
+  margin-top: 4px;
+}
+.fv-roadmap-body .fv-tasklist-row > span:nth-child(2) {
+  /* Title span: claim remaining space on row 1 alongside status glyph,
+   * never shrink below a usable text column. */
+  min-width: 0;
+  flex: 1 1 calc(100% - 28px);
+}
+.fv-roadmap-body .fv-tasklist-items > li {
+  /* Looser row spacing so wrapped chips have visual room. */
+  margin-bottom: 6px;
+}

@@ -71,6 +71,61 @@ The last Why is highlighted as the plausible root cause — assign an action ite
 
 Use `tone=` to colour-code lanes (`default`, `info`, `success`, `warn`, `danger`, `muted`).
 
+### Layout modes
+
+Default: responsive grid — vertical stack on mobile, equal columns on `sm+`. Best for short bullets.
+
+For dense lanes (nested `<TaskList>` / `<Datagrid>` / long descriptions) use `laneMinWidth="320"` (or shorthand `scroll`) — each lane gets at least the given width and the whole roadmap scrolls horizontally when `lanes × minWidth > viewport`. Click the expand icon in the header to toggle fullscreen (Esc to exit) so wide content stretches across the screen.
+
+<Roadmap title="Phased rollout (laneMinWidth=320)" laneMinWidth="320">
+
+<Lane name="Phase 0 — recon" subtitle="map the territory">
+
+- Audit current auth middleware contracts
+- Catalogue every JWT consumer (mobile / web / admin / pickup)
+- Document refresh-token flow per client
+- Diagram session lifecycle states
+
+</Lane>
+
+<Lane name="Phase 1 — schema" subtitle="DB-first foundation" tone="info">
+
+- Add `blocked` column to users
+- Create `user_sessions` table (jti, refresh_hash, device, IP, lifecycle)
+- Index user_id (partial: WHERE revoked_at IS NULL)
+- Index last_seen for LRU eviction
+
+</Lane>
+
+<Lane name="Phase 2 — middleware" subtitle="hot path lockdown" tone="warn">
+
+- In-memory blockedUsers + revokedJTIs sync.Maps
+- Write-through on block/revoke (DB then map)
+- 15-min refresh job: scan DB → reconcile maps
+- Eviction policy: drop entries past JWT exp
+
+</Lane>
+
+<Lane name="Phase 3 — flows" subtitle="web/admin/pickup refresh" tone="success">
+
+- /auth/refresh endpoint with grace window
+- Rotating refresh tokens per refresh
+- 10s grace for concurrent refresh races
+- Geo-IP enrichment + UA capture
+
+</Lane>
+
+<Lane name="Phase 4 — endpoints" subtitle="user-facing surfaces">
+
+- GET /me/sessions (list + filter active)
+- DELETE /me/sessions/:id (logout single device)
+- POST /admin/users/:id/block (admin block flow)
+- Audit log: who revoked what, when, why
+
+</Lane>
+
+</Roadmap>
+
 ---
 
 ## 4. DecisionTree — branching analysis (recursive)
