@@ -98,55 +98,55 @@ Long attribute lines are fine — but they must NOT include a literal newline. I
 
 | Component | Source | What it does |
 |---|---|---|
-| `<Callout>` | inline HTML | 5 variants: `note` / `tip` / `info` / `warning` / `danger` |
-| `<Tabs>` + `<Tab>` | inline HTML | Tabbed content panels — syntax examples, OS-specific commands |
-| `<Details>` | inline HTML | Collapsible `<summary>`-headed block |
-| `<Stats>` + `<Stat>` | inline HTML | KPI tile grid with delta arrows, intent colors, optional `href=` |
-| `<ADR>` | inline HTML | Architecture Decision Record card with status pill + metadata |
+| `<Callout type= title=>` | inline HTML | 5 type variants: `note` / `tip` / `info` / `warning` / `danger` |
+| `<Tabs>` + `<Tab title=>` | inline HTML | Tabbed content panels — syntax examples, OS-specific commands |
+| `<Details summary=>` | inline HTML | Collapsible `<summary>`-headed block |
+| `<Stats cols=>` + `<Stat title= value= intent= description= delta= href=>` | inline HTML | KPI tile grid with delta arrows, intent colors, optional `href=` |
+| `<ADR id= status= date= owner= deciders= supersedes= title=>` | inline HTML | Architecture Decision Record card with status pill + metadata |
 | fenced ```` ```csv ```` / ```` ```tsv ```` / ```` ```md ```` / ```` ```json ```` | fence meta | Datagrid (Google-Sheets-like interactive table) |
-| `<Datagrid>` | inline HTML | Datagrid with external CSV via `src=` |
+| `<Datagrid src= meta=>` | inline HTML | Datagrid with external CSV via `src=`; pass fence-style meta string |
 | fenced ```` ```bar/line/pie/area/scatter/funnel/radar/chart ```` | fence meta | Chart |
-| `<Chart>` | inline HTML | Chart with external CSV via `src=` |
+| `<Chart src= type= x= y= group= height= title=>` | inline HTML | Chart with external CSV via `src=` |
 | fenced ```` ```kanban ```` | fence meta | Kanban board from CSV rows |
-| `<Kanban>` | inline HTML | Kanban from CSV via `src=` OR from task bullets via `md` |
+| `<Kanban md src= group-by= order= filter= sort= title= height=>` | inline HTML | Kanban from CSV via `src=` OR from task bullets via `md` |
 | fenced ```` ```mermaid ```` | fence | Mermaid diagram |
 | fenced ```` ```schema / sql / prisma / dbml ```` | fence | ER diagram |
 | `- [ ] task …` | GFM task bullet + sigils | Markdown-native task |
-| `<TaskStats md>` | inline HTML | KPI tiles over parsed tasks |
-| `<TaskList>` | inline HTML | Flat or grouped task list |
-| `<TaskTimeline md>` | inline HTML | Gantt-lite timeline |
+| `<TaskStats md cols= filter=>` | inline HTML | KPI tiles over parsed tasks |
+| `<TaskList md filter= sort= group-by= order= limit= title= empty=>` | inline HTML | Flat or grouped task list |
+| `<TaskTimeline md filter= from= to= lane= height= title=>` | inline HTML | Gantt-lite timeline |
 | `<DocBlock kind="prfaq" \| "rfc" \| "pitch" \| "postmortem" \| "meeting" \| "daily">` | inline HTML | Single unified template wrapper with smart `kind=` presets — replaces the per-template `<PRFAQ>` / `<RFC>` / `<Pitch>` / `<PostMortem>` / `<MeetingNotes>` / `<DailyNote>` (all collapsed into `<DocBlock>`) |
-| `<DocStatus>` | inline HTML | Inline status pill — draft / review / approved / deprecated / archived |
-| fenced ```` ```mindmap ```` / `<MindMap>` | fence meta / inline HTML | Collapsible horizontal tree from a bullet outline (fenced form preferred) |
-| `<OKRtree>` + `<Objective>` + `<KR>` | inline HTML | Objective → key-results scorecard; KR scoring from manual `current/target` or `tasks="id1,id2"` |
-| `<Backlinks>` | inline HTML | Inbound `[[wikilink]]` references (host-supplied; chrome-ext wires it via `BacklinksProvider`) |
-| `<WeightedScore>` + `<Criterion>` + `<Option>` | inline HTML | Decision matrix; auto-ranks rows by Σ score × weight |
-| `<Matrix2x2>` + `<Item>` | inline HTML | 2×2 prioritization grid; positioned bubbles in Quick-wins / Big-bets / Time-sinks / Fillers quadrants |
-| `<Timeline>` + `<Event>` | inline HTML | Horizontal date axis; lanes; bars vs diamonds; today marker |
-| `<ReadingTime>` | inline HTML | Auto-counted "~N min read" chip |
-| `<FiveWhys>` + `<Why>` | inline HTML | Numbered root-cause chain; last Why styled as root cause |
+| `<DocStatus state= owner= updated= note=>` | inline HTML | Inline status pill — draft / review / approved / deprecated / archived |
+| fenced ```` ```mindmap ```` / `<MindMap src= height= title=>` | fence meta / inline HTML | Collapsible horizontal tree from a bullet outline (fenced form preferred) |
+| `<OKRtree>` + `<Objective title= owner= due=>` + `<KR title= current= target= owner= tasks= note=>` | inline HTML | Objective → key-results scorecard; KR scoring from manual `current/target` or `tasks="id1,id2"` |
+| `<Backlinks title= empty=>` | inline HTML | Inbound `[[wikilink]]` references (host-supplied; chrome-ext wires it via `BacklinksProvider`) |
+| `<WeightedScore title=>` + `<Criterion name= weight=>` + `<Option name= scores= note=>` | inline HTML | Decision matrix; auto-ranks rows by Σ score × weight |
+| `<Matrix2x2 title= quadrants=>` + `<Item label= x= y= size=>` | inline HTML | 2×2 prioritization grid; positioned bubbles in Quick-wins / Big-bets / Time-sinks / Fillers quadrants |
+| `<Timeline title= from= to=>` + `<Event date= end= lane= title= type=>` | inline HTML | Horizontal date axis; lanes; bars vs diamonds; today marker |
+| `<ReadingTime>` | inline HTML | Auto-counted "~N min read" chip (no args — counts all body text) |
+| `<FiveWhys problem=>` + `<Why>` | inline HTML | Numbered root-cause chain; last Why styled as root cause |
 | `<Roadmap cols= laneMinWidth= scroll>` + `<Lane>` | inline HTML | Multi-lane now/next/later board with toned lanes. `laneMinWidth=300` (or `scroll`) switches to a horizontally-scrollable layout — use when lanes hold dense widgets (nested `<TaskList>` / `<Datagrid>`) that need real width |
-| `<DecisionTree>` + `<Branch>` | inline HTML | Recursive branching analysis with collapsible labels |
+| `<DecisionTree question=>` + `<Branch label=>` | inline HTML | Recursive branching analysis with collapsible labels |
 | `<Steps>` + `<Step n= title=>` | inline HTML | Numbered guided walkthrough — install / setup / how-to flows |
 | `<Cards cols=>` + `<DocCard icon= title= href= badge=>` | inline HTML | Landing-page card grid (responsive 1 / 2 / 3 / 4 cols) |
 | `<Badge tone=>` | inline HTML | Tiny inline tone pill — six tones via datagrid TONE_CLASS |
 | `<LastUpdated date= by=>` + `<EditThisPage repo= path= branch=>` | inline HTML | Doc workflow chips |
 | `<VideoEmbed src= title= aspect=>` | inline HTML | Safe iframe wrapper for YouTube / Vimeo / Loom (privacy-conscious) |
-| `<Diff>` wrapping `before` + `after` fenced blocks | inline HTML | Side-by-side before/after code blocks |
-| `<APIEndpoint method= path= auth= base=>` | inline HTML | REST endpoint card — method chip, copy-curl button, body |
+| `<Diff>` wrapping `before` + `after` fenced blocks | inline HTML | Side-by-side before/after code blocks (no top-level args; nested fences carry the language) |
+| `<APIEndpoint method= path= auth= base= title=>` | inline HTML | REST endpoint card — method chip, copy-curl button, body |
 | `<Define term=>` | inline HTML | Glossary entry — every later occurrence in the doc gets a hover popover |
-| `<Heatmap src= date= value= year=>` | inline HTML | GitHub-style activity grid (53 weeks × 7 days) from CSV |
-| `<AnnotatedImage src=>` + `<Hotspot x= y= label=>` | inline HTML | Image with numbered hotspot overlays + popovers |
+| `<Heatmap src= date= value= year= title=>` | inline HTML | GitHub-style activity grid (53 weeks × 7 days) from CSV |
+| `<AnnotatedImage src= alt= caption=>` + `<Hotspot x= y= label=>` | inline HTML | Image with numbered hotspot overlays + popovers |
 | `<PullQuote author= role= avatar=>` + `<Testimonials cols=>` | inline HTML | Styled quote block / grid for marketing pages |
 | `<Sparkline data= type= color=>` | inline HTML | Tiny inline trend visual (line or bar) |
-| `<Footnote>` | inline HTML | Inline numbered footnote — click to toggle popover |
-| `<PRCard>` / `<IssueCard>` / `<CommitCard>` | inline HTML | GitHub artifacts as styled cards |
-| `<FileTree>` | inline HTML | Indented file/folder outline from fenced text — also serves as the project's general tree-view primitive (any hierarchical data: menus, nested categories, org chart). Powered by `@pierre/trees` web components |
+| `<Footnote>` | inline HTML | Inline numbered footnote — click to toggle popover (children = footnote body) |
+| `<PRCard repo= number= state= title= author= date= url=>` / `<IssueCard …>` / `<CommitCard repo= sha= title= author= date= url=>` | inline HTML | GitHub artifacts as styled cards |
+| `<FileTree>` | inline HTML | Indented file/folder outline from fenced text body — also serves as the project's general tree-view primitive (any hierarchical data: menus, nested categories, org chart). Powered by `@pierre/trees` web components |
 | `<EnvVarsTable>` + `<Env name= type= default= required secret>` | inline HTML | Env var reference table |
-| `<Lightbox>` | inline HTML | Click-to-fullscreen image (single or multi) |
+| `<Lightbox src= alt=>` | inline HTML | Click-to-fullscreen image (single — pass `src=` — or multi via children) |
 | `<Carousel>` + `<Slide title=>` | inline HTML | CSS scroll-snap card row |
 | `<Gauge value= target= thresholds= label= unit=>` | inline HTML | Single-value semicircle dial |
-| `<Treemap>` | inline HTML | Nested rectangles sized by value (CSV: name,value[,group]) |
+| `<Treemap src= height=>` | inline HTML | Nested rectangles sized by value (CSV body or `src=`: name,value[,group]) |
 | `<Quiz question=>` + `<Choice correct?>` | inline HTML | Multi-choice question with reveal-on-click |
 | `<Poll id= question=>` + `<PollOption>` | inline HTML | Single-question vote, persisted via localStorage |
 | `<AISummary status=>` | inline HTML | Placeholder slot for host-provided summariser |
