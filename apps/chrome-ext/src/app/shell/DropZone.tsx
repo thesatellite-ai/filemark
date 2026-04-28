@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Upload } from "lucide-react";
 import { useLibrary, type LibraryFile, type LibraryFolder } from "../store";
 import { useSettings, isFormatEnabled } from "../settings";
-import { folderFromHandle, readDroppedFile } from "../fs";
+import { folderFromHandle, readDroppedFile, isNoiseDir } from "../fs";
 import { sessionHandles } from "../sessionHandles";
 import { isSupported, SUPPORTED_EXTS } from "../registry";
 
@@ -256,7 +256,9 @@ async function readAllEntries(
  * files, each with a forward-slash relative path from the drop root (the
  * directory name itself is NOT included — e.g. if `codeskill/` is dropped
  * and it contains `research/foo.md`, the relPath is `research/foo.md`).
- * Skips hidden dirs and `node_modules`.
+ * Skips well-known noise dirs (`.git`, `node_modules`, build outputs,
+ * editor metadata) — see `isNoiseDir` in fs.ts. User-meaningful dotted
+ * dirs like `.ai/`, `.docsi/`, `.cursor/` are NOT skipped.
  */
 async function walkDirEntry(
   dir: FileSystemDirectoryEntry,
@@ -272,7 +274,7 @@ async function walkDirEntry(
       return;
     }
     if (entry.isDirectory) {
-      if (entry.name.startsWith(".") || entry.name === "node_modules") return;
+      if (isNoiseDir(entry.name)) return;
       const sub = await readAllEntries(
         (entry as FileSystemDirectoryEntry).createReader()
       );

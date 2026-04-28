@@ -11,6 +11,55 @@ function fileExt(name: string): string {
   return i >= 0 ? name.slice(i + 1).toLowerCase() : "";
 }
 
+/**
+ * Directory names to skip during recursive folder walks. Blacklist instead
+ * of "anything starting with `.`" so user-meaningful dotted dirs like
+ * `.ai/`, `.docsi/`, `.cursor/`, `.claude/` get discovered. Listed dirs
+ * are either build/cache output (giant + uninteresting), VCS internals,
+ * or editor metadata.
+ */
+const NOISE_DIRS = new Set<string>([
+  ".git",
+  ".svn",
+  ".hg",
+  ".bzr",
+  "node_modules",
+  ".next",
+  ".turbo",
+  ".nuxt",
+  ".svelte-kit",
+  ".astro",
+  ".cache",
+  ".parcel-cache",
+  ".pnpm-store",
+  ".yarn",
+  "dist",
+  "build",
+  "out",
+  ".vercel",
+  ".netlify",
+  ".firebase",
+  ".expo",
+  ".gradle",
+  ".idea",
+  ".vscode-test",
+  "DerivedData",
+  ".DS_Store",
+  "__pycache__",
+  ".venv",
+  ".tox",
+  ".pytest_cache",
+  ".mypy_cache",
+  ".ruff_cache",
+  "target",
+  "bin",
+  "obj",
+]);
+
+export function isNoiseDir(name: string): boolean {
+  return NOISE_DIRS.has(name);
+}
+
 export function isRenderable(name: string): boolean {
   return SUPPORTED_EXTS.includes(fileExt(name));
 }
@@ -31,8 +80,7 @@ export async function walkDirectory(
     if (entry.kind === "file") {
       if (isRenderable(entry.name)) out.push({ path, handle: entry });
     } else if (entry.kind === "directory") {
-      // skip hidden + node_modules
-      if (entry.name.startsWith(".") || entry.name === "node_modules") continue;
+      if (isNoiseDir(entry.name)) continue;
       out.push(...(await walkDirectory(entry, path)));
     }
   }
