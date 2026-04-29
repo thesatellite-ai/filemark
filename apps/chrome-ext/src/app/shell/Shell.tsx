@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLibrary } from "../store";
-import { useSettings, isShortcutEnabled } from "../settings";
+import {
+  useSettings,
+  isShortcutEnabled,
+  getShortcutCode,
+  matchShortcut,
+} from "../settings";
 import { useUrlSync } from "../urlSync";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
@@ -57,42 +62,49 @@ export function Shell() {
         if (fullscreen) toggleFullscreen();
         return;
       }
-      // ── Tab shortcuts (bare keys, no modifiers) ──
-      // Chrome reserves every Ctrl/⌘/Alt combination we tried for its own
-      // tab management — preventDefault from chrome-extension:// pages
-      // cannot reliably override them. Bare keys with no modifiers are the
-      // only reliably available surface, so we gate them on "not typing in
-      // an input" and use Vim-style chords.
+      // ── Bare-key shortcuts (no modifiers) ──
+      // All shortcut matches use `e.code` (physical key position) so they
+      // work across keyboard layouts (Turkish Q, AZERTY, Dvorak, Cyrillic,
+      // …) without forcing the user to press AltGr combos. The user can
+      // remap any shortcut from the options page; bindings live in
+      // `settings.shortcutBindings`.
       //
-      //   ]      next tab
-      //   [      previous tab
-      //   x      close active tab
-      //   1..9   jump to tab by position
-      //
-      // These only fire when no input / textarea / contenteditable has
-      // focus, so typing in the search palette or filter is unaffected.
-      if (!isInInput(e) && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (e.key === "]") {
-          if (!isShortcutEnabled(settings, "nextTab")) return;
+      // Chrome reserves every Ctrl/⌘/Alt tab-management combination, so
+      // tab navigation stays on bare keys and we gate on "not typing in
+      // an input" so the search palette / filter inputs aren't shadowed.
+      if (!isInInput(e)) {
+        if (
+          isShortcutEnabled(settings, "nextTab") &&
+          matchShortcut(e, getShortcutCode(settings, "nextTab"))
+        ) {
           e.preventDefault();
           nextTab();
           return;
         }
-        if (e.key === "[") {
-          if (!isShortcutEnabled(settings, "prevTab")) return;
+        if (
+          isShortcutEnabled(settings, "prevTab") &&
+          matchShortcut(e, getShortcutCode(settings, "prevTab"))
+        ) {
           e.preventDefault();
           prevTab();
           return;
         }
-        if ((e.key === "x" || e.key === "X") && activeId) {
-          if (!isShortcutEnabled(settings, "closeTab")) return;
+        if (
+          activeId &&
+          isShortcutEnabled(settings, "closeTab") &&
+          matchShortcut(e, getShortcutCode(settings, "closeTab"))
+        ) {
           e.preventDefault();
           closeTab(activeId);
           return;
         }
-        if (/^[1-9]$/.test(e.key)) {
+        // Jump-to-tab: range match Digit1–Digit9 (no remap UI for ranges).
+        if (
+          !e.metaKey && !e.ctrlKey && !e.altKey &&
+          /^Digit[1-9]$/.test(e.code)
+        ) {
           if (!isShortcutEnabled(settings, "jumpToTab")) return;
-          const idx = Number(e.key) - 1;
+          const idx = Number(e.code.slice(5)) - 1;
           const target = openTabs[idx];
           if (target) {
             e.preventDefault();
@@ -102,43 +114,73 @@ export function Shell() {
         }
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        if (!isShortcutEnabled(settings, "search")) return;
+      // ── Modifier + bare-key shortcuts ──
+      if (
+        isShortcutEnabled(settings, "search") &&
+        matchShortcut(e, getShortcutCode(settings, "search"))
+      ) {
         e.preventDefault();
         setSearchOpen((v) => !v);
-      } else if ((e.metaKey || e.ctrlKey) && e.key === "b") {
-        if (!isShortcutEnabled(settings, "toggleSidebar")) return;
+        return;
+      }
+      if (
+        isShortcutEnabled(settings, "toggleSidebar") &&
+        matchShortcut(e, getShortcutCode(settings, "toggleSidebar"))
+      ) {
         e.preventDefault();
         toggleSidebar();
-      } else if ((e.metaKey || e.ctrlKey) && (e.key === "t" || e.key === "T")) {
-        // ⌘T — toggle the cross-file task panel.
-        // Note: bare ⌘T opens a new browser tab. Our ext runs in its
-        // own chrome-extension://… page so the default is free.
+        return;
+      }
+      // ⌘T — toggle the cross-file task panel.
+      // Note: bare ⌘T opens a new browser tab. Our ext runs in its
+      // own chrome-extension://… page so the default is free.
+      if ((e.metaKey || e.ctrlKey) && e.code === "KeyT") {
         e.preventDefault();
         toggleTasksPanel();
-      } else if (e.key === "\\" && !isInInput(e)) {
-        if (!isShortcutEnabled(settings, "toggleToc")) return;
+        return;
+      }
+      if (
+        !isInInput(e) &&
+        isShortcutEnabled(settings, "toggleToc") &&
+        matchShortcut(e, getShortcutCode(settings, "toggleToc"))
+      ) {
         e.preventDefault();
         toggleToc();
-      } else if ((e.key === "f" || e.key === "F") && !isInInput(e) && !e.metaKey && !e.ctrlKey) {
-        if (!isShortcutEnabled(settings, "toggleFullscreen")) return;
+        return;
+      }
+      if (
+        !isInInput(e) &&
+        isShortcutEnabled(settings, "toggleFullscreen") &&
+        matchShortcut(e, getShortcutCode(settings, "toggleFullscreen"))
+      ) {
         e.preventDefault();
         toggleFullscreen();
-      } else if ((e.key === "r" || e.key === "R") && !isInInput(e) && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (!isShortcutEnabled(settings, "toggleRaw")) return;
+        return;
+      }
+      if (
+        !isInInput(e) &&
+        isShortcutEnabled(settings, "toggleRaw") &&
+        matchShortcut(e, getShortcutCode(settings, "toggleRaw"))
+      ) {
         // Only meaningful when a file is active — and we rely on file-
         // actions for the state toggle so the FileActions UI stays in sync.
         if (!activeId) return;
         e.preventDefault();
         setViewMode(viewMode === "raw" ? "rendered" : "raw");
-      } else if (e.key === "/" && !isInInput(e)) {
-        if (!isShortcutEnabled(settings, "focusFilter")) return;
+        return;
+      }
+      if (
+        !isInInput(e) &&
+        isShortcutEnabled(settings, "focusFilter") &&
+        matchShortcut(e, getShortcutCode(settings, "focusFilter"))
+      ) {
         e.preventDefault();
         // Focus the first visible folder filter input.
         const input = document.querySelector<HTMLInputElement>(
           'aside input[placeholder*="Filter"]'
         );
         input?.focus();
+        return;
       }
     };
     window.addEventListener("keydown", onKey);

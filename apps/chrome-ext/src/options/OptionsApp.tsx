@@ -16,10 +16,15 @@ import {
   ALL_SHORTCUTS,
   ALL_FORMATS,
   JSON_THEMES,
+  getShortcutCode,
   type FormatId,
   type ShortcutId,
   type JsonThemeId,
 } from "../app/settings";
+import {
+  getKeyboardLabels,
+  type KeyboardLabels,
+} from "../app/keyboardLabels";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
@@ -266,14 +271,74 @@ function JsonSection() {
 function ShortcutsSection() {
   const settings = useSettings((s) => s.settings);
   const setShortcut = useSettings((s) => s.setShortcut);
+  const setShortcutBinding = useSettings((s) => s.setShortcutBinding);
   const setAll = useSettings((s) => s.setAllShortcutsDisabled);
+  const [labels, setLabels] = useState<KeyboardLabels | null>(null);
+  const [capturingId, setCapturingId] = useState<ShortcutId | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getKeyboardLabels().then((l) => {
+      if (!cancelled) setLabels(l);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Active capture: listen at the document level for the next keydown,
+  // accept it as the new binding, release the listener.
+  useEffect(() => {
+    if (!capturingId) return;
+    const onKey = (e: KeyboardEvent) => {
+      // Cancel keys
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setCapturingId(null);
+        return;
+      }
+      // Ignore raw modifier keypresses — wait for a "real" key.
+      if (
+        e.code === "MetaLeft" ||
+        e.code === "MetaRight" ||
+        e.code === "ControlLeft" ||
+        e.code === "ControlRight" ||
+        e.code === "AltLeft" ||
+        e.code === "AltRight" ||
+        e.code === "ShiftLeft" ||
+        e.code === "ShiftRight" ||
+        !e.code
+      ) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      const usesMod = e.metaKey || e.ctrlKey;
+      const next = usesMod ? `Mod+${e.code}` : e.code;
+      void setShortcutBinding(capturingId, next);
+      setCapturingId(null);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [capturingId, setShortcutBinding]);
+
+  // Build a lookup of which IDs are currently bound to each code, so we
+  // can warn about conflicts inline.
+  const boundCodes = new Map<string, ShortcutId[]>();
+  for (const s of ALL_SHORTCUTS) {
+    const code = getShortcutCode(settings, s.id);
+    if (!code) continue;
+    const list = boundCodes.get(code) ?? [];
+    list.push(s.id);
+    boundCodes.set(code, list);
+  }
 
   return (
     <section>
       <SectionHeading
         icon={Keyboard}
         title="Keyboard shortcuts"
-        subtitle="Disable individual shortcuts or turn them all off. Custom key binding is a v0.3 feature."
+        subtitle="Click any chord to rebind. Bindings match the physical key position so they work on every layout (Turkish Q, AZERTY, Dvorak, …)."
       />
       <div className="mb-3">
         <label className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm">
@@ -296,6 +361,20 @@ function ShortcutsSection() {
         {ALL_SHORTCUTS.map((s) => {
           const enabled = settings.shortcuts[s.id as ShortcutId] !== false;
           const effective = enabled && !settings.allShortcutsDisabled;
+          const code = getShortcutCode(settings, s.id);
+          const isCustom =
+            settings.shortcutBindings[s.id] !== undefined &&
+            settings.shortcutBindings[s.id] !== null;
+          const isCapturing = capturingId === s.id;
+          const conflicts =
+            code && (boundCodes.get(code)?.length ?? 0) > 1
+              ? boundCodes.get(code)!.filter((x) => x !== s.id)
+              : [];
+          const chordLabel = labels
+            ? labels.prettyChord(code)
+            : (code ?? s.chord);
+          // jumpToTab is range-bound, not single-key — disable rebind for it.
+          const rebindable = s.defaultCode !== null;
           return (
             <div
               key={s.id}
@@ -306,10 +385,48 @@ function ShortcutsSection() {
                 <div className="text-muted-foreground text-xs">
                   {s.description}
                 </div>
+                {conflicts.length > 0 && (
+                  <div className="mt-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                    Conflicts with: {conflicts.join(", ")}
+                  </div>
+                )}
               </div>
-              <code className="bg-muted rounded border px-2 py-0.5 text-xs font-mono tabular-nums">
-                {s.chord}
-              </code>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!rebindable) return;
+                  setCapturingId(isCapturing ? null : s.id);
+                }}
+                disabled={!rebindable || settings.allShortcutsDisabled}
+                title={
+                  !rebindable
+                    ? "This shortcut binds a range of keys and can't be remapped."
+                    : isCapturing
+                      ? "Press a key (Esc to cancel)…"
+                      : "Click, then press the key combo you want"
+                }
+                className={[
+                  "rounded border px-2 py-0.5 text-xs font-mono tabular-nums transition-colors",
+                  isCapturing
+                    ? "animate-pulse border-primary bg-primary/15 text-primary"
+                    : "bg-muted hover:border-ring hover:bg-background",
+                  !rebindable && "cursor-not-allowed opacity-60",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {isCapturing ? "Press key…" : chordLabel}
+              </button>
+              {isCustom && rebindable && (
+                <button
+                  type="button"
+                  onClick={() => void setShortcutBinding(s.id, null)}
+                  title="Reset to default"
+                  className="text-muted-foreground hover:text-foreground text-[11px]"
+                >
+                  Reset
+                </button>
+              )}
               <Toggle
                 checked={enabled}
                 onChange={(v) => setShortcut(s.id as ShortcutId, v)}
@@ -321,8 +438,10 @@ function ShortcutsSection() {
         })}
       </div>
       <p className="text-muted-foreground mt-3 text-[11px]">
-        Custom key bindings (VS Code-style chord capture) are planned for v0.3.
-        For now, this page toggles shortcuts on/off.
+        Bindings use the physical key position (<code>KeyboardEvent.code</code>),
+        so a shortcut bound to the "<kbd>]</kbd>"-position key still fires when
+        that key produces a different character on a non-US layout. The label
+        shown above reflects what's actually printed on your keyboard.
       </p>
     </section>
   );
