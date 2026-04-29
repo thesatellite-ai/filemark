@@ -97,6 +97,13 @@ export interface LibraryState {
    *  view, then briefly flashes it. */
   revealRequest: number;
 
+  /** Ephemeral request to open the search palette pre-scoped to one
+   *  folder. `{ folderId, rev }` — Shell listens for `rev` changes,
+   *  opens the palette with `searchScope = folderId`. Cleared on
+   *  pickup. */
+  scopedSearchRequest: { folderId: string; rev: number } | null;
+  requestScopedSearch(folderId: string): void;
+
   setActive(id: string | null): Promise<void>;
   closeTab(id: string): Promise<void>;
   nextTab(): void;
@@ -231,6 +238,16 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   tasksOpen: false,
   scrollTarget: null,
   revealRequest: 0,
+  scopedSearchRequest: null,
+
+  requestScopedSearch(folderId) {
+    set((s) => ({
+      scopedSearchRequest: {
+        folderId,
+        rev: (s.scopedSearchRequest?.rev ?? 0) + 1,
+      },
+    }));
+  },
 
   async hydrate() {
     const [files, folders, recent, theme, active, tabs, ui] = await Promise.all([

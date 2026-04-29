@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { FileText } from "lucide-react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { FileText, FolderClosed, RotateCcw, X } from "lucide-react";
 import FlexSearch from "flexsearch";
 import { useLibrary, type LibraryFile, type LibraryFolder } from "../store";
 import { sessionHandles } from "../sessionHandles";
@@ -30,9 +30,15 @@ interface FlexDoc {
 export function SearchPalette({
   open,
   onOpenChange,
+  scope,
+  onScopeChange,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  /** When set, restrict the search index + results to files in this
+   *  folder. Null = search every loaded file. */
+  scope?: string | null;
+  onScopeChange?: (next: string | null) => void;
 }) {
   const files = useLibrary((s) => s.files);
   const folders = useLibrary((s) => s.folders);
@@ -42,11 +48,73 @@ export function SearchPalette({
   const idxRef = useRef<FlexDoc | null>(null);
   const contentsRef = useRef<Map<string, string>>(new Map());
 
+  // `@mention` picker state. Opens when the input starts with `@` and
+  // the user is still typing the token (no space yet). User picks a
+  // folder with arrows + Enter or by clicking; selection sets scope
+  // and strips the `@token` from the input.
+  const [pickerIdx, setPickerIdx] = useState(0);
+  const [pickerDismissed, setPickerDismissed] = useState(false);
+  const atTokenMatch = /^@([^\s]*)$/s.exec(q);
+  const atToken = atTokenMatch ? atTokenMatch[1]! : null;
+  const pickerOpen = atToken !== null && !pickerDismissed;
+
+  // Filtered folder list for the picker. Match by label OR name OR
+  // rootPath (so two folders named "notes" with different parent dirs
+  // are both pickable + visually distinguishable).
+  const pickerOptions = useMemo(() => {
+    if (atToken === null) return [];
+    const lower = atToken.toLowerCase();
+    return Object.values(folders).filter((f) => {
+      const label = (f.label ?? "").toLowerCase();
+      const name = (f.name ?? "").toLowerCase();
+      return label.includes(lower) || name.includes(lower);
+    });
+  }, [folders, atToken]);
+
+  // Reset picker selection when filter or open-state changes.
+  useEffect(() => {
+    setPickerIdx(0);
+  }, [atToken, pickerOpen]);
+
+  // When the input no longer starts with `@…`, reset the dismissed flag
+  // so the next `@` re-opens the picker.
+  useEffect(() => {
+    if (atToken === null && pickerDismissed) setPickerDismissed(false);
+  }, [atToken, pickerDismissed]);
+
+  // Active scope: prop scope only — picker commits set the prop scope
+  // via onScopeChange and strip the `@token` from the input.
+  const activeScope = scope ?? null;
+  const effectiveQuery = q;
+
+  // Files in the current scope. When `activeScope` is null we search
+  // every loaded file; when set we filter by folderId.
+  const scopedFiles = useMemo<Record<string, LibraryFile>>(() => {
+    if (!activeScope) return files;
+    const out: Record<string, LibraryFile> = {};
+    for (const [id, f] of Object.entries(files)) {
+      if (f.folderId === activeScope) out[id] = f;
+    }
+    return out;
+  }, [files, activeScope]);
+
+  const scopeFolder = activeScope ? folders[activeScope] : null;
+  const scopeLabel =
+    scopeFolder?.label ||
+    scopeFolder?.name ||
+    (activeScope ? "(unknown folder)" : "");
+
+  const commitPickerSelection = (folder: LibraryFolder) => {
+    onScopeChange?.(folder.id);
+    setQ("");
+    setPickerDismissed(true);
+  };
+
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     (async () => {
-      const built = await buildIndex(files);
+      const built = await buildIndex(scopedFiles);
       if (cancelled) return;
       idxRef.current = built.idx;
       contentsRef.current = built.contents;
@@ -54,10 +122,10 @@ export function SearchPalette({
     return () => {
       cancelled = true;
     };
-  }, [files, open]);
+  }, [scopedFiles, open]);
 
   useEffect(() => {
-    if (!q.trim()) {
+    if (!effectiveQuery.trim()) {
       setHits([]);
       return;
     }
@@ -65,7 +133,7 @@ export function SearchPalette({
     (async () => {
       const idx = idxRef.current;
       if (!idx) return;
-      const raw = (await idx.searchAsync(q, { limit: 30 })) as {
+      const raw = (await idx.searchAsync(effectiveQuery, { limit: 30 })) as {
         field: string;
         result: string[];
       }[];
@@ -74,7 +142,7 @@ export function SearchPalette({
       for (const f of raw) for (const id of f.result) ids.add(id);
       const results: Hit[] = [];
       for (const id of ids) {
-        const f = files[id];
+        const f = scopedFiles[id];
         if (!f) continue;
         const content = contentsRef.current.get(id) ?? "";
         const folder = f.folderId ? folders[f.folderId] : null;
@@ -83,7 +151,7 @@ export function SearchPalette({
           name: f.name,
           location: locationLabelFor(f, folder),
           origin: originTagFor(f, folder),
-          snippet: snippet(content, q),
+          snippet: snippet(content, effectiveQuery),
         });
         if (results.length >= 30) break;
       }
@@ -92,7 +160,7 @@ export function SearchPalette({
     return () => {
       cancelled = true;
     };
-  }, [q, files, folders]);
+  }, [effectiveQuery, scopedFiles, folders]);
 
   // Whenever hits change, force the cmdk list to scroll to the top.
   // cmdk's scroll-into-view logic preserves stale positions across query
@@ -105,10 +173,54 @@ export function SearchPalette({
     if (list) list.scrollTop = 0;
   }, [hits]);
 
+  // Force-focus the cmdk input each time the palette opens. Radix's
+  // dialog auto-focus runs on first mount but can be skipped on
+  // subsequent opens when state persists — without this the user has
+  // to click the input every time after the first session.
+  //
+  // Radix mounts the dialog content via Portal in a microtask after
+  // `open` flips, so an immediate `requestAnimationFrame` fires before
+  // the input exists. We retry on a short interval until the input is
+  // findable (cap ~200ms / 10 attempts).
+  useEffect(() => {
+    if (!open) return;
+    let attempts = 0;
+    let cancelled = false;
+    const tryFocus = () => {
+      if (cancelled) return;
+      attempts++;
+      const input = document.querySelector<HTMLInputElement>(
+        "[cmdk-input]",
+      );
+      if (input) {
+        input.focus();
+        // Select-all so a fresh keystroke replaces the last query — but
+        // arrow keys still navigate, and Enter commits the highlighted
+        // hit unchanged.
+        input.select();
+        return;
+      }
+      if (attempts < 10) setTimeout(tryFocus, 20);
+    };
+    tryFocus();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
   const select = (id: string) => {
     setActive(id);
     onOpenChange(false);
+    // Intentionally NOT clearing `q` or scope — keeping them lets the
+    // user re-open the palette and see their previous search restored,
+    // which is the common "open file → realize wrong → re-open and
+    // pick another" loop. Use the Reset button or the chip ✕ to clear.
+  };
+
+  const resetSearch = () => {
     setQ("");
+    setPickerDismissed(false);
+    onScopeChange?.(null);
   };
 
   return (
@@ -118,12 +230,107 @@ export function SearchPalette({
       title="Search"
       description="Search across loaded files"
       shouldFilter={false}
+      showCloseButton={false}
     >
-      <CommandInput
-        placeholder="Search across all loaded files…"
-        value={q}
-        onValueChange={setQ}
-      />
+      {activeScope && scopeFolder && (
+        <div className="border-border/60 flex flex-wrap items-center gap-2 border-b px-3 py-1.5 text-[11px]">
+          <FolderClosed className="text-muted-foreground size-3.5 shrink-0" />
+          <span className="text-muted-foreground">Scoped to</span>
+          <span
+            className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium"
+            title={`Searching only in "${scopeLabel}". Use Reset (top-right) to widen.`}
+          >
+            <span className="max-w-[180px] truncate">{scopeLabel}</span>
+          </span>
+          <span className="text-muted-foreground tabular-nums">
+            {Object.keys(scopedFiles).length} file
+            {Object.keys(scopedFiles).length === 1 ? "" : "s"}
+          </span>
+        </div>
+      )}
+      {!activeScope && Object.keys(folders).length > 0 && (
+        <div className="text-muted-foreground border-border/60 px-3 py-1 text-[10.5px]">
+          Tip: type <code className="bg-muted rounded px-1">@</code> to pick a folder to scope to.
+        </div>
+      )}
+      <div className="relative">
+        {/* Reset + close cluster vertically centered with the input row.
+            `inset-y-0` + `items-center` keeps them on the row's baseline
+            regardless of the input's exact height. Replaces the dialog's
+            built-in close X so we don't end up with two crosses. */}
+        <div className="absolute inset-y-0 right-2 z-20 flex items-center gap-1">
+          {(q || activeScope) && (
+            <button
+              type="button"
+              onClick={resetSearch}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-6 items-center gap-1 rounded px-2 text-[11px] leading-none transition-colors"
+              title="Reset search (clears query and scope)"
+            >
+              <RotateCcw className="size-3" />
+              <span>Reset</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-6 items-center justify-center rounded transition-colors"
+            aria-label="Close"
+            title="Close (Esc)"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+        <CommandInput
+          placeholder={
+            activeScope && scopeFolder
+              ? `Search in "${scopeLabel}"…`
+              : "Search across all loaded files… (type @ to scope)"
+          }
+          value={q}
+          onValueChange={setQ}
+          onKeyDown={(e) => {
+            if (pickerOpen && pickerOptions.length > 0) {
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setPickerIdx((i) => (i + 1) % pickerOptions.length);
+                return;
+              }
+              if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setPickerIdx((i) =>
+                  (i - 1 + pickerOptions.length) % pickerOptions.length,
+                );
+                return;
+              }
+              if (e.key === "Enter" || e.key === "Tab") {
+                e.preventDefault();
+                const f = pickerOptions[pickerIdx];
+                if (f) commitPickerSelection(f);
+                return;
+              }
+              if (e.key === "Escape") {
+                e.preventDefault();
+                setPickerDismissed(true);
+                return;
+              }
+            }
+            // Backspace on empty query → clear scope.
+            if (e.key === "Backspace" && q === "" && activeScope) {
+              e.preventDefault();
+              onScopeChange?.(null);
+            }
+          }}
+        />
+        {pickerOpen && (
+          <ScopePicker
+            options={pickerOptions}
+            activeIdx={pickerIdx}
+            onHover={setPickerIdx}
+            onSelect={commitPickerSelection}
+            token={atToken!}
+          />
+        )}
+      </div>
       {/*
        * Key the list on query + top-hit id so cmdk's internal active-item
        * tracker resets both (a) when the user types — instantly remounts
@@ -263,4 +470,73 @@ function snippet(content: string, q: string): string {
     (start > 0 ? "…" : "") +
     content.slice(start, end).replace(/\s+/g, " ").trim()
   );
+}
+
+/**
+ * @mention-style picker that drops below the search input when the user
+ * types `@`. Lists all folders matching the typed token (or all folders
+ * when token is empty). Each row shows label/name + parent dir so two
+ * folders with the same name are visually distinct.
+ */
+function ScopePicker({
+  options,
+  activeIdx,
+  onHover,
+  onSelect,
+  token,
+}: {
+  options: LibraryFolder[];
+  activeIdx: number;
+  onHover: (idx: number) => void;
+  onSelect: (folder: LibraryFolder) => void;
+  token: string;
+}) {
+  if (options.length === 0) {
+    return (
+      <div className="bg-popover absolute left-0 right-0 top-full z-30 mt-1 rounded-md border shadow-md">
+        <div className="text-muted-foreground px-3 py-2 text-xs italic">
+          No folders match {token ? `"${token}"` : ""} — type to filter or pick from drag/drop folders.
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="bg-popover absolute left-0 right-0 top-full z-30 mt-1 max-h-[260px] overflow-y-auto rounded-md border shadow-md">
+      {options.map((f, i) => {
+        const display = f.label || f.name || "(unnamed folder)";
+        const subtitle = parentSubtitle(f);
+        const active = i === activeIdx;
+        return (
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => onSelect(f)}
+            onMouseEnter={() => onHover(i)}
+            className={[
+              "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors",
+              active
+                ? "bg-accent text-accent-foreground"
+                : "hover:bg-accent/50",
+            ].join(" ")}
+          >
+            <FolderClosed className="text-muted-foreground size-3.5 shrink-0" />
+            <span className="truncate font-medium">{display}</span>
+            {subtitle && (
+              <span className="text-muted-foreground ml-auto truncate text-[10.5px]">
+                {subtitle}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function parentSubtitle(folder: LibraryFolder): string {
+  if (!folder.rootPath) return "";
+  const trimmed = folder.rootPath.replace(/\/+$/, "");
+  const parts = trimmed.split("/").filter(Boolean);
+  if (parts.length <= 1) return trimmed;
+  return ".../" + parts.slice(-2).join("/");
 }

@@ -49,6 +49,7 @@ export function Sidebar() {
   const removeFolder = useLibrary((s) => s.removeFolder);
   const rescanFolder = useLibrary((s) => s.rescanFolder);
   const setFolderLabel = useLibrary((s) => s.setFolderLabel);
+  const requestScopedSearch = useLibrary((s) => s.requestScopedSearch);
   const clearAll = useLibrary((s) => s.clearAll);
   const clearRecent = useLibrary((s) => s.clearRecent);
   const clearDropped = useLibrary((s) => s.clearDropped);
@@ -336,6 +337,8 @@ export function Sidebar() {
               rescanLabel={`Rescan ${displayName} for changes on disk`}
               onRename={(next) => setFolderLabel(folder.id, next || null)}
               renameInitial={folder.label ?? folder.name}
+              onSearch={() => requestScopedSearch(folder.id)}
+              searchLabel={`Search inside ${displayName}`}
               onRemove={() => {
                 if (
                   confirm(
@@ -538,6 +541,8 @@ function Section({
   rescanLabel,
   onRename,
   renameInitial,
+  onSearch,
+  searchLabel,
   children,
 }: {
   title: string;
@@ -557,6 +562,11 @@ function Section({
   onRename?: (next: string) => void | Promise<void>;
   /** Initial value for the rename input. Defaults to `title`. */
   renameInitial?: string;
+  /** Optional "search inside this section" callback. Renders a magnifying
+   *  glass in the header (hover-revealed) — opens the search palette
+   *  pre-scoped to the section's contents. */
+  onSearch?: () => void;
+  searchLabel?: string;
   children: React.ReactNode;
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
@@ -636,6 +646,19 @@ function Section({
                 {badge}
               </Badge>
             )}
+          </button>
+        )}
+        {onSearch && !editing && (
+          <button
+            className="text-muted-foreground hover:text-sidebar-foreground opacity-0 transition-opacity group-hover/section:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSearch();
+            }}
+            aria-label={searchLabel ?? `Search inside ${title}`}
+            title={searchLabel ?? `Search inside ${title}`}
+          >
+            <Search className="size-3" />
           </button>
         )}
         {onRename && !editing && (

@@ -40,6 +40,20 @@ export function Shell() {
   useUrlSync();
 
   const [searchOpen, setSearchOpen] = useState(false);
+  // Optional folder scope for the search palette. Null = all files.
+  // Set by the per-folder search icon in the Sidebar; cleared by the
+  // chip inside the palette or when the palette closes.
+  const [searchScope, setSearchScope] = useState<string | null>(null);
+
+  // Sidebar fires a scoped-search request via the store (so the button
+  // doesn't need to thread a callback through three component layers).
+  // We listen for the rev counter and open the palette pre-scoped.
+  const scopedSearchRequest = useLibrary((s) => s.scopedSearchRequest);
+  useEffect(() => {
+    if (!scopedSearchRequest) return;
+    setSearchScope(scopedSearchRequest.folderId);
+    setSearchOpen(true);
+  }, [scopedSearchRequest?.rev]);
 
   // Auto-collapse the sidebar drawer when the active file changes on a
   // mobile-width viewport (so picking a file from the slide-over closes
@@ -281,7 +295,12 @@ export function Shell() {
         )}
       </div>
       <DropZone />
-      <SearchPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      <SearchPalette
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        scope={searchScope}
+        onScopeChange={setSearchScope}
+      />
     </div>
   );
 }
