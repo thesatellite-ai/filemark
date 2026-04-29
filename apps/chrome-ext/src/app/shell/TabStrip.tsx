@@ -47,8 +47,16 @@ export function TabStrip() {
   return (
     <div
       ref={stripRef}
-      className="bg-muted/40 scrollbar-thin flex h-8 shrink-0 items-stretch overflow-x-auto border-b"
+      className="bg-muted/40 flex h-8 shrink-0 items-stretch overflow-x-auto overflow-y-hidden scroll-smooth border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       role="tablist"
+      onWheel={(e) => {
+        // Translate vertical wheel to horizontal scroll so mouse-wheel
+        // users can navigate the tab strip without holding Shift. Mac
+        // trackpads send native horizontal deltaX which we leave alone.
+        if (e.deltaY === 0) return;
+        if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+        e.currentTarget.scrollLeft += e.deltaY;
+      }}
     >
       {items.map((f) => {
         const isActive = f.id === activeId;
