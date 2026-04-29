@@ -825,7 +825,11 @@
   height: 100%;
   display: grid;
   place-items: center;
-  will-change: transform;
+  /* Intentionally NOT `will-change: transform` — that promotes the
+   * inner div to its own compositor layer at the CSS-shrunk SVG size
+   * and then GPU-upscales the cached bitmap, blurring the diagram on
+   * zoom. Without will-change, Chrome re-rasterizes the SVG vector at
+   * each transform → sharp at any zoom level. */
 }
 /* ─── CalloutWithAction button ─────────────────────────────────────────── */
 /* MDX prose styles add `a:hover { text-decoration: underline }` for body

@@ -31,8 +31,11 @@ let idCounter = 0;
 const nextId = () => `fv-mermaid-${++idCounter}-${Date.now().toString(36)}`;
 
 const ZOOM_STEP = 0.2;
-const ZOOM_MIN = 0.3;
-const ZOOM_MAX = 6;
+const ZOOM_MIN = 0.2;
+// Cap raised from 6 → 16 so wide schemas (db-schema-toolkit dumps a
+// 30+ table ER diagram into a single SVG) stay readable when zoomed in.
+// At 1600% a 12px label is ~192px, comfortable on a 4K display.
+const ZOOM_MAX = 16;
 
 export function Mermaid({ source }: { source: string }) {
   const appTheme = useThemeOptional()?.theme ?? null;
@@ -95,22 +98,50 @@ export function Mermaid({ source }: { source: string }) {
   }
 
   return (
-    <>
-      <MermaidCanvas
-        svg={svg}
-        fullscreen={false}
-        onRequestFullscreen={() => setFullscreen(true)}
-        source={source}
-      />
-      {fullscreen && (
-        <MermaidCanvas
-          svg={svg}
-          fullscreen
-          onRequestFullscreen={() => setFullscreen(false)}
-          source={source}
-        />
-      )}
-    </>
+    <SharedCanvas
+      svg={svg}
+      source={source}
+      fullscreen={fullscreen}
+      onRequestFullscreen={() => setFullscreen((v) => !v)}
+    />
+  );
+}
+
+/**
+ * Hoists scale + translate state above the inline ↔ fullscreen split so
+ * a zoom level entered in one carries into the other. Without this, going
+ * fullscreen mounted a fresh MermaidCanvas with `useState(1)` and wiped
+ * the user's zoom.
+ *
+ * Both views render the same SVG string. We render only the active one
+ * (inline OR fullscreen), not both — keeps the DOM small and avoids
+ * paying for an off-screen second SVG copy.
+ */
+function SharedCanvas({
+  svg,
+  source,
+  fullscreen,
+  onRequestFullscreen,
+}: {
+  svg: string;
+  source: string;
+  fullscreen: boolean;
+  onRequestFullscreen: () => void;
+}) {
+  const [scale, setScale] = useState(1);
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+
+  return (
+    <MermaidCanvas
+      svg={svg}
+      source={source}
+      fullscreen={fullscreen}
+      onRequestFullscreen={onRequestFullscreen}
+      scale={scale}
+      setScale={setScale}
+      translate={translate}
+      setTranslate={setTranslate}
+    />
   );
 }
 
@@ -119,21 +150,55 @@ function MermaidCanvas({
   fullscreen,
   onRequestFullscreen,
   source,
+  scale,
+  setScale,
+  translate,
+  setTranslate,
 }: {
   svg: string;
   fullscreen: boolean;
   onRequestFullscreen: () => void;
   source: string;
+  scale: number;
+  setScale: React.Dispatch<React.SetStateAction<number>>;
+  translate: { x: number; y: number };
+  setTranslate: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number }>
+  >;
 }) {
-  const [scale, setScale] = useState(1);
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ x: number; y: number } | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  // Live transform state — mutated imperatively in wheel/drag handlers
+  // so we don't pay React reconciliation per pointer event. The toolbar
+  // % display reads from React `scale` state, which we sync via rAF.
+  const liveRef = useRef({ x: translate.x, y: translate.y, s: scale });
+  const rafRef = useRef<number | null>(null);
 
-  // Reset when entering or leaving fullscreen so each viewport starts at 1:1.
-  useEffect(() => {
-    setScale(1);
-    setTranslate({ x: 0, y: 0 });
-  }, [fullscreen]);
+  const writeStyle = useCallback(() => {
+    rafRef.current = null;
+    const el = innerRef.current;
+    if (!el) return;
+    const { x, y, s } = liveRef.current;
+    el.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+  }, []);
+
+  const queueStyle = useCallback(() => {
+    if (rafRef.current != null) return;
+    rafRef.current = requestAnimationFrame(writeStyle);
+  }, [writeStyle]);
+
+  // Sync the React-tracked scale (toolbar %) on a coarser cadence —
+  // rAF-debounced setScale so we re-render the toolbar at most once per
+  // frame instead of once per wheel tick.
+  const syncScaleRef = useRef<number | null>(null);
+  const syncScaleSoon = useCallback(() => {
+    if (syncScaleRef.current != null) return;
+    syncScaleRef.current = requestAnimationFrame(() => {
+      syncScaleRef.current = null;
+      setScale(liveRef.current.s);
+      setTranslate({ x: liveRef.current.x, y: liveRef.current.y });
+    });
+  }, [setScale, setTranslate]);
 
   // Close fullscreen on Esc.
   useEffect(() => {
@@ -149,53 +214,96 @@ function MermaidCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullscreen]);
 
-  const zoomBy = useCallback((delta: number) => {
-    setScale((s) => clamp(s + delta * (s > 1 ? s : 1), ZOOM_MIN, ZOOM_MAX));
+  // Sync React-driven changes (toolbar buttons, reset, parent re-mount)
+  // back into the imperative live ref + DOM.
+  useEffect(() => {
+    liveRef.current = { x: translate.x, y: translate.y, s: scale };
+    queueStyle();
+  }, [scale, translate, queueStyle]);
+
+  // Cleanup any pending rAF on unmount.
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      if (syncScaleRef.current != null)
+        cancelAnimationFrame(syncScaleRef.current);
+    };
   }, []);
 
-  const reset = useCallback(() => {
-    setScale(1);
-    setTranslate({ x: 0, y: 0 });
-  }, []);
-
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    // Pinch / ctrl-wheel or plain wheel both zoom. preventDefault keeps the
-    // page from scrolling while the user is zooming a diagram.
-    e.preventDefault();
-    const delta = -Math.sign(e.deltaY) * ZOOM_STEP * 0.5;
-    setScale((s) => clamp(s + delta * (s > 1 ? s : 1), ZOOM_MIN, ZOOM_MAX));
-  }, []);
-
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.button !== 0) return;
-      dragRef.current = { x: e.clientX - translate.x, y: e.clientY - translate.y };
+  const zoomBy = useCallback(
+    (delta: number) => {
+      const cur = liveRef.current.s;
+      const next = clamp(cur + delta * (cur > 1 ? cur : 1), ZOOM_MIN, ZOOM_MAX);
+      liveRef.current.s = next;
+      queueStyle();
+      syncScaleSoon();
     },
-    [translate]
+    [queueStyle, syncScaleSoon],
   );
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!dragRef.current) return;
-    setTranslate({
-      x: e.clientX - dragRef.current.x,
-      y: e.clientY - dragRef.current.y,
-    });
+  const reset = useCallback(() => {
+    liveRef.current = { x: 0, y: 0, s: 1 };
+    queueStyle();
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+  }, [queueStyle, setScale, setTranslate]);
+
+  const onWheel = useCallback(
+    (e: React.WheelEvent) => {
+      // Pinch / ctrl-wheel or plain wheel both zoom. preventDefault keeps
+      // the page from scrolling while the user is zooming a diagram.
+      e.preventDefault();
+      const delta = -Math.sign(e.deltaY) * ZOOM_STEP * 0.5;
+      const cur = liveRef.current.s;
+      const next = clamp(cur + delta * (cur > 1 ? cur : 1), ZOOM_MIN, ZOOM_MAX);
+      liveRef.current.s = next;
+      queueStyle();
+      syncScaleSoon();
+    },
+    [queueStyle, syncScaleSoon],
+  );
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    dragRef.current = {
+      x: e.clientX - liveRef.current.x,
+      y: e.clientY - liveRef.current.y,
+    };
+    if (innerRef.current) innerRef.current.style.cursor = "grabbing";
   }, []);
 
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!dragRef.current) return;
+      liveRef.current.x = e.clientX - dragRef.current.x;
+      liveRef.current.y = e.clientY - dragRef.current.y;
+      queueStyle();
+    },
+    [queueStyle],
+  );
+
   const endDrag = useCallback(() => {
+    if (!dragRef.current) return;
     dragRef.current = null;
-  }, []);
+    if (innerRef.current) innerRef.current.style.cursor = "grab";
+    syncScaleSoon();
+  }, [syncScaleSoon]);
 
   const onDoubleClick = useCallback(() => reset(), [reset]);
 
+  // Static style — no scale/translate here. The transform is applied
+  // imperatively by writeStyle(); React re-renders only on toolbar
+  // events (rAF-debounced via syncScaleSoon).
   const innerStyle: CSSProperties = useMemo(
     () => ({
       transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
       transformOrigin: "center center",
-      transition: dragRef.current ? "none" : "transform 120ms ease-out",
-      cursor: dragRef.current ? "grabbing" : "grab",
+      cursor: "grab",
     }),
-    [translate, scale]
+    // Only React state, not the live ref — this style runs at mount /
+    // toolbar-event sync. Pointer-driven updates bypass it entirely.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const container = (
@@ -216,8 +324,11 @@ function MermaidCanvas({
         <MermaidBtn onClick={() => zoomBy(ZOOM_STEP)} title="Zoom in (+)">
           +
         </MermaidBtn>
-        <MermaidBtn onClick={reset} title="Reset zoom and pan (0)">
-          1:1
+        <MermaidBtn
+          onClick={reset}
+          title="Fit to viewport (0). Resets pan + scale=1, which CSS-fits the SVG to the container — for wide schemas that's much smaller than natural size, so zoom in (+) to read tables."
+        >
+          Fit
         </MermaidBtn>
         <MermaidBtn
           onClick={() => {
@@ -244,6 +355,7 @@ function MermaidCanvas({
         onDoubleClick={onDoubleClick}
       >
         <div
+          ref={innerRef}
           className="fv-mermaid-inner"
           style={innerStyle}
           dangerouslySetInnerHTML={{ __html: svg }}
