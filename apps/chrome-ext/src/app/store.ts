@@ -21,6 +21,11 @@ export interface LibraryFile {
 export interface LibraryFolder {
   id: string;
   name: string;
+  /** User-chosen display name. Falls back to `name` when absent. Lets the
+   *  user disambiguate two dropped folders with the same on-disk name
+   *  (e.g. `~/work/notes` vs `~/personal/notes` → "Work notes" / "Personal
+   *  notes"). Sidebar uses this for display + tooltip. */
+  label?: string;
   /** Present only for the session; FS handles can't be serialized to JSON. */
   handle?: FileSystemDirectoryHandle;
   /** Live file handles keyed by file id — session only. */
@@ -108,6 +113,7 @@ export interface LibraryState {
    */
   rescanFolder(folderId: string): Promise<{ added: number; removed: number }>;
   setFolderRootPath(folderId: string, rootPath: string): Promise<void>;
+  setFolderLabel(folderId: string, label: string | null): Promise<void>;
   toggleStar(id: string): Promise<void>;
   setTags(id: string, tags: string[]): Promise<void>;
   setSearchQuery(q: string): void;
@@ -520,6 +526,32 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     return { added: addedCount, removed: removedCount };
   },
 
+  async setFolderLabel(folderId, label) {
+    const state = get();
+    const folder = state.folders[folderId];
+    if (!folder) return;
+    const trimmed = (label ?? "").trim();
+    const nextLabel = trimmed === "" ? undefined : trimmed;
+    const next = {
+      ...state.folders,
+      [folderId]: { ...folder, label: nextLabel },
+    };
+    set({ folders: next });
+
+    const persisted: Record<string, LibraryFolder> = {};
+    for (const [id, fo] of Object.entries(next)) {
+      persisted[id] = {
+        id: fo.id,
+        name: fo.name,
+        ...(fo.label !== undefined && { label: fo.label }),
+        handleId: fo.handleId,
+        addedAt: fo.addedAt,
+        rootPath: fo.rootPath,
+      };
+    }
+    await idbStorage.set(KEYS.folders, persisted);
+  },
+
   async setFolderRootPath(folderId, rootPath) {
     const state = get();
     const folder = state.folders[folderId];
@@ -536,6 +568,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       persisted[id] = {
         id: fo.id,
         name: fo.name,
+        ...(fo.label !== undefined && { label: fo.label }),
         handleId: fo.handleId,
         addedAt: fo.addedAt,
         rootPath: fo.rootPath,

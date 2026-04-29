@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import {
   Check,
   ChevronRight,
@@ -7,6 +7,7 @@ import {
   ClipboardCopy,
   FileText,
   MoreHorizontal,
+  Pencil,
   RotateCw,
   Search,
   Star,
@@ -47,6 +48,7 @@ export function Sidebar() {
   const removeFile = useLibrary((s) => s.removeFile);
   const removeFolder = useLibrary((s) => s.removeFolder);
   const rescanFolder = useLibrary((s) => s.rescanFolder);
+  const setFolderLabel = useLibrary((s) => s.setFolderLabel);
   const clearAll = useLibrary((s) => s.clearAll);
   const clearRecent = useLibrary((s) => s.clearRecent);
   const clearDropped = useLibrary((s) => s.clearDropped);
@@ -311,14 +313,16 @@ export function Sidebar() {
             </Section>
           )}
 
-          {folderTrees.map(({ folder, tree, count }) => (
+          {folderTrees.map(({ folder, tree, count }) => {
+            const displayName = folder.label || (
+              folderNameCounts[folder.name] > 1
+                ? `${folder.name} (${parentDirOf(folder.rootPath) ?? folder.id.slice(0, 6)})`
+                : folder.name
+            );
+            return (
             <Section
               key={folder.id}
-              title={
-                folderNameCounts[folder.name] > 1
-                  ? `${folder.name} (${parentDirOf(folder.rootPath) ?? folder.id.slice(0, 6)})`
-                  : folder.name
-              }
+              title={displayName}
               badge={String(count)}
               open={getSectionOpen(`folder:${folder.id}`)}
               onOpenChange={(v) => setSectionOpen(`folder:${folder.id}`, v)}
@@ -329,11 +333,13 @@ export function Sidebar() {
                     }
                   : undefined
               }
-              rescanLabel={`Rescan ${folder.name} for changes on disk`}
+              rescanLabel={`Rescan ${displayName} for changes on disk`}
+              onRename={(next) => setFolderLabel(folder.id, next || null)}
+              renameInitial={folder.label ?? folder.name}
               onRemove={() => {
                 if (
                   confirm(
-                    `Remove folder "${folder.name}" from the library?\n\n${count} file${count === 1 ? "" : "s"} will be removed. The files on disk are not touched.`
+                    `Remove folder "${displayName}" from the library?\n\n${count} file${count === 1 ? "" : "s"} will be removed. The files on disk are not touched.`
                   )
                 )
                   removeFolder(folder.id);
@@ -401,7 +407,8 @@ export function Sidebar() {
                 ));
               })()}
             </Section>
-          ))}
+            );
+          })}
 
           {orphanFiles.length > 0 && (
             <Section
@@ -529,6 +536,8 @@ function Section({
   removeLabel,
   onRescan,
   rescanLabel,
+  onRename,
+  renameInitial,
   children,
 }: {
   title: string;
@@ -542,45 +551,113 @@ function Section({
   /** Optional "rescan" action; renders a refresh icon in the header. */
   onRescan?: () => void | Promise<void>;
   rescanLabel?: string;
+  /** Optional rename callback. When set, renders a pencil icon that
+   *  swaps the title for an inline input. Called with the new label
+   *  (empty string clears the override → falls back to default). */
+  onRename?: (next: string) => void | Promise<void>;
+  /** Initial value for the rename input. Defaults to `title`. */
+  renameInitial?: string;
   children: React.ReactNode;
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const open = controlledOpen ?? uncontrolledOpen;
   const toggle = () => {
     if (onOpenChange) onOpenChange(!open);
     else setUncontrolledOpen((v) => !v);
   };
+  const startEdit = () => {
+    setDraft(renameInitial ?? title);
+    setEditing(true);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
+  };
+  const commitEdit = async () => {
+    setEditing(false);
+    if (!onRename) return;
+    const next = draft.trim();
+    // Only persist when changed (allow empty string → reset).
+    if (next !== (renameInitial ?? title).trim()) {
+      await onRename(next);
+    }
+  };
   return (
     <div className="group/section mb-1 w-full min-w-0">
       <div className="hover:text-sidebar-foreground text-muted-foreground flex w-full min-w-0 items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider">
-        <button
-          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
-          onClick={toggle}
-          title={title}
-        >
-          <ChevronRight
-            className={cn(
-              "size-3 shrink-0 transition-transform duration-150",
-              open && "rotate-90"
+        {editing ? (
+          <>
+            <ChevronRight
+              className={cn(
+                "size-3 shrink-0",
+                open && "rotate-90"
+              )}
+              aria-hidden
+            />
+            <input
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void commitEdit();
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  setEditing(false);
+                }
+              }}
+              onBlur={() => void commitEdit()}
+              placeholder={renameInitial ?? title}
+              className="bg-background text-foreground border-input focus:ring-ring flex-1 min-w-0 rounded-sm border px-1.5 py-0.5 text-[11px] font-medium normal-case tracking-normal outline-none focus:ring-1"
+            />
+          </>
+        ) : (
+          <button
+            className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+            onClick={toggle}
+            title={title}
+          >
+            <ChevronRight
+              className={cn(
+                "size-3 shrink-0 transition-transform duration-150",
+                open && "rotate-90"
+              )}
+            />
+            <span className="flex-1 truncate normal-case">{title}</span>
+            {badge && (
+              <Badge
+                variant="secondary"
+                className="h-4 px-1.5 text-[9px] font-medium"
+              >
+                {badge}
+              </Badge>
             )}
-          />
-          <span className="flex-1 truncate normal-case">{title}</span>
-          {badge && (
-            <Badge
-              variant="secondary"
-              className="h-4 px-1.5 text-[9px] font-medium"
-            >
-              {badge}
-            </Badge>
-          )}
-        </button>
-        {onRescan && (
+          </button>
+        )}
+        {onRename && !editing && (
+          <button
+            className="text-muted-foreground hover:text-sidebar-foreground opacity-0 transition-opacity group-hover/section:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              startEdit();
+            }}
+            aria-label={`Rename ${title}`}
+            title="Rename folder (custom label, doesn't change the file on disk)"
+          >
+            <Pencil className="size-3" />
+          </button>
+        )}
+        {onRescan && !editing && (
           <RescanButton
             onRescan={onRescan}
             label={rescanLabel ?? `Rescan ${title} for changes on disk`}
           />
         )}
-        {onRemove && (
+        {onRemove && !editing && (
           <button
             className="hover:text-destructive opacity-0 transition-opacity group-hover/section:opacity-100"
             onClick={(e) => {
@@ -594,7 +671,7 @@ function Section({
           </button>
         )}
       </div>
-      {open && <div className="mt-0.5 flex flex-col gap-px">{children}</div>}
+      {open && !editing && <div className="mt-0.5 flex flex-col gap-px">{children}</div>}
     </div>
   );
 }
