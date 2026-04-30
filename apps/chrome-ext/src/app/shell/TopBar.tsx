@@ -16,6 +16,11 @@ import { useLibrary } from "../store";
 import { pickFolder } from "../fs";
 import { sessionHandles } from "../sessionHandles";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ThemePopover } from "./ThemePopover";
 import { FileActions } from "./FileActions";
 import { cn } from "@/lib/utils";
@@ -207,17 +212,28 @@ function IconBtn({
   "aria-label"?: string;
   className?: string;
 }) {
-  return (
+  const button = (
     <Button
       variant="ghost"
       size="sm"
       className={cn("size-7 p-0", className)}
       onClick={onClick}
+      // Native `title=` kept too for screen-reader / right-click-info
+      // discoverability; the Base UI Tooltip provides the visible UX.
       title={title}
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? title}
     >
       {children}
     </Button>
+  );
+  if (!title) return button;
+  // Prefer children over `render={…}` for the trigger — see CLAUDE.md
+  // base-ui quirks (render with a nested component throws #31).
+  return (
+    <Tooltip>
+      <TooltipTrigger>{button}</TooltipTrigger>
+      <TooltipContent>{title}</TooltipContent>
+    </Tooltip>
   );
 }
 
