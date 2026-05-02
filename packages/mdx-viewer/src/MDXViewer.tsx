@@ -382,9 +382,23 @@ export function MDXViewer(props: ViewerProps) {
         img: ({ node: _n, ...p }: React.ImgHTMLAttributes<HTMLImageElement> & { node?: unknown }) => (
           <SmartImage {...p} assets={assets} />
         ),
-        input: ({ node: _n, ...p }: React.InputHTMLAttributes<HTMLInputElement> & { node?: unknown }) => {
+        input: ({ node, ...p }: React.InputHTMLAttributes<HTMLInputElement> & {
+          node?: { position?: { start?: { line?: number } } };
+        }) => {
           if (p.type === "checkbox") {
-            return <TaskCheckbox {...p} file={file} storage={storage} />;
+            // Pull the source line from remark's hast node — it's a
+            // file-local stable identifier. Replaces the old DOM-index
+            // approach which leaked across files mounted in the same
+            // tab session and silently corrupted state.
+            const line = node?.position?.start?.line;
+            return (
+              <TaskCheckbox
+                {...p}
+                file={file}
+                storage={storage}
+                line={line}
+              />
+            );
           }
           return <input {...p} />;
         },

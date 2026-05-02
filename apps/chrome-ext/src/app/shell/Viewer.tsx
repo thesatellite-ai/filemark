@@ -378,7 +378,14 @@ export function Viewer() {
     );
   }
 
-  if (loading || content === null) {
+  // Block render when the in-state `content` belongs to the previously
+  // active file. Without this, switching files mounts the OLD file's
+  // markdown body inside the NEW file's frame for the few ms of the
+  // async load — TaskCheckboxes mount with the wrong line numbers but
+  // the correct file.id, then write/restore against the wrong file's
+  // storage map (visible as "tasks unchecking themselves" when bouncing
+  // between two TASKS.md files).
+  if (loading || content === null || contentFileId !== file.id) {
     return <StateBlock>Loading…</StateBlock>;
   }
 
