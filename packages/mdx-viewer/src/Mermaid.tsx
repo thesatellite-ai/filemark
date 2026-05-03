@@ -37,18 +37,62 @@ const ZOOM_MIN = 0.2;
 // At 1600% a 12px label is ~192px, comfortable on a 4K display.
 const ZOOM_MAX = 16;
 
+// LRU-bounded SVG cache keyed by source+theme. Mermaid render is the
+// slowest single piece in a typical doc (200ms–1.5s for big ER diagrams).
+// Cache hits skip the entire mermaid load + render path.
+const SVG_CACHE = new Map<string, string>();
+const SVG_CACHE_MAX = 30;
+
+function svgCacheKey(source: string, theme: string): string {
+  return `${theme}:${fnv1a(source)}`;
+}
+function fnv1a(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
+}
+function getCachedSvg(source: string, theme: string): string | null {
+  const k = svgCacheKey(source, theme);
+  const hit = SVG_CACHE.get(k);
+  if (hit === undefined) return null;
+  SVG_CACHE.delete(k);
+  SVG_CACHE.set(k, hit);
+  return hit;
+}
+function setCachedSvg(source: string, theme: string, svg: string): void {
+  const k = svgCacheKey(source, theme);
+  SVG_CACHE.set(k, svg);
+  if (SVG_CACHE.size > SVG_CACHE_MAX) {
+    const oldest = SVG_CACHE.keys().next().value;
+    if (oldest !== undefined) SVG_CACHE.delete(oldest);
+  }
+}
+
 export function Mermaid({ source }: { source: string }) {
   const appTheme = useThemeOptional()?.theme ?? null;
   const mode = appTheme?.mode ?? "light";
   const mermaidTheme =
     mode === "dark" ? "dark" : mode === "sepia" ? "neutral" : "default";
 
-  const [svg, setSvg] = useState<string | null>(null);
+  // Synchronous cache hit on first render → no "Rendering diagram…" flash
+  // when returning to a tab that already rendered this diagram.
+  const [svg, setSvg] = useState<string | null>(() =>
+    getCachedSvg(source, mermaidTheme),
+  );
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const idRef = useRef<string>(nextId());
 
   useEffect(() => {
+    const cached = getCachedSvg(source, mermaidTheme);
+    if (cached !== null) {
+      if (cached !== svg) setSvg(cached);
+      setError(null);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -60,11 +104,11 @@ export function Mermaid({ source }: { source: string }) {
           fontFamily: "inherit",
         });
         await mermaid.parse(source);
-        const { svg } = await mermaid.render(idRef.current, source);
-        if (!cancelled) {
-          setSvg(svg);
-          setError(null);
-        }
+        const { svg: rendered } = await mermaid.render(idRef.current, source);
+        if (cancelled) return;
+        setCachedSvg(source, mermaidTheme, rendered);
+        setSvg(rendered);
+        setError(null);
       } catch (e) {
         if (cancelled) return;
         setSvg(null);
@@ -74,6 +118,7 @@ export function Mermaid({ source }: { source: string }) {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, mermaidTheme]);
 
   if (error) {
@@ -117,6 +162,44 @@ export function Mermaid({ source }: { source: string }) {
  * (inline OR fullscreen), not both — keeps the DOM small and avoids
  * paying for an off-screen second SVG copy.
  */
+// Per-source pan/zoom state. Survives unmount/remount so a tab switch
+// back to a doc that contains a mermaid diagram restores the user's
+// last zoom + pan instead of resetting to 100% / 0,0. Keyed by source
+// hash so it works regardless of which file the diagram lives in.
+const VIEW_STATE = new Map<
+  string,
+  { scale: number; translate: { x: number; y: number } }
+>();
+const VIEW_STATE_MAX = 50;
+
+function viewStateKey(source: string): string {
+  return fnv1a(source);
+}
+function getViewState(
+  source: string,
+): { scale: number; translate: { x: number; y: number } } {
+  const k = viewStateKey(source);
+  const hit = VIEW_STATE.get(k);
+  if (hit) {
+    VIEW_STATE.delete(k);
+    VIEW_STATE.set(k, hit);
+    return hit;
+  }
+  return { scale: 1, translate: { x: 0, y: 0 } };
+}
+function saveViewState(
+  source: string,
+  scale: number,
+  translate: { x: number; y: number },
+): void {
+  const k = viewStateKey(source);
+  VIEW_STATE.set(k, { scale, translate });
+  if (VIEW_STATE.size > VIEW_STATE_MAX) {
+    const oldest = VIEW_STATE.keys().next().value;
+    if (oldest !== undefined) VIEW_STATE.delete(oldest);
+  }
+}
+
 function SharedCanvas({
   svg,
   source,
@@ -128,8 +211,14 @@ function SharedCanvas({
   fullscreen: boolean;
   onRequestFullscreen: () => void;
 }) {
-  const [scale, setScale] = useState(1);
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const initial = getViewState(source);
+  const [scale, setScale] = useState(initial.scale);
+  const [translate, setTranslate] = useState(initial.translate);
+
+  // Persist on every state change (cheap — Map.set on a string key).
+  useEffect(() => {
+    saveViewState(source, scale, translate);
+  }, [source, scale, translate]);
 
   return (
     <MermaidCanvas

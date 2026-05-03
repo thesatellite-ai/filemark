@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLibrary } from "../store";
 import {
   useSettings,
@@ -251,9 +251,9 @@ export function Shell() {
         )}
         <main className="relative flex min-w-0 flex-1 flex-col">
           {!fullscreen && <TabStrip />}
-          <div className="relative flex-1 overflow-auto">
+          <ViewerScroll activeId={activeId}>
             <Viewer />
-          </div>
+          </ViewerScroll>
           {fullscreen && (
             <Button
               variant="ghost"
@@ -310,4 +310,138 @@ function isInInput(e: KeyboardEvent): boolean {
   if (!t) return false;
   const tag = t.tagName;
   return tag === "INPUT" || tag === "TEXTAREA" || t.isContentEditable;
+}
+
+/**
+ * Scroll-position memory per active file.
+ *
+ * Saves the viewer's scrollTop on every scroll (per file id), then restores
+ * it whenever the active file changes. The new file's content loads
+ * asynchronously (Viewer gates on `contentFileId === file.id`), so we keep
+ * trying to apply the saved offset across animation frames until the
+ * scroll container actually has the height to support it.
+ *
+ * Memory lives in a ref Map — ephemeral, in-memory only. Closing the
+ * extension tab drops everything. No need to round-trip through IDB for
+ * a UI nicety like this.
+ */
+function ViewerScroll({
+  activeId,
+  children,
+}: {
+  activeId: string | null;
+  children: React.ReactNode;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const positions = useRef<Map<string, number>>(new Map());
+  const lastIdRef = useRef<string | null>(null);
+  // True while the restore loop is mid-flight. Blocks the scroll
+  // listener from saving the browser-clamped intermediate values
+  // that fire as we set scrollTop on a still-loading body.
+  const suppressSaveRef = useRef(false);
+
+  // Save on scroll (always for the currently-active id, except while
+  // restore is running).
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      if (suppressSaveRef.current) return;
+      if (!activeId) return;
+      positions.current.set(activeId, el.scrollTop);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [activeId]);
+
+  // Restore when activeId changes. The new file's content loads + grows
+  // asynchronously (markdown parse, shiki code highlight, mermaid /
+  // schema diagrams, table layout, image load). The browser silently
+  // clamps `scrollTop` to `scrollHeight - clientHeight`, so an early
+  // restore to e.g. 1200px lands at 800px while the body is still 900
+  // tall.
+  //
+  // While restoring we ALSO suppress the scroll listener (via a ref
+  // flag), so the clamped intermediate values don't overwrite the
+  // saved target with junk. Without this, an early `el.scrollTop = 1200`
+  // → browser clamps to 800 → scroll event fires → onScroll writes
+  // 800 to positions[id] → next restore lands at 800 forever.
+  useEffect(() => {
+    if (!activeId) return;
+    if (activeId === lastIdRef.current) return;
+    const target = positions.current.get(activeId) ?? 0;
+    lastIdRef.current = activeId;
+    const el = containerRef.current;
+    if (!el) return;
+    if (target === 0) {
+      el.scrollTop = 0;
+      return;
+    }
+
+    // Pin the scroll for up to 3s regardless of whether apply succeeds
+    // early — late renders (shiki, mermaid, images) can re-layout the
+    // body after the first success and shift scrollTop by 50–100px.
+    // Re-pinning every frame keeps it nailed.
+    //
+    // We bail the moment the user grabs the scroll themselves (wheel,
+    // touch drag, keyboard nav, scrollbar drag). Otherwise the pin
+    // would fight every input → frozen scroll.
+    const MAX_MS = 3000;
+    const startedAt = performance.now();
+    let cancelled = false;
+    let userTookOver = false;
+    suppressSaveRef.current = true;
+
+    const stop = () => {
+      cancelled = true;
+      userTookOver = true;
+      suppressSaveRef.current = false;
+      el.removeEventListener("wheel", stop);
+      el.removeEventListener("touchstart", stop);
+      el.removeEventListener("keydown", stop);
+      el.removeEventListener("mousedown", onMouseDown);
+    };
+    // Scrollbar drag fires `mousedown` on the container body but not
+    // on its content children. Distinguish via `event.target === el`
+    // (the scrollbar grabs the container itself, not its inner div).
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.target === el) stop();
+    };
+    el.addEventListener("wheel", stop, { passive: true });
+    el.addEventListener("touchstart", stop, { passive: true });
+    el.addEventListener("keydown", stop);
+    el.addEventListener("mousedown", onMouseDown);
+
+    const tick = () => {
+      if (cancelled || userTookOver) return;
+      // Re-pin to target every frame.
+      if (el.scrollTop !== target) {
+        el.scrollTop = target;
+      }
+      if (performance.now() - startedAt > MAX_MS) {
+        // Window closed normally — release the listener. If we never
+        // reached target (content too short after 3s), save the
+        // clamped value so we don't keep over-shooting on the next
+        // visit.
+        if (el.scrollTop !== target) {
+          positions.current.set(activeId, el.scrollTop);
+        }
+        suppressSaveRef.current = false;
+        stop();
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    return () => {
+      stop();
+    };
+  }, [activeId]);
+
+  return (
+    <div ref={containerRef} className="relative flex-1 overflow-auto">
+      {children}
+    </div>
+  );
 }

@@ -92,22 +92,68 @@ async function ensureLang(lang: string): Promise<string> {
   }
 }
 
+// LRU cache of highlighted HTML keyed by `<lang>:<theme>:<codeHash>`.
+// Bounded so giant docs with hundreds of fences don't balloon memory.
+// Re-rendering the same code block (e.g. on tab switch back to a doc
+// already viewed) hits this cache → no shiki call, no async tick.
+const HL_CACHE = new Map<string, string>();
+const HL_CACHE_MAX = 500;
+
+function fnv1a(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
+}
+
+export function getCachedHighlight(
+  code: string,
+  lang: string,
+  isDark: boolean,
+): string | null {
+  const key = `${lang || "text"}:${isDark ? "d" : "l"}:${fnv1a(code)}`;
+  const hit = HL_CACHE.get(key);
+  if (hit === undefined) return null;
+  // LRU touch — re-insert moves to most-recent position in iteration order.
+  HL_CACHE.delete(key);
+  HL_CACHE.set(key, hit);
+  return hit;
+}
+
 export async function highlight(
   code: string,
   lang: string,
   isDark: boolean
 ): Promise<string> {
+  const key = `${lang || "text"}:${isDark ? "d" : "l"}:${fnv1a(code)}`;
+  const cached = HL_CACHE.get(key);
+  if (cached !== undefined) {
+    HL_CACHE.delete(key);
+    HL_CACHE.set(key, cached);
+    return cached;
+  }
+
   const hl = await getHighlighter();
   const resolved = await ensureLang(lang || "text");
+  let html: string;
   try {
-    return hl.codeToHtml(code, {
+    html = hl.codeToHtml(code, {
       lang: resolved,
       theme: isDark ? "github-dark" : "github-light",
     });
   } catch {
-    return hl.codeToHtml(code, {
+    html = hl.codeToHtml(code, {
       lang: "text",
       theme: isDark ? "github-dark" : "github-light",
     });
   }
+  HL_CACHE.set(key, html);
+  if (HL_CACHE.size > HL_CACHE_MAX) {
+    // Drop oldest (first inserted) — Map iteration order is insertion.
+    const oldest = HL_CACHE.keys().next().value;
+    if (oldest !== undefined) HL_CACHE.delete(oldest);
+  }
+  return html;
 }

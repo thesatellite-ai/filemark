@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { highlight } from "./shiki";
+import { highlight, getCachedHighlight } from "./shiki";
 import { useTheme } from "@filemark/core";
 
 export function CodeBlock({
@@ -16,18 +16,34 @@ export function CodeBlock({
   const isDark = theme.mode === "dark";
   const raw = String(children ?? "");
   const lang = /language-(\w+)/.exec(className ?? "")?.[1] ?? "";
-  const [html, setHtml] = useState<string | null>(null);
+  const trimmed = raw.replace(/\n$/, "");
+  // Synchronous cache hit on first render → no plain-text flash on the
+  // tab-switch-back path. Uncached → still falls through to the async
+  // useEffect below.
+  const [html, setHtml] = useState<string | null>(() =>
+    inline || !trimmed.trim()
+      ? null
+      : getCachedHighlight(trimmed, lang, isDark),
+  );
 
   useEffect(() => {
-    if (inline || !raw.trim()) return;
+    if (inline || !trimmed.trim()) return;
+    // If we hydrated synchronously from cache for the same inputs, skip
+    // the async pass.
+    const cached = getCachedHighlight(trimmed, lang, isDark);
+    if (cached !== null) {
+      if (cached !== html) setHtml(cached);
+      return;
+    }
     let cancelled = false;
-    highlight(raw.replace(/\n$/, ""), lang, isDark)
+    highlight(trimmed, lang, isDark)
       .then((h) => !cancelled && setHtml(h))
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [raw, lang, isDark, inline]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trimmed, lang, isDark, inline]);
 
   if (inline) {
     return (
