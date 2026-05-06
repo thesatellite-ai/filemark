@@ -38,6 +38,7 @@ import { Cards, DocCard } from "./components/Cards";
 import { Diff } from "./components/Diff";
 import { APIEndpoint } from "./components/APIEndpoint";
 import { Define } from "./components/Glossary";
+import { rehypeGlossary, extractGlossaryTerms } from "./rehypeGlossary";
 import { Heatmap } from "./components/Heatmap";
 import { AnnotatedImage, Hotspot } from "./components/AnnotatedImage";
 import { PullQuote, Testimonials } from "./components/Quote";
@@ -123,6 +124,8 @@ export function MDXViewer(props: ViewerProps) {
     () => extractTasks(body, { file: file.path }),
     [body, file.path]
   );
+
+  const glossaryTerms = useMemo(() => extractGlossaryTerms(body), [body]);
 
   const components = useMemo(
     () =>
@@ -474,7 +477,12 @@ export function MDXViewer(props: ViewerProps) {
           <TasksProvider value={tasks}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCodeMeta]}
-              rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex]}
+              rehypePlugins={[
+                rehypeRaw,
+                rehypeSlug,
+                rehypeKatex,
+                [rehypeGlossary, { terms: glossaryTerms }],
+              ]}
               components={components}
             >
               {body}
