@@ -58,7 +58,10 @@ export function RawView({
     : "m-0 overflow-x-auto whitespace-pre p-4 font-mono text-[13px] leading-relaxed";
 
   return (
-    <div className="mx-auto max-w-5xl overflow-hidden rounded-md border">
+    <div
+      className="mx-auto w-full overflow-hidden rounded-md border"
+      style={{ maxWidth: "var(--fv-content-width, 760px)" }}
+    >
       <div className="bg-muted sticky top-0 z-10 flex items-center justify-between gap-2 border-b px-4 py-1.5">
         <div className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wider">
           Raw · {ext}

@@ -12,6 +12,7 @@ export type ShortcutId =
   | "toggleSidebar"
   | "toggleToc"
   | "toggleFullscreen"
+  | "toggleReadingMode"
   | "toggleRaw"
   | "focusFilter"
   | "nextTab"
@@ -34,6 +35,7 @@ export const ALL_SHORTCUTS: Array<{
   { id: "toggleSidebar", label: "Toggle sidebar", chord: "⌘B", defaultCode: "Mod+KeyB", description: "Show / hide the library sidebar" },
   { id: "toggleToc", label: "Toggle table of contents", chord: "\\", defaultCode: "Backslash", description: "Show / hide the right TOC" },
   { id: "toggleFullscreen", label: "Fullscreen viewer", chord: "F", defaultCode: "KeyF", description: "Maximize the viewer; hides topbar and sidebar" },
+  { id: "toggleReadingMode", label: "Reading mode", chord: "⇧F", defaultCode: "Shift+KeyF", description: "Distraction-free reading; keeps topbar + tabs, hides sidebar + tasks panel" },
   { id: "toggleRaw", label: "Toggle rendered / raw", chord: "R", defaultCode: "KeyR", description: "Switch the active file between its rendered view and syntax-highlighted source" },
   { id: "nextTab", label: "Next tab", chord: "]", defaultCode: "BracketRight", description: "Activate the next tab. Plain key — Chrome reserves every Ctrl/⌘ tab shortcut." },
   { id: "prevTab", label: "Previous tab", chord: "[", defaultCode: "BracketLeft", description: "Activate the previous tab." },
@@ -282,20 +284,36 @@ export function getShortcutCode(
   return def?.defaultCode ?? null;
 }
 
-/** Split `"Mod+KeyK"` into `{ mod: true, code: "KeyK" }`. */
+/** Split `"Mod+Shift+KeyK"` (etc.) into `{ mod, shift, code }`. */
 export function parseShortcutCode(
   code: string | null,
-): { mod: boolean; code: string } | null {
+): { mod: boolean; shift: boolean; code: string } | null {
   if (!code) return null;
-  if (code.startsWith("Mod+")) return { mod: true, code: code.slice(4) };
-  return { mod: false, code };
+  let mod = false;
+  let shift = false;
+  let rest = code;
+  while (true) {
+    if (rest.startsWith("Mod+")) {
+      mod = true;
+      rest = rest.slice(4);
+    } else if (rest.startsWith("Shift+")) {
+      shift = true;
+      rest = rest.slice(6);
+    } else {
+      break;
+    }
+  }
+  return { mod, shift, code: rest };
 }
 
 /**
  * Match a `KeyboardEvent` against a stored shortcut code. Compares by
  * physical key position (`event.code`) so the binding works on any
  * keyboard layout. The `Mod+` prefix requires ⌘ (macOS) OR Ctrl
- * (Win/Linux) and disallows the other modifiers.
+ * (Win/Linux). The `Shift+` prefix requires Shift. Bare bindings
+ * (no prefix) tolerate Shift to keep behavior consistent with the
+ * pre-Shift-prefix era — callers must order Shift+ checks before
+ * bare checks to disambiguate (e.g. Shift+F vs F).
  */
 export function matchShortcut(
   e: KeyboardEvent,
@@ -309,6 +327,7 @@ export function matchShortcut(
   } else {
     if (e.metaKey || e.ctrlKey || e.altKey) return false;
   }
+  if (parsed.shift && !e.shiftKey) return false;
   return true;
 }
 

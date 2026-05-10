@@ -10,6 +10,7 @@ import {
   Sun,
   Moon,
   BookOpenText,
+  BookOpen,
   ListTodo,
 } from "lucide-react";
 import { useLibrary } from "../store";
@@ -29,6 +30,8 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
   const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
+  const toggleReadingMode = useLibrary((s) => s.toggleReadingMode);
+  const readingMode = useLibrary((s) => s.readingMode);
   const revealActiveInSidebar = useLibrary((s) => s.revealActiveInSidebar);
   const tasksOpen = useLibrary((s) => s.tasksOpen);
   const toggleAutoRefresh = useLibrary((s) => s.toggleAutoRefresh);
@@ -171,6 +174,16 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
           )}
         >
           <ListTodo className="size-4" />
+        </IconBtn>
+        <IconBtn
+          onClick={toggleReadingMode}
+          title={readingMode ? "Exit reading mode (⇧F)" : "Reading mode (⇧F)"}
+          aria-label="Reading mode"
+          className={cn(
+            readingMode && "bg-accent text-accent-foreground"
+          )}
+        >
+          <BookOpen className="size-4" />
         </IconBtn>
         <ThemePopover>
           <Button

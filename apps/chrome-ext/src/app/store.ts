@@ -74,6 +74,9 @@ export interface LibraryState {
   viewMode: "rendered" | "raw";
   /** Hides sidebar + topbar + TOC so the viewer fills the window. */
   fullscreen: boolean;
+  /** Reading mode — hides Sidebar + TaskPanel; keeps TopBar + TabStrip.
+   *  Softer "expand viewer" mode for distraction-free reading. */
+  readingMode: boolean;
   /** When true, the Viewer re-reads the active file every `autoRefreshMs`. */
   autoRefresh: boolean;
   /** Interval in ms for autoRefresh. Default 2000. */
@@ -131,6 +134,7 @@ export interface LibraryState {
   setSidebarWidth(px: number): void;
   toggleToc(): void;
   toggleFullscreen(): void;
+  toggleReadingMode(): void;
   toggleAutoRefresh(): void;
   setAutoRefreshMs(ms: number): void;
   toggleTasksPanel(): void;
@@ -173,6 +177,7 @@ interface UIPrefs {
   sidebarWidth?: number;
   tocOpen: boolean;
   fullscreen: boolean;
+  readingMode?: boolean;
   autoRefresh?: boolean;
   autoRefreshMs?: number;
   sidebarSections?: Record<string, boolean>;
@@ -185,6 +190,7 @@ function persistUI(s: {
   sidebarWidth: number;
   tocOpen: boolean;
   fullscreen: boolean;
+  readingMode: boolean;
   autoRefresh: boolean;
   autoRefreshMs: number;
   sidebarSections: Record<string, boolean>;
@@ -197,6 +203,7 @@ function persistUI(s: {
       sidebarWidth: s.sidebarWidth,
       tocOpen: s.tocOpen,
       fullscreen: s.fullscreen,
+      readingMode: s.readingMode,
       autoRefresh: s.autoRefresh,
       autoRefreshMs: s.autoRefreshMs,
       sidebarSections: s.sidebarSections,
@@ -231,6 +238,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   sessionRev: 0,
   viewMode: "rendered",
   fullscreen: false,
+  readingMode: false,
   autoRefresh: false,
   autoRefreshMs: 2000,
   sidebarSections: {},
@@ -283,6 +291,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       ),
       tocOpen: ui?.tocOpen ?? true,
       fullscreen: ui?.fullscreen ?? false,
+      readingMode: ui?.readingMode ?? false,
       autoRefresh: ui?.autoRefresh ?? false,
       autoRefreshMs: ui?.autoRefreshMs ?? 2000,
       sidebarSections: ui?.sidebarSections ?? {},
@@ -650,6 +659,11 @@ export const useLibrary = create<LibraryState>((set, get) => ({
 
   toggleFullscreen() {
     set((s) => ({ fullscreen: !s.fullscreen }));
+    persistUI(get());
+  },
+
+  toggleReadingMode() {
+    set((s) => ({ readingMode: !s.readingMode }));
     persistUI(get());
   },
 

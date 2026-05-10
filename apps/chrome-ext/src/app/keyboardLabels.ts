@@ -80,10 +80,25 @@ function makeLabels(map: Map<string, string>): KeyboardLabels {
 
   const prettyChord = (code: string | null): string => {
     if (!code) return "—";
-    if (code.startsWith("Mod+")) {
-      return `${modGlyph} ${codeToChar(code.slice(4))}`;
+    let mod = false;
+    let shift = false;
+    let rest = code;
+    while (true) {
+      if (rest.startsWith("Mod+")) {
+        mod = true;
+        rest = rest.slice(4);
+      } else if (rest.startsWith("Shift+")) {
+        shift = true;
+        rest = rest.slice(6);
+      } else {
+        break;
+      }
     }
-    return codeToChar(code);
+    const parts: string[] = [];
+    if (mod) parts.push(modGlyph);
+    if (shift) parts.push("⇧");
+    parts.push(codeToChar(rest));
+    return parts.join(" ");
   };
 
   return { codeToChar, prettyChord };

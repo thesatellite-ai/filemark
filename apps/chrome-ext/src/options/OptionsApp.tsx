@@ -314,7 +314,9 @@ function ShortcutsSection() {
       e.preventDefault();
       e.stopPropagation();
       const usesMod = e.metaKey || e.ctrlKey;
-      const next = usesMod ? `Mod+${e.code}` : e.code;
+      const usesShift = e.shiftKey;
+      const next =
+        (usesMod ? "Mod+" : "") + (usesShift ? "Shift+" : "") + e.code;
       void setShortcutBinding(capturingId, next);
       setCapturingId(null);
     };

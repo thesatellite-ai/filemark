@@ -137,6 +137,11 @@ export function ThemePopover({ children }: { children: ReactNode }) {
             max={22}
             step={1}
             onChange={(v) => setTheme({ fontSize: v })}
+            onReset={
+              theme.fontSize !== DEFAULT_THEME.fontSize
+                ? () => setTheme({ fontSize: DEFAULT_THEME.fontSize })
+                : undefined
+            }
           />
           <SliderRow
             label="Line height"
@@ -146,15 +151,25 @@ export function ThemePopover({ children }: { children: ReactNode }) {
             step={0.05}
             formatter={(v) => v.toFixed(2)}
             onChange={(v) => setTheme({ lineHeight: v })}
+            onReset={
+              theme.lineHeight !== DEFAULT_THEME.lineHeight
+                ? () => setTheme({ lineHeight: DEFAULT_THEME.lineHeight })
+                : undefined
+            }
           />
           <SliderRow
             label="Width"
             value={theme.contentWidth}
             unit="px"
             min={560}
-            max={1080}
-            step={20}
+            max={2400}
+            step={40}
             onChange={(v) => setTheme({ contentWidth: v })}
+            onReset={
+              theme.contentWidth !== DEFAULT_THEME.contentWidth
+                ? () => setTheme({ contentWidth: DEFAULT_THEME.contentWidth })
+                : undefined
+            }
           />
 
           <Separator />
@@ -340,6 +355,7 @@ function SliderRow({
   unit = "",
   formatter,
   onChange,
+  onReset,
 }: {
   label: string;
   value: number;
@@ -349,16 +365,31 @@ function SliderRow({
   unit?: string;
   formatter?: (v: number) => string;
   onChange: (v: number) => void;
+  onReset?: () => void;
 }) {
   const shown = formatter ? formatter(value) : String(value);
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-1.5">
         <Label>{label}</Label>
-        <span className="text-foreground text-xs tabular-nums">
-          {shown}
-          {unit}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="text-foreground text-xs tabular-nums">
+            {shown}
+            {unit}
+          </span>
+          {onReset && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="size-5 p-0 text-muted-foreground hover:text-foreground"
+              onClick={onReset}
+              aria-label={`Reset ${label.toLowerCase()}`}
+              title={`Reset ${label.toLowerCase()}`}
+            >
+              <RotateCcw className="size-3" />
+            </Button>
+          )}
+        </div>
       </div>
       <Slider
         value={[value]}

@@ -23,11 +23,13 @@ export function Shell() {
   const hydrated = useLibrary((s) => s.hydrated);
   const sidebarOpen = useLibrary((s) => s.sidebarOpen);
   const fullscreen = useLibrary((s) => s.fullscreen);
+  const readingMode = useLibrary((s) => s.readingMode);
   const tasksOpen = useLibrary((s) => s.tasksOpen);
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
   const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
   const toggleFullscreen = useLibrary((s) => s.toggleFullscreen);
+  const toggleReadingMode = useLibrary((s) => s.toggleReadingMode);
   const activeId = useLibrary((s) => s.activeFileId);
   const setActive = useLibrary((s) => s.setActive);
   const openTabs = useLibrary((s) => s.openTabs);
@@ -164,11 +166,31 @@ export function Shell() {
       }
       if (
         !isInInput(e) &&
+        isShortcutEnabled(settings, "toggleReadingMode") &&
+        matchShortcut(e, getShortcutCode(settings, "toggleReadingMode"))
+      ) {
+        e.preventDefault();
+        toggleReadingMode();
+        return;
+      }
+      if (
+        !isInInput(e) &&
         isShortcutEnabled(settings, "toggleFullscreen") &&
         matchShortcut(e, getShortcutCode(settings, "toggleFullscreen"))
       ) {
         e.preventDefault();
         toggleFullscreen();
+        return;
+      }
+      // Esc — exit reading mode (fullscreen has its own handling).
+      if (
+        !isInInput(e) &&
+        e.code === "Escape" &&
+        readingMode &&
+        !fullscreen
+      ) {
+        e.preventDefault();
+        toggleReadingMode();
         return;
       }
       if (
@@ -204,10 +226,12 @@ export function Shell() {
     toggleToc,
     toggleTasksPanel,
     toggleFullscreen,
+    toggleReadingMode,
     setActive,
     setViewMode,
     viewMode,
     fullscreen,
+    readingMode,
     settings,
     nextTab,
     prevTab,
@@ -233,7 +257,7 @@ export function Shell() {
         </>
       )}
       <div className="relative flex min-h-0 flex-1">
-        {sidebarOpen && !fullscreen && (
+        {sidebarOpen && !fullscreen && !readingMode && (
           <>
             {/* Mobile backdrop — clicking it closes the slide-over sidebar. */}
             <button
@@ -279,7 +303,7 @@ export function Shell() {
             </Button>
           )}
         </main>
-        {tasksOpen && !fullscreen && (
+        {tasksOpen && !fullscreen && !readingMode && (
           <>
             <button
               type="button"
