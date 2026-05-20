@@ -50,7 +50,7 @@ export function Steps(
             <span className="bg-primary text-primary-foreground mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold tabular-nums">
               {num}
             </span>
-            <div className="bg-card flex-1 rounded-md border p-3">
+            <div className="bg-card min-w-0 flex-1 rounded-md border p-3">
               {s.title && (
                 <div className="text-foreground mb-1 text-[14px] font-semibold leading-tight">
                   {s.title}

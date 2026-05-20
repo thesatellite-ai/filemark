@@ -577,6 +577,34 @@
   font-size: 11px;
 }
 .fv-code-copy:hover { color: var(--foreground); border-color: var(--ring); }
+.fv-code-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.fv-code-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 120ms, background 120ms, border-color 120ms;
+}
+.fv-code-iconbtn:hover {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.fv-code-iconbtn[aria-pressed="true"] {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 10%, transparent);
+  border-color: var(--border);
+}
 .fv-code-shiki,
 .fv-code-plain {
   padding: 12px 14px;
@@ -588,6 +616,26 @@
 .fv-code-shiki pre { margin: 0; background: transparent !important; }
 .fv-code-plain pre,
 .fv-code-plain code { margin: 0; background: transparent; font: inherit; color: inherit; }
+
+/* Wrap mode (default): soft-wrap long lines, break unbreakable tokens. */
+.fv-code-block[data-wrap="on"] .fv-code-shiki pre,
+.fv-code-block[data-wrap="on"] .fv-code-shiki code,
+.fv-code-block[data-wrap="on"] .fv-code-shiki .line,
+.fv-code-block[data-wrap="on"] .fv-code-plain pre,
+.fv-code-block[data-wrap="on"] .fv-code-plain code {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+/* Scroll mode: full-width horizontal scroll, no wrap. */
+.fv-code-block[data-wrap="off"] .fv-code-shiki,
+.fv-code-block[data-wrap="off"] .fv-code-plain {
+  overflow-x: auto;
+}
+.fv-code-block[data-wrap="off"] .fv-code-shiki pre,
+.fv-code-block[data-wrap="off"] .fv-code-plain pre {
+  white-space: pre;
+}
 
 
 /* ─── Callout ────────────────────────────────────────────────────────── */
