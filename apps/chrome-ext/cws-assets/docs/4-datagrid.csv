@@ -1,0 +1,16 @@
+id,title,priority,owner,status,due,estimate_hours,done
+1,Pass platform-design review,P0,Ada Lovelace,in-progress,2026-06-18,8,false
+2,Cut electron-builder release,P1,Grace Hopper,todo,2026-06-22,12,false
+3,Wire Open Folder hotkey to onboarding,P2,Linus Torvalds,done,2026-06-10,3,true
+4,Ship CWS listing draft,P0,Aman Kumar,in-progress,2026-06-15,6,false
+5,Capture promo screenshots 1280x800,P1,Aman Kumar,in-progress,2026-06-15,4,false
+6,Render 440x280 small promo tile,P1,Aman Kumar,todo,2026-06-15,2,false
+7,Trademark sanity check on "Filemark",P2,Aman Kumar,todo,2026-06-16,1,false
+8,Wire OAuth refresh token in .env,P1,Aman Kumar,todo,2026-06-16,1,false
+9,Hit Submit in CWS dev console,P0,Aman Kumar,todo,2026-06-17,1,false
+10,Marketing site live at khanakia.com,P0,Aman Kumar,done,2026-06-14,12,true
+11,Move playground into apps/website,P1,Aman Kumar,done,2026-06-14,4,true
+12,Privacy policy expanded for CWS,P1,Aman Kumar,done,2026-06-14,3,true
+13,App-template shipped to gateway repo,P2,Aman Kumar,done,2026-06-14,2,true
+14,Schema-viewer fallback to highlighted source,P3,Linus Torvalds,done,2026-06-12,3,true
+15,Lore knowledge base committed,P3,Aman Kumar,done,2026-06-08,8,true

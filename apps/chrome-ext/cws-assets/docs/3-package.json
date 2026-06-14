@@ -1,0 +1,53 @@
+{
+  "name": "@filemark/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Filemark desktop app — Electron host reusing every viewer package.",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "rebuild": "electron-rebuild -f -m . -w libsql",
+    "package": "electron-vite build && electron-builder --dir"
+  },
+  "dependencies": {
+    "@filemark/core": "workspace:*",
+    "@filemark/csv": "workspace:*",
+    "@filemark/json": "workspace:*",
+    "@filemark/mdx": "workspace:*",
+    "@filemark/schema": "workspace:*",
+    "@libsql/client": "^0.14.0",
+    "chokidar": "^4.0.1",
+    "drizzle-orm": "^0.36.0",
+    "flexsearch": "^0.7.43",
+    "lucide-react": "^0.460.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tw-animate-css": "^1.4.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.7.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^3.1.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  },
+  "build": {
+    "appId": "ai.thesatellite.filemark.desktop",
+    "productName": "Filemark",
+    "directories": { "output": "release" },
+    "files": ["out/**/*", "package.json"],
+    "asarUnpack": ["node_modules/@libsql/**"],
+    "mac": {
+      "target": "dir",
+      "category": "public.app-category.developer-tools"
+    }
+  }
+}
