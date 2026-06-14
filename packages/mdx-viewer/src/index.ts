@@ -22,3 +22,4 @@ export {
   type TemplateVariant,
 } from "./components/DocBlock";
 export { highlight as highlightCode } from "./shiki";
+export { CodeBlock } from "./CodeBlock";

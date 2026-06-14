@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ViewerProps } from "@filemark/core";
-import { Mermaid } from "@filemark/mdx";
+import { Mermaid, CodeBlock } from "@filemark/mdx";
 
 /**
  * Database schema viewer.
@@ -19,7 +19,7 @@ export function SchemaViewer({ content, file }: ViewerProps) {
   const [state, setState] = useState<
     | { phase: "loading" }
     | { phase: "ready"; mermaid: string; tableCount: number; relCount: number; databaseType?: string }
-    | { phase: "error"; message: string }
+    | { phase: "fallback"; message: string }
   >({ phase: "loading" });
 
   // Key on content so edits to the active file re-parse.
@@ -36,9 +36,8 @@ export function SchemaViewer({ content, file }: ViewerProps) {
         if (cancelled) return;
         if (!diagram || !diagram.tables || diagram.tables.length === 0) {
           setState({
-            phase: "error",
-            message:
-              "Couldn't detect any tables in this file. If this is a schema file the parser didn't recognize, try renaming to .sql / .prisma / .dbml explicitly.",
+            phase: "fallback",
+            message: "No tables detected — showing raw source.",
           });
           return;
         }
@@ -52,7 +51,10 @@ export function SchemaViewer({ content, file }: ViewerProps) {
         });
       } catch (e) {
         if (cancelled) return;
-        setState({ phase: "error", message: String((e as Error)?.message ?? e) });
+        setState({
+          phase: "fallback",
+          message: `Couldn't parse schema (${String((e as Error)?.message ?? e)}) — showing raw source.`,
+        });
       }
     })();
     return () => {
@@ -79,11 +81,15 @@ export function SchemaViewer({ content, file }: ViewerProps) {
   if (state.phase === "loading") {
     return <div className="fv-schema-loading">Parsing schema…</div>;
   }
-  if (state.phase === "error") {
+  if (state.phase === "fallback") {
+    const lang = extToLang(file.ext);
     return (
-      <div className="fv-schema-error">
-        <div className="fv-schema-error-title">Couldn't render schema</div>
-        <pre className="fv-schema-error-body">{state.message}</pre>
+      <div className="fv-schema-root">
+        <div className="fv-schema-notice" role="status">
+          <span className="fv-schema-notice-dot" aria-hidden="true" />
+          <span>{state.message}</span>
+        </div>
+        <CodeBlock className={`language-${lang}`}>{content}</CodeBlock>
       </div>
     );
   }
@@ -94,4 +100,12 @@ export function SchemaViewer({ content, file }: ViewerProps) {
       <Mermaid source={state.mermaid} />
     </div>
   );
+}
+
+function extToLang(ext: string): string {
+  const e = (ext || "").toLowerCase().replace(/^\./, "");
+  if (e === "sql") return "sql";
+  if (e === "prisma") return "prisma";
+  if (e === "dbml") return "dbml";
+  return "text";
 }
