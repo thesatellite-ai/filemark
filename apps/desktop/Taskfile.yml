@@ -1,0 +1,49 @@
+version: "3"
+
+# Run from apps/desktop. Packages must be built first (see root Taskfile
+# `build:packages`) — the renderer imports @filemark/* from dist.
+tasks:
+  rebuild:
+    desc: Rebuild native modules (libsql) against Electron's ABI
+    cmds:
+      - pnpm exec electron-rebuild -f -m . -w libsql
+
+  dev:
+    desc: Rebuild native deps for Electron, then launch dev (HMR)
+    deps: [rebuild]
+    cmds:
+      - pnpm exec electron-vite dev
+
+  build:
+    desc: Production build (main + preload + renderer to out/)
+    cmds:
+      - pnpm exec electron-vite build
+
+  start:
+    desc: Preview the production build
+    cmds:
+      - pnpm exec electron-vite preview
+
+  typecheck:
+    desc: Type-check without emitting
+    cmds:
+      - pnpm exec tsc --noEmit
+
+  shot:
+    desc: Offscreen-render the built UI to /tmp/desk-shot-{light,dark}.png (no display needed)
+    cmds:
+      - pnpm exec electron-vite build
+      - pnpm exec electron scripts/shot.cjs
+      - pnpm exec electron scripts/shot.cjs --dark
+
+  package:
+    desc: Build + electron-builder --dir (unpacked app, no installer/signing)
+    cmds:
+      - pnpm exec electron-vite build
+      - pnpm exec electron-builder --dir
+
+  dist:
+    desc: Build + full electron-builder (installers; needs signing config)
+    cmds:
+      - pnpm exec electron-vite build
+      - pnpm exec electron-builder

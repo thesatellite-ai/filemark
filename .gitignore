@@ -13,3 +13,10 @@ filemark.zip
 /CLAUDE.md
 /docsi
 # END repolink
+
+# lore
+.lore/lore.db
+.lore/lore.db-shm
+.lore/lore.db-wal
+.lore/state/
+.lore/backups/
