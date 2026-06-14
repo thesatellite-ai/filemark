@@ -100,7 +100,11 @@ tasks:
     deps: [build]
     cmds:
       - rm -f {{.ZIP}}
-      - 'cd {{.DIST}} && zip -r "{{.TASKFILE_DIR}}/{{.ZIP}}" . -x "*.map"'
+      # Exclude macOS Finder junk + source-maps. CWS reviewers flag
+      # unnecessary files like .DS_Store / __MACOSX even though they
+      # don't hard-fail — ship a clean archive.
+      - 'cd {{.DIST}} && find . -name .DS_Store -delete'
+      - 'cd {{.DIST}} && zip -r "{{.TASKFILE_DIR}}/{{.ZIP}}" . -x "*.map" -x "*.DS_Store" -x "__MACOSX/*" -x "._*"'
       - 'echo "✓ packaged {{.ZIP}} ($(du -h {{.ZIP}} | cut -f1))"'
 
   zip:verify:
