@@ -1,0 +1,20 @@
+{
+  // Cloudflare Workers Static Assets — assets-only worker, no script.
+  // Output lives in dist-cf/ (build:cf nests under /apps/filemark/ so the
+  // file layout matches the canonical gateway path). Routed publicly via
+  // khanakia_com_cfare_gateway: khanakia.com/apps/filemark/* → this worker.
+  // SPA fallback rewrites any unknown path to index.html so deep links
+  // like /privacy, /changelog work without server-side routes.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "filemark",
+  // Pinned to aman-f4d so wrangler doesn't ask which of the many
+  // browser-logged accounts to use. The worker subdomain
+  // filemark.aman-f4d.workers.dev already commits us to this account;
+  // an API token in .env (CLOUDFLARE_API_TOKEN) overrides if set.
+  "account_id": "f4d9ab24f2ab1eec54b9bfbb13506e5a",
+  "compatibility_date": "2026-05-25",
+  "assets": {
+    "directory": "./dist-cf",
+    "not_found_handling": "single-page-application"
+  }
+}
