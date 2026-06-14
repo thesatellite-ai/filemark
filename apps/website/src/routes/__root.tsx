@@ -1,4 +1,9 @@
-import { Outlet, createRootRoute, Link } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRoute,
+  Link,
+  useRouterState,
+} from "@tanstack/react-router";
 import { Github, ExternalLink } from "lucide-react";
 
 export const Route = createRootRoute({
@@ -6,6 +11,18 @@ export const Route = createRootRoute({
 });
 
 function RootLayout(): React.ReactElement {
+  // /demo IS the playground — it brings its own header + footer, so we
+  // skip the site chrome there to give it the full viewport (otherwise
+  // the editor competes with our header for vertical space).
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const chromeless = path === "/demo" || path.endsWith("/demo");
+  if (chromeless) {
+    return (
+      <div className="h-full bg-background text-foreground">
+        <Outlet />
+      </div>
+    );
+  }
   return (
     <div className="flex min-h-full flex-col bg-background text-foreground">
       <Header />
@@ -26,14 +43,6 @@ function Header(): React.ReactElement {
           <span>Filemark</span>
         </Link>
         <nav className="hidden flex-1 items-center gap-5 text-sm text-muted-foreground sm:flex">
-          <Link
-            to="/"
-            hash="features"
-            className="hover:text-foreground"
-            activeOptions={{ exact: true }}
-          >
-            Features
-          </Link>
           <Link to="/demo" className="hover:text-foreground">
             Demo
           </Link>
@@ -71,7 +80,7 @@ function Footer(): React.ReactElement {
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex items-center gap-2">
           <Logo />
-          <span>Filemark · MIT · open source</span>
+          <span>© {new Date().getFullYear()} Filemark</span>
         </div>
         <div className="flex items-center gap-4">
           <Link to="/privacy" className="hover:text-foreground">

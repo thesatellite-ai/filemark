@@ -1,5 +1,12 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 @import "@filemark/mdx/styles.css";
+
+/* Tailwind v4 only auto-scans this app's sources. The merged playground
+   uses utility classes from @filemark/datagrid + @filemark/mdx that
+   live in their source — opt them in so the classes survive into the
+   final CSS (otherwise hover/resize/etc. silently disappear). */
+@source "../../../../packages/*/src/**/*.{ts,tsx,js,jsx}";
 
 /* Same shadcn token layer used by the chrome extension + desktop app,
    so the marketing site shares visual identity with the product. */

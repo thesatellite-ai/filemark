@@ -392,7 +392,7 @@ Plus `<OKRtree>` (with task-derived progress %), `<Roadmap>` (now/next/later col
 
 ### Examples directory
 
-Every component above has a worked showcase in `examples/`. Open [`examples/INDEX.md`](./examples/INDEX.md) for the per-component catalogue with one-line use cases — or open the playground gallery (`apps/playground`) and pick from the sidebar.
+Every component above has a worked showcase in `examples/`. Open [`examples/INDEX.md`](./examples/INDEX.md) for the per-component catalogue with one-line use cases — or open the live playground at https://khanakia.com/apps/filemark/demo and pick from the sidebar.
 
 ## Keyboard shortcuts
 

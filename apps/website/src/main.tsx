@@ -1,7 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+// KaTeX stylesheet — needed for math rendering AND to suppress the
+// MathML annotation span (LaTeX source bleeds through without it).
+import "katex/dist/katex.min.css";
 import "./styles.css";
+// Sample themes demonstrate the theming contract — shown in the
+// playground theme picker (/demo route).
+import "../../../examples/themes/neon.css";
+import "../../../examples/themes/solarized.css";
 import { routeTree } from "./routeTree.gen";
 
 // Browser history (not hash) so deep links like /privacy and /changelog

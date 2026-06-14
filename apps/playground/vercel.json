@@ -1,8 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "outputDirectory": "dist",
-  "buildCommand": "echo skip — using local prebuilt dist/",
-  "installCommand": "echo skip — monorepo lockfile lives at repo root, build locally then deploy --prebuilt",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}

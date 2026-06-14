@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { ThemeProvider } from "@filemark/core";
 import { Gallery } from "./Gallery";
 import { Playground } from "./Playground";
@@ -21,7 +23,7 @@ function readHash(): { view: View; exampleId: string } {
   return { view: "gallery", exampleId: EXAMPLES[0]!.id };
 }
 
-export function App() {
+export function PlaygroundApp() {
   const [route, setRoute] = useState(() => readHash());
   const [userDoc, setUserDoc] = useState<
     { name: string; content: string } | null
@@ -52,14 +54,31 @@ export function App() {
       <div className="flex h-screen min-h-0 flex-col bg-background">
         <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 py-2 sm:px-4">
           <div className="flex items-center gap-2 min-w-0 sm:gap-3">
-            <div className="flex items-baseline gap-1 shrink-0">
-              <span className="text-[15px] font-semibold tracking-tight">
-                Filemark
-              </span>
-              <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase hidden sm:inline">
-                playground
-              </span>
-            </div>
+            {/* Back link: Filemark wordmark only, NOT "playground" — you
+                wouldn't click "playground" to leave the playground. The
+                breadcrumb chip beside it (not clickable) tells you where
+                you are. */}
+            <Link
+              to="/"
+              title="Back to filemark.com"
+              className="group flex shrink-0 items-center gap-1.5 rounded-md py-0.5 pl-1 pr-1.5 text-[15px] font-semibold tracking-tight hover:bg-muted"
+            >
+              <ArrowLeft
+                size={13}
+                className="text-muted-foreground transition-colors group-hover:text-foreground"
+                aria-hidden
+              />
+              <span>Filemark</span>
+            </Link>
+            <span
+              aria-hidden
+              className="hidden text-muted-foreground/50 sm:inline"
+            >
+              /
+            </span>
+            <span className="hidden text-[11px] font-medium tracking-wider text-muted-foreground uppercase sm:inline">
+              Playground
+            </span>
             <nav className="inline-flex shrink-0 items-center rounded-full border border-border bg-background p-0.5 text-[11.5px] sm:ml-2">
               <button
                 type="button"
