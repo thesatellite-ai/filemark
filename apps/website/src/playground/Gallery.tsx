@@ -285,7 +285,8 @@ export function Gallery({
  */
 function DemoFileLinks({ filename }: { filename: string }) {
   const [copied, setCopied] = useState(false);
-  const path = `/demo-files/${filename}`;
+  const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+  const path = `${base}/demo-files/${filename}`;
   const absolute =
     typeof window !== "undefined" ? new URL(path, window.location.origin).toString() : path;
 

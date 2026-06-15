@@ -27,6 +27,7 @@ import {
   Type,
   Zap,
 } from "lucide-react";
+import { asset } from "../lib/asset";
 
 const SITE = "https://khanakia.com/apps/filemark";
 
@@ -636,7 +637,7 @@ function FeatureRow({ feature }: { feature: Feature }): React.ReactElement {
             {feature.image ? (
               <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
                 <img
-                  src={feature.image}
+                  src={asset(feature.image)}
                   alt={feature.imageAlt ?? feature.title}
                   className="block h-auto w-full"
                   loading="lazy"
