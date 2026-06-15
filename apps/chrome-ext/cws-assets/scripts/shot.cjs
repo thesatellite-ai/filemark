@@ -73,7 +73,10 @@ app.whenReady().then(async () => {
   // Wait for React mount + viewer dynamic imports + shiki + (for SQL)
   // db-schema-toolkit to download + paint. 8s is comfortable for all five.
   await new Promise((r) => setTimeout(r, 8000));
-  const img = await win.webContents.capturePage();
+  const raw = await win.webContents.capturePage();
+  // Capture comes out at device-pixel-ratio scale (often 2x). CWS requires
+  // exactly 1280x800 — downscale to match.
+  const img = raw.getSize().width === 1280 ? raw : raw.resize({ width: 1280, height: 800 });
   writeFileSync(outPath, img.toPNG());
   const kb = (img.toPNG().length / 1024).toFixed(1);
   console.log(`SHOT_WROTE ${outPath} (${kb} KB)`);

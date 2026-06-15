@@ -93,6 +93,18 @@ tasks:
         done
         echo "✓ version bumped to $V"
 
+  # ── brand assets ────────────────────────────────────────────────────────
+
+  icon:gen:
+    desc: Rasterize brand/icon.svg → extension PNGs (16/32/48/128) + website favicon
+    cmds:
+      - rsvg-convert -w 16  -h 16  brand/icon.svg -o apps/chrome-ext/public/icons/icon-16.png
+      - rsvg-convert -w 32  -h 32  brand/icon.svg -o apps/chrome-ext/public/icons/icon-32.png
+      - rsvg-convert -w 48  -h 48  brand/icon.svg -o apps/chrome-ext/public/icons/icon-48.png
+      - rsvg-convert -w 128 -h 128 brand/icon.svg -o apps/chrome-ext/public/icons/icon-128.png
+      - cp brand/icon.svg apps/website/public/favicon.svg
+      - 'echo "✓ icons regenerated from brand/icon.svg"'
+
   # ── packaging ───────────────────────────────────────────────────────────
 
   zip:
@@ -118,7 +130,7 @@ tasks:
         echo "── manifest ─────────────────────────"
         unzip -p {{.ZIP}} manifest.json | jq '{name, version, manifest_version, permissions, content_scripts: (.content_scripts // []) | length}'
         echo "── required entries ─────────────────"
-        for f in manifest.json service-worker.js content.js src/app/index.html src/options/index.html; do
+        for f in manifest.json service-worker.js bootstrap.js content/main.js src/app/index.html src/options/index.html; do
           if unzip -l {{.ZIP}} | grep -q " $f$"; then
             echo "  ✓ $f"
           else

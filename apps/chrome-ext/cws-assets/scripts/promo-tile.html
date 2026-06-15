@@ -28,13 +28,7 @@
       }
       .logo {
         width: 28px; height: 28px;
-        border-radius: 6px;
-        background: #0a0a0a;
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-weight: 700;
-        font-size: 14px;
+        display: block;
       }
       .name {
         font-size: 17px;
@@ -96,7 +90,12 @@
   <body>
     <div class="tile">
       <div class="top">
-        <div class="logo">F</div>
+        <svg class="logo" viewBox="0 0 32 32" aria-label="Filemark">
+          <rect width="32" height="32" rx="7" fill="#0a0a0a"/>
+          <path d="M8 8h12l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M20 8v4h4" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M10 17h8M10 21h6" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
         <div class="name">Filemark</div>
         <div class="pill"><span class="dot"></span>Local-first</div>
       </div>
