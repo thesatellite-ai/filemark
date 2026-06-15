@@ -1,6 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+const SITE = "https://khanakia.com/apps/filemark";
+
 export const Route = createFileRoute("/changelog")({
+  head: () => {
+    const title = "Changelog — Filemark";
+    const desc =
+      "Every Filemark release, what changed, and why. Markdown viewer, JSON viewer, schema viewer, datagrid, kanban, and inject mode — all version-by-version.";
+    const url = `${SITE}/changelog`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: Changelog,
 });
 

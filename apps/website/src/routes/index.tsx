@@ -11,7 +11,46 @@ import {
   Database,
 } from "lucide-react";
 
+const SITE = "https://khanakia.com/apps/filemark";
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      {
+        title:
+          "Filemark — Markdown, MDX, JSON, CSV & schema viewer for Chrome",
+      },
+      {
+        name: "description",
+        content:
+          "Open .md, .mdx, .json, .csv, .sql, .prisma in Chrome — real renderers, tabs, search, themes, kanban from markdown. 100% client-side.",
+      },
+      { property: "og:url", content: `${SITE}/` },
+    ],
+    links: [{ rel: "canonical", href: `${SITE}/` }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Filemark",
+          url: `${SITE}/`,
+          description:
+            "Chrome extension that renders local and remote markdown, MDX, JSON, CSV, TSV, SQL, Prisma and DBML files with rich interactive components.",
+          applicationCategory: "DeveloperApplication",
+          operatingSystem: "Chrome",
+          isAccessibleForFree: true,
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          author: {
+            "@type": "Person",
+            name: "khanakia",
+            url: "https://github.com/khanakia",
+          },
+        }),
+      },
+    ],
+  }),
   component: Home,
 });
 

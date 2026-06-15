@@ -1,0 +1,44 @@
+# https://khanakia.com/apps/filemark/robots.txt
+# Filemark is a free, client-side Chrome extension. The whole site is
+# public; we welcome every honest crawler — including the AI ones.
+
+User-agent: *
+Allow: /
+
+# AI / answer engines — explicitly allowed (we are a free tool, citation
+# benefit > brand-control concern). If you ever want to restrict any of
+# these, switch them to Disallow: / individually.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+Sitemap: https://khanakia.com/apps/filemark/sitemap.xml

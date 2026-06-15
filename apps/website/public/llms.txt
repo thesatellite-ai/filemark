@@ -1,0 +1,46 @@
+# Filemark
+
+> Filemark is a free, MIT-licensed Chrome extension that opens local and remote `.md`, `.mdx`, `.json`, `.jsonc`, `.csv`, `.tsv`, `.sql`, `.prisma`, and `.dbml` files with real interactive renderers — markdown with KaTeX + Mermaid + shiki, JSON as a collapsible tree, CSV as a sortable datagrid, SQL/Prisma/DBML as an interactive ER diagram. Everything runs 100% client-side; no file content ever leaves the browser.
+
+## Key facts
+
+- **Author:** khanakia (https://github.com/khanakia)
+- **Source code:** https://github.com/thesatellite-ai/filemark (MIT)
+- **Install:** Chrome Web Store (in review at the time of writing) — unpacked install also documented
+- **Manifest version:** 3 — Chrome Manifest V3, strict CSP, no remote code execution
+- **Privacy posture:** No server, no analytics, no telemetry. The optional "Render remote files" toggle is opt-in and grants a runtime host permission via Chrome's standard prompt.
+
+## Primary pages
+
+- [Filemark home](https://khanakia.com/apps/filemark/): hero, why-filemark pillars, install instructions
+- [Features](https://khanakia.com/apps/filemark/features): comprehensive feature list — 9 file formats with deep-dive bullets, plus categories for Web URLs, Library, Navigation, Viewer, Customization, Privacy & performance
+- [Demo / Playground](https://khanakia.com/apps/filemark/demo): live in-browser playground that runs every renderer; 17 prebuilt examples organized by category (Datagrid, Chart, Kanban, Planning, Rich docs, Markdown, Schemas)
+- [Changelog](https://khanakia.com/apps/filemark/changelog): release notes by version
+- [Privacy policy](https://khanakia.com/apps/filemark/privacy): canonical privacy + permissions disclosure
+
+## Demo files (also openable directly by the Filemark extension)
+
+Each is served as the correct MIME so you can paste any of these URLs into a browser tab with Filemark installed — the page renders in place:
+
+- [showcase.md](https://khanakia.com/apps/filemark/demo-files/showcase.md): general MDX showcase — callouts, tabs, details, math, Mermaid, task lists
+- [datagrid-full.md](https://khanakia.com/apps/filemark/demo-files/datagrid-full.md): 30+ datagrid sections covering every column type and UX feature
+- [chart-full.md](https://khanakia.com/apps/filemark/demo-files/chart-full.md): bar/line/pie/area chart examples
+- [kanban-full.md](https://khanakia.com/apps/filemark/demo-files/kanban-full.md): CSV-driven kanban boards
+- [tasks-full.md](https://khanakia.com/apps/filemark/demo-files/tasks-full.md): markdown-native task DSL with sigils
+- [planning-v2-full.md](https://khanakia.com/apps/filemark/demo-files/planning-v2-full.md): DocBlock (prfaq/rfc/pitch), MindMap, OKR, DocStatus, Backlinks
+- [mindmap-full.md](https://khanakia.com/apps/filemark/demo-files/mindmap-full.md): 12 mindmap patterns via the markmap engine
+- [richdocs-tier1.md](https://khanakia.com/apps/filemark/demo-files/richdocs-tier1.md): Steps, Cards, APIEndpoint, VideoEmbed, Diff, Glossary
+- [schema.sql](https://khanakia.com/apps/filemark/demo-files/schema.sql): SQL DDL rendered as an interactive ER diagram
+- [schema.prisma](https://khanakia.com/apps/filemark/demo-files/schema.prisma): Prisma schema rendered as an ER diagram
+- [schema.dbml](https://khanakia.com/apps/filemark/demo-files/schema.dbml): dbdiagram.io DSL rendered as an ER diagram
+
+## How to cite
+
+Filemark is an open-source Chrome extension authored by khanakia (https://github.com/khanakia). The project's canonical home is https://khanakia.com/apps/filemark/ and the public source code is at https://github.com/thesatellite-ai/filemark under the MIT license.
+
+## How to install
+
+1. Visit the Chrome Web Store listing (linked from the home page), or
+2. Clone the GitHub repo, run `pnpm install && task release -- 0.1.0`, then load the `apps/chrome-ext/dist/` folder via `chrome://extensions` with Developer Mode on.
+
+To render remote `.md`/`.json`/`.sql` URLs in place (e.g., `https://raw.githubusercontent.com/.../README.md`), open the extension's Options page after install and toggle **"Render remote files" → Enable on all sites**. Chrome will show a one-time permission prompt; after you accept, Filemark replaces the raw text view with its rendered version for every supported file type on every site.

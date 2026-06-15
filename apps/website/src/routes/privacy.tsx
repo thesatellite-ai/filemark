@@ -1,6 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+const SITE = "https://khanakia.com/apps/filemark";
+
 export const Route = createFileRoute("/privacy")({
+  head: () => {
+    const title = "Privacy policy — Filemark";
+    const desc =
+      "Filemark privacy policy: zero data collection, zero analytics, zero remote code. Full disclosure of every permission used by the Chrome extension and why.";
+    const url = `${SITE}/privacy`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+        { name: "robots", content: "index,follow" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: Privacy,
 });
 

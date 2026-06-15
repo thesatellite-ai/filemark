@@ -3,5 +3,6 @@ dist/
 dist-cf/
 .env
 .wrangler/
+.tanstack/
 *.log
 .DS_Store
