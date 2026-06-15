@@ -1,0 +1,84 @@
+// Sample DBML schema for a project-management tool.
+// Drop into Filemark to render as an interactive ER diagram.
+
+Table workspaces {
+  id integer [pk, increment]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table users {
+  id integer [pk, increment]
+  email varchar [unique, not null]
+  name varchar [not null]
+  avatar_url varchar
+  created_at timestamp [default: `now()`]
+}
+
+Table workspace_members {
+  id integer [pk, increment]
+  workspace_id integer [ref: > workspaces.id, not null]
+  user_id integer [ref: > users.id, not null]
+  role varchar [default: 'member', not null]
+
+  indexes {
+    (workspace_id, user_id) [unique]
+  }
+}
+
+Table projects {
+  id integer [pk, increment]
+  workspace_id integer [ref: > workspaces.id, not null]
+  name varchar [not null]
+  key varchar(4) [not null]
+  lead_id integer [ref: > users.id]
+  created_at timestamp [default: `now()`]
+
+  indexes {
+    (workspace_id, key) [unique]
+  }
+}
+
+Table issues {
+  id integer [pk, increment]
+  project_id integer [ref: > projects.id, not null]
+  number integer [not null]
+  title varchar [not null]
+  description text
+  status varchar [default: 'open', not null]
+  reporter_id integer [ref: > users.id, not null]
+  assignee_id integer [ref: > users.id]
+  parent_id integer [ref: > issues.id]
+  created_at timestamp [default: `now()`]
+  closed_at timestamp
+
+  indexes {
+    (project_id, number) [unique]
+    status
+  }
+}
+
+Table issue_comments {
+  id integer [pk, increment]
+  issue_id integer [ref: > issues.id, not null]
+  author_id integer [ref: > users.id, not null]
+  body text [not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table labels {
+  id integer [pk, increment]
+  workspace_id integer [ref: > workspaces.id, not null]
+  name varchar [not null]
+  color varchar [default: '#888', not null]
+}
+
+Table issue_labels {
+  issue_id integer [ref: > issues.id]
+  label_id integer [ref: > labels.id]
+
+  indexes {
+    (issue_id, label_id) [pk]
+  }
+}

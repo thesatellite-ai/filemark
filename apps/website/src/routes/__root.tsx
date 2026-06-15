@@ -1,4 +1,5 @@
 import {
+  HeadContent,
   Outlet,
   createRootRoute,
   Link,
@@ -6,7 +7,44 @@ import {
 } from "@tanstack/react-router";
 import { Github, ExternalLink } from "lucide-react";
 
+const SITE = "https://khanakia.com/apps/filemark";
+const OG_IMAGE = `${SITE}/screenshots/promo-tile.png`;
+const DEFAULT_TITLE =
+  "Filemark — Markdown, MDX, JSON, CSV & schema viewer for Chrome";
+const DEFAULT_DESC =
+  "Free Chrome extension that opens local and remote .md, .mdx, .json, .jsonc, .csv, .tsv, .sql, .prisma and .dbml files with real interactive renderers. 100% client-side, MIT licensed.";
+
 export const Route = createRootRoute({
+  // Defaults — child routes override via their own head(). HeadContent in
+  // the layout below renders these into the document head at runtime;
+  // social-card crawlers without JS still get the values baked into the
+  // build's prerendered HTML (see build:prerender task).
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1.0" },
+      { title: DEFAULT_TITLE },
+      { name: "description", content: DEFAULT_DESC },
+      { name: "author", content: "khanakia" },
+      // Social
+      { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "khanakia.com" },
+      { property: "og:title", content: DEFAULT_TITLE },
+      { property: "og:description", content: DEFAULT_DESC },
+      { property: "og:url", content: `${SITE}/` },
+      { property: "og:image", content: OG_IMAGE },
+      { property: "og:image:width", content: "440" },
+      { property: "og:image:height", content: "280" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: DEFAULT_TITLE },
+      { name: "twitter:description", content: DEFAULT_DESC },
+      { name: "twitter:image", content: OG_IMAGE },
+    ],
+    links: [
+      { rel: "canonical", href: `${SITE}/` },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+    ],
+  }),
   component: RootLayout,
 });
 
@@ -15,16 +53,19 @@ function RootLayout(): React.ReactElement {
   // skip the site chrome there to give it the full viewport (otherwise
   // the editor competes with our header for vertical space).
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const chromeless = path === "/demo" || path.endsWith("/demo");
+  const chromeless =
+    path === "/demo" || path.startsWith("/demo/") || path.endsWith("/demo");
   if (chromeless) {
     return (
       <div className="h-full bg-background text-foreground">
+        <HeadContent />
         <Outlet />
       </div>
     );
   }
   return (
     <div className="flex min-h-full flex-col bg-background text-foreground">
+      <HeadContent />
       <Header />
       <div className="flex-1">
         <Outlet />
@@ -43,6 +84,9 @@ function Header(): React.ReactElement {
           <span>Filemark</span>
         </Link>
         <nav className="hidden flex-1 items-center gap-5 text-sm text-muted-foreground sm:flex">
+          <Link to="/features" className="hover:text-foreground">
+            Features
+          </Link>
           <Link to="/demo" className="hover:text-foreground">
             Demo
           </Link>
@@ -57,17 +101,19 @@ function Header(): React.ReactElement {
           href="https://github.com/thesatellite-ai/filemark"
           target="_blank"
           rel="noreferrer"
+          aria-label="Filemark on GitHub"
           className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-muted sm:ml-0"
         >
-          <Github size={14} />
+          <Github size={14} aria-hidden />
           <span className="hidden sm:inline">GitHub</span>
         </a>
         <a
           href="#install"
+          aria-label="Jump to install section"
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
         >
           Install
-          <ExternalLink size={12} />
+          <ExternalLink size={12} aria-hidden />
         </a>
       </div>
     </header>

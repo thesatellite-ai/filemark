@@ -1,50 +1,42 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { ThemeProvider } from "@filemark/core";
 import { Gallery } from "./Gallery";
 import { Playground } from "./Playground";
 import { ThemeToggle } from "./ThemeToggle";
-import { EXAMPLES } from "./examples";
 
-type View = "gallery" | "playground";
+export type PlaygroundView = "gallery" | "playground";
 
-function readHash(): { view: View; exampleId: string } {
-  if (typeof window === "undefined") {
-    return { view: "gallery", exampleId: EXAMPLES[0]!.id };
-  }
-  const raw = window.location.hash.replace(/^#\/?/, "");
-  if (raw.startsWith("play")) {
-    return { view: "playground", exampleId: EXAMPLES[0]!.id };
-  }
-  if (raw.startsWith("gallery/")) {
-    return { view: "gallery", exampleId: raw.slice("gallery/".length) };
-  }
-  return { view: "gallery", exampleId: EXAMPLES[0]!.id };
+interface Props {
+  view: PlaygroundView;
+  exampleId: string;
 }
 
-export function PlaygroundApp() {
-  const [route, setRoute] = useState(() => readHash());
+/**
+ * Shell for the /demo route. Owns the header + tabs; the actual view
+ * (Gallery vs Playground) is selected by URL, not by internal hash state.
+ *
+ *   /demo                          → redirect to /demo/gallery/<first-id>
+ *   /demo/gallery/<exampleId>      → Gallery, this example active
+ *   /demo/play                     → Playground (Monaco scratch editor)
+ */
+export function PlaygroundApp({ view, exampleId }: Props) {
+  const navigate = useNavigate();
   const [userDoc, setUserDoc] = useState<
     { name: string; content: string } | null
   >(null);
 
-  useEffect(() => {
-    const onHash = () => setRoute(readHash());
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
-
-  const setView = (view: View) => {
-    if (view === "playground") {
-      window.location.hash = "#/play";
+  const setView = (next: PlaygroundView) => {
+    if (next === "playground") {
+      void navigate({ to: "/demo/play" });
     } else {
-      window.location.hash = `#/gallery/${route.exampleId}`;
+      void navigate({ to: "/demo/gallery/$exampleId", params: { exampleId } });
     }
   };
 
   const setExampleId = (id: string) => {
-    window.location.hash = `#/gallery/${id}`;
+    void navigate({ to: "/demo/gallery/$exampleId", params: { exampleId: id } });
   };
 
   const year = useMemo(() => new Date().getFullYear(), []);
@@ -54,10 +46,6 @@ export function PlaygroundApp() {
       <div className="flex h-screen min-h-0 flex-col bg-background">
         <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 py-2 sm:px-4">
           <div className="flex items-center gap-2 min-w-0 sm:gap-3">
-            {/* Back link: Filemark wordmark only, NOT "playground" — you
-                wouldn't click "playground" to leave the playground. The
-                breadcrumb chip beside it (not clickable) tells you where
-                you are. */}
             <Link
               to="/"
               title="Back to filemark.com"
@@ -83,14 +71,14 @@ export function PlaygroundApp() {
               <button
                 type="button"
                 onClick={() => setView("gallery")}
-                className={tabCls(route.view === "gallery")}
+                className={tabCls(view === "gallery")}
               >
                 Gallery
               </button>
               <button
                 type="button"
                 onClick={() => setView("playground")}
-                className={tabCls(route.view === "playground")}
+                className={tabCls(view === "playground")}
               >
                 Playground
               </button>
@@ -118,9 +106,9 @@ export function PlaygroundApp() {
           </div>
         </header>
         <div className="flex-1 min-h-0 overflow-hidden">
-          {route.view === "gallery" ? (
+          {view === "gallery" ? (
             <Gallery
-              initialId={route.exampleId}
+              initialId={exampleId}
               onChange={setExampleId}
               userDoc={userDoc}
               onUserDrop={setUserDoc}

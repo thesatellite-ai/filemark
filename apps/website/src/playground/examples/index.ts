@@ -23,6 +23,13 @@ export interface Example {
   content: string;
   /** Optional grouping for the sidebar. */
   section?: string;
+  /**
+   * Filename of the source file under /demo-files/, served as a static
+   * asset with the right MIME so users can open it in the Filemark
+   * Chrome extension to test remote-URL rendering. Null = no standalone
+   * source (e.g. the in-code STARTER_DOC).
+   */
+  filename?: string | null;
 }
 
 const FENCE = "```";
@@ -97,6 +104,7 @@ export const EXAMPLES: Example[] = [
       "30+ sections covering every column type, info-string flag, and UX feature.",
     section: "Datagrid",
     content: datagridFull,
+    filename: "datagrid-full.md",
   },
   {
     id: "datagrid-intro",
@@ -104,6 +112,7 @@ export const EXAMPLES: Example[] = [
     description: "Shorter first-touch walkthrough for the fenced csv syntax.",
     section: "Datagrid",
     content: datagridIntro,
+    filename: "datagrid.md",
   },
   {
     id: "playground-starter",
@@ -111,6 +120,7 @@ export const EXAMPLES: Example[] = [
     description: "Minimal scratch doc you can edit live.",
     section: "Datagrid",
     content: STARTER_DOC,
+    filename: null,
   },
   {
     id: "chart-full",
@@ -119,6 +129,7 @@ export const EXAMPLES: Example[] = [
       "Bar / line / pie / area via recharts; formats, by-pivot, tags.",
     section: "Chart",
     content: chartFull,
+    filename: "chart-full.md",
   },
   {
     id: "kanban-full",
@@ -127,6 +138,7 @@ export const EXAMPLES: Example[] = [
       "Group a CSV into columns, render rows as cards with rich types.",
     section: "Kanban",
     content: kanbanFull,
+    filename: "kanban-full.md",
   },
   {
     id: "stats-adr-full",
@@ -135,6 +147,7 @@ export const EXAMPLES: Example[] = [
       "KPI card grid and Architecture Decision Record blocks for planning docs.",
     section: "Planning",
     content: statsAdrFull,
+    filename: "stats-adr-full.md",
   },
   {
     id: "tasks-full",
@@ -143,6 +156,7 @@ export const EXAMPLES: Example[] = [
       "Markdown-native task DSL — 6 statuses, inline metadata chips, links, subtasks, cascading defaults.",
     section: "Planning",
     content: tasksFull,
+    filename: "tasks-full.md",
   },
   {
     id: "planning-v2-full",
@@ -151,6 +165,7 @@ export const EXAMPLES: Example[] = [
       "All M9 planning shapes in one doc — unified `<DocBlock kind=…>` for header-strip templates, knowledge connectivity, visual brainstorm, OKR scoring, daily journal.",
     section: "Planning",
     content: planningV2Full,
+    filename: "planning-v2-full.md",
   },
   {
     id: "planning-v2-tier2",
@@ -159,6 +174,7 @@ export const EXAMPLES: Example[] = [
       "Decision frameworks + meeting capture (via unified DocBlock) + 2×2 prioritization + horizontal timeline with lanes.",
     section: "Planning",
     content: planningV2Tier2,
+    filename: "planning-v2-tier2.md",
   },
   {
     id: "planning-v2-tier3",
@@ -167,6 +183,7 @@ export const EXAMPLES: Example[] = [
       "Quick-win additions: read-time chip, root-cause chain, now/next/later board, branching analysis.",
     section: "Planning",
     content: planningV2Tier3,
+    filename: "planning-v2-tier3.md",
   },
   {
     id: "mindmap-full",
@@ -175,6 +192,7 @@ export const EXAMPLES: Example[] = [
       "Twelve patterns: bullets, headings, rich text, math, code, multi-line, frontmatter directives, mixed structure, deep chains, wide fan-outs, controlled height, legacy wrapper form.",
     section: "Planning",
     content: mindmapFull,
+    filename: "mindmap-full.md",
   },
   {
     id: "richdocs-tier1",
@@ -183,6 +201,7 @@ export const EXAMPLES: Example[] = [
       "Eight Tier 1 components covering tutorials, landing pages, dev reference, and doc workflow.",
     section: "Rich docs",
     content: richdocsTier1,
+    filename: "richdocs-tier1.md",
   },
   {
     id: "richdocs-tier2",
@@ -191,6 +210,7 @@ export const EXAMPLES: Example[] = [
       "Six Tier 2 components — activity grid, image hotspots, marketing pull quotes, inline trends, Tufte-style notes.",
     section: "Rich docs",
     content: richdocsTier2,
+    filename: "richdocs-tier2.md",
   },
   {
     id: "richdocs-tier3",
@@ -199,6 +219,7 @@ export const EXAMPLES: Example[] = [
       "Thirteen Tier 3 components — niche additions for dev docs, tutorials, marketing, and polls/quizzes.",
     section: "Rich docs",
     content: richdocsTier3,
+    filename: "richdocs-tier3.md",
   },
   {
     id: "showcase",
@@ -207,6 +228,7 @@ export const EXAMPLES: Example[] = [
       "The general MDX showcase — callouts, tabs, details, math, Mermaid, task lists.",
     section: "Markdown",
     content: showcase,
+    filename: "showcase.md",
   },
   {
     id: "schema-sql",
@@ -214,6 +236,7 @@ export const EXAMPLES: Example[] = [
     description: "Drop-any-Postgres/MySQL/SQLite DDL and get an ER diagram.",
     section: "Schemas",
     content: wrapSchema("sql", schemaSql),
+    filename: "schema.sql",
   },
   {
     id: "schema-prisma",
@@ -221,6 +244,7 @@ export const EXAMPLES: Example[] = [
     description: "Prisma schema rendered as a live Mermaid ER diagram.",
     section: "Schemas",
     content: wrapSchema("prisma", schemaPrisma),
+    filename: "schema.prisma",
   },
   {
     id: "schema-dbml",
@@ -228,6 +252,7 @@ export const EXAMPLES: Example[] = [
     description: "The dbdiagram.io DSL, in the browser.",
     section: "Schemas",
     content: wrapSchema("dbml", schemaDbml),
+    filename: "schema.dbml",
   },
 ];
 

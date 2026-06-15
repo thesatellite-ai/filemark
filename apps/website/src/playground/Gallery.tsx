@@ -14,6 +14,8 @@ import {
   Upload,
   Menu,
   X,
+  ExternalLink,
+  Link2,
 } from "lucide-react";
 import { getExample, groupedExamples } from "./examples";
 import { RenderedDoc } from "./RenderedDoc";
@@ -231,6 +233,9 @@ export function Gallery({
               >
                 {copied ? "Copied ✓" : "Copy"}
               </button>
+              {activeExample?.filename && (
+                <DemoFileLinks filename={activeExample.filename} />
+              )}
             </div>
           </div>
         )}
@@ -263,6 +268,59 @@ export function Gallery({
         </div>
       </main>
     </div>
+  );
+}
+
+/**
+ * "Open as remote URL" affordances next to each example.
+ *
+ * Two buttons, both pointing at the demo file served from
+ * /demo-files/<filename> with the right MIME (text/markdown for .md, etc.).
+ *
+ *   ↗ — opens in a new tab. With the Filemark extension installed and the
+ *       "Render remote files" toggle enabled, the new tab will render with
+ *       Filemark over the raw file — handy for testing the remote-URL path.
+ *   🔗 — copies the absolute URL to the clipboard for sharing or pasting
+ *       into the extension's address bar manually.
+ */
+function DemoFileLinks({ filename }: { filename: string }) {
+  const [copied, setCopied] = useState(false);
+  const path = `/demo-files/${filename}`;
+  const absolute =
+    typeof window !== "undefined" ? new URL(path, window.location.origin).toString() : path;
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(absolute);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard denied — silent; the link is still openable via the ↗ icon */
+    }
+  };
+
+  return (
+    <>
+      <a
+        href={path}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex h-6 items-center gap-1 rounded-md border border-border bg-background px-2 font-medium text-muted-foreground transition-colors hover:text-foreground"
+        title="Open the raw file URL in a new tab — with the Filemark extension installed, this is how a remote .md / .json / .sql file renders in place"
+      >
+        <ExternalLink size={12} />
+        <span className="hidden sm:inline">Open URL</span>
+      </a>
+      <button
+        type="button"
+        onClick={onCopy}
+        className="inline-flex h-6 items-center gap-1 rounded-md border border-border bg-background px-2 font-medium text-muted-foreground transition-colors hover:text-foreground"
+        title={`Copy ${absolute}`}
+      >
+        <Link2 size={12} />
+        <span className="hidden sm:inline">{copied ? "Copied ✓" : "Copy URL"}</span>
+      </button>
+    </>
   );
 }
 

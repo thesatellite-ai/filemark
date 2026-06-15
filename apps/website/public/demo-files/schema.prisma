@@ -1,0 +1,108 @@
+// Sample Prisma schema for a minimal social + ticketing product.
+// Drop into Filemark to render as an interactive ER diagram.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  handle      String    @unique
+  displayName String
+  avatarUrl   String?
+  createdAt   DateTime  @default(now())
+
+  posts       Post[]
+  tickets     Ticket[]
+  comments    Comment[]
+  memberships Membership[]
+}
+
+model Organization {
+  id        Int          @id @default(autoincrement())
+  name      String
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+
+  members   Membership[]
+  tickets   Ticket[]
+}
+
+model Membership {
+  id     Int    @id @default(autoincrement())
+  role   Role   @default(MEMBER)
+  userId Int
+  orgId  Int
+
+  user   User         @relation(fields: [userId], references: [id])
+  org    Organization @relation(fields: [orgId], references: [id])
+
+  @@unique([userId, orgId])
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  title      String
+  body       String
+  authorId   Int
+  author     User      @relation(fields: [authorId], references: [id])
+  createdAt  DateTime  @default(now())
+  comments   Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  body      String
+  postId    Int
+  authorId  Int
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Ticket {
+  id          Int          @id @default(autoincrement())
+  subject     String
+  body        String
+  status      TicketStatus @default(OPEN)
+  priority    Priority     @default(NORMAL)
+  reporterId  Int
+  assigneeId  Int?
+  orgId       Int
+  createdAt   DateTime     @default(now())
+  closedAt    DateTime?
+
+  reporter    User         @relation(fields: [reporterId], references: [id], name: "reported")
+  org         Organization @relation(fields: [orgId], references: [id])
+
+  @@index([status])
+  @@index([assigneeId])
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}

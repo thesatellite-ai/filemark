@@ -10,13 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DemoIndexRouteImport } from './routes/demo.index'
+import { Route as DemoPlayRouteImport } from './routes/demo.play'
+import { Route as DemoGalleryExampleIdRouteImport } from './routes/demo.gallery.$exampleId'
 
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -34,38 +43,89 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoPlayRoute = DemoPlayRouteImport.update({
+  id: '/play',
+  path: '/play',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoGalleryExampleIdRoute = DemoGalleryExampleIdRouteImport.update({
+  id: '/gallery/$exampleId',
+  path: '/gallery/$exampleId',
+  getParentRoute: () => DemoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
+  '/features': typeof FeaturesRoute
   '/privacy': typeof PrivacyRoute
+  '/demo/play': typeof DemoPlayRoute
+  '/demo/': typeof DemoIndexRoute
+  '/demo/gallery/$exampleId': typeof DemoGalleryExampleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/demo': typeof DemoRoute
+  '/features': typeof FeaturesRoute
   '/privacy': typeof PrivacyRoute
+  '/demo/play': typeof DemoPlayRoute
+  '/demo': typeof DemoIndexRoute
+  '/demo/gallery/$exampleId': typeof DemoGalleryExampleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
+  '/features': typeof FeaturesRoute
   '/privacy': typeof PrivacyRoute
+  '/demo/play': typeof DemoPlayRoute
+  '/demo/': typeof DemoIndexRoute
+  '/demo/gallery/$exampleId': typeof DemoGalleryExampleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/changelog' | '/demo' | '/privacy'
+  fullPaths:
+    | '/'
+    | '/changelog'
+    | '/demo'
+    | '/features'
+    | '/privacy'
+    | '/demo/play'
+    | '/demo/'
+    | '/demo/gallery/$exampleId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/changelog' | '/demo' | '/privacy'
-  id: '__root__' | '/' | '/changelog' | '/demo' | '/privacy'
+  to:
+    | '/'
+    | '/changelog'
+    | '/features'
+    | '/privacy'
+    | '/demo/play'
+    | '/demo'
+    | '/demo/gallery/$exampleId'
+  id:
+    | '__root__'
+    | '/'
+    | '/changelog'
+    | '/demo'
+    | '/features'
+    | '/privacy'
+    | '/demo/play'
+    | '/demo/'
+    | '/demo/gallery/$exampleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChangelogRoute: typeof ChangelogRoute
-  DemoRoute: typeof DemoRoute
+  DemoRoute: typeof DemoRouteWithChildren
+  FeaturesRoute: typeof FeaturesRoute
   PrivacyRoute: typeof PrivacyRoute
 }
 
@@ -76,6 +136,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -99,13 +166,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/': {
+      id: '/demo/'
+      path: '/'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/play': {
+      id: '/demo/play'
+      path: '/play'
+      fullPath: '/demo/play'
+      preLoaderRoute: typeof DemoPlayRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/gallery/$exampleId': {
+      id: '/demo/gallery/$exampleId'
+      path: '/gallery/$exampleId'
+      fullPath: '/demo/gallery/$exampleId'
+      preLoaderRoute: typeof DemoGalleryExampleIdRouteImport
+      parentRoute: typeof DemoRoute
+    }
   }
 }
+
+interface DemoRouteChildren {
+  DemoPlayRoute: typeof DemoPlayRoute
+  DemoIndexRoute: typeof DemoIndexRoute
+  DemoGalleryExampleIdRoute: typeof DemoGalleryExampleIdRoute
+}
+
+const DemoRouteChildren: DemoRouteChildren = {
+  DemoPlayRoute: DemoPlayRoute,
+  DemoIndexRoute: DemoIndexRoute,
+  DemoGalleryExampleIdRoute: DemoGalleryExampleIdRoute,
+}
+
+const DemoRouteWithChildren = DemoRoute._addFileChildren(DemoRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChangelogRoute: ChangelogRoute,
-  DemoRoute: DemoRoute,
+  DemoRoute: DemoRouteWithChildren,
+  FeaturesRoute: FeaturesRoute,
   PrivacyRoute: PrivacyRoute,
 }
 export const routeTree = rootRouteImport
