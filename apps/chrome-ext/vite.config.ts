@@ -45,14 +45,10 @@ export default defineConfig({
         app: "src/app/index.html",
         options: "src/options/index.html",
         "service-worker": "src/background/service-worker.ts",
-        content: "src/content/handler.ts",
       },
       output: {
         entryFileNames: (chunk) => {
-          // Service worker and content script must be at fixed paths
-          // (referenced by manifest.json) — no content hash.
           if (chunk.name === "service-worker") return "service-worker.js";
-          if (chunk.name === "content") return "content.js";
           return "assets/[name]-[hash].js";
         },
       },

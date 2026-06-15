@@ -34,91 +34,179 @@ chrome.action.onClicked.addListener(async () => {
 });
 
 // =============================================================================
-// declarativeNetRequest — file:// CSV/TSV redirect
+// File interception — two strategies depending on whether the browser would
+// render or download the URL:
+//
+// 1. Browser-would-DOWNLOAD formats (.csv, .tsv) → declarativeNetRequest
+//    redirect. The page never loads, so no content script can fire — we
+//    must intercept at the network layer and send the URL to the viewer.
+//
+// 2. Browser-would-RENDER formats (.md, .mdx, .json, .jsonc, .sql, .prisma,
+//    .dbml) → content-script iframe overlay. The tab loads as text; our
+//    script (content/handler.ts) replaces the page body with an iframe
+//    pointing at the viewer. The tab URL is preserved — back / forward /
+//    bookmark all work normally.
+//
+//    For file:// the content script auto-runs (manifest content_scripts).
+//    For http(s):// we inject manually via chrome.scripting.executeScript
+//    from tabs.onUpdated, gated on the optional "*://*/*" host permission
+//    granted via the Options page.
 // =============================================================================
-// Chrome treats .csv / .tsv as octet-stream and downloads them, so the
-// content script never gets a chance to fire (the page never loads). We
-// install a dynamic DNR rule that catches these URLs at the network layer
-// and redirects them to the viewer with `?openFile=<original-url>`. The
-// app's intercept pickup (apps/chrome-ext/src/app/intercept.ts) handles
-// the query param by fetching the file content and adding a one-off file.
-//
-// Dynamic rules (not static `declarative_net_request.rule_resources`)
-// because the redirect URL needs `chrome.runtime.getURL(...)` which embeds
-// the per-install extension ID — not knowable at build time.
-//
-// Settings-aware: each format gets its own rule id. When the user disables
-// a format in the options page (`fv:settings.formats.csv = false`) the
-// corresponding rule is removed and Chrome falls back to its default
-// behavior (download). We re-evaluate on install, on startup, and on any
-// `chrome.storage.onChanged` for the settings key.
 
 const SETTINGS_KEY = "fv:settings";
+const REMOTE_PERMISSION_ORIGIN = "*://*/*";
 
-// Format → DNR rule id. Stable across reloads so updateDynamicRules can
-// surgically swap rules without nuking unrelated dynamic rules a future
-// caller might add.
-const REDIRECT_FORMATS: Record<string, number> = {
+// DNR rule ids — stable across reloads so updateDynamicRules can swap
+// surgically without nuking unrelated dynamic rules.
+const FILE_DOWNLOAD_FORMATS: Record<string, number> = {
   csv: 1,
   tsv: 2,
 };
+const HTTPS_DOWNLOAD_FORMATS: Record<string, number> = {
+  csv: 11,
+  tsv: 12,
+};
+const ALL_RULE_IDS = [
+  ...Object.values(FILE_DOWNLOAD_FORMATS),
+  ...Object.values(HTTPS_DOWNLOAD_FORMATS),
+];
+
+// Formats that get the iframe-overlay treatment on http(s) tabs. file:// is
+// handled by manifest content_scripts auto-injection — kept in sync with
+// handler.ts.
+const INJECT_FORMATS = new Set([
+  "md",
+  "mdx",
+  "markdown",
+  "json",
+  "jsonc",
+  "sql",
+  "prisma",
+  "dbml",
+]);
 
 type StoredSettings = {
   formats?: Record<string, boolean>;
 };
 
-async function readEnabledFormats(): Promise<Set<string>> {
+async function readEnabledSet(known: string[]): Promise<Set<string>> {
   try {
     const bag = await chrome.storage.sync.get(SETTINGS_KEY);
     const settings = bag[SETTINGS_KEY] as StoredSettings | undefined;
     const formats = settings?.formats;
-    // Default policy: when the settings haven't been written yet, every
-    // redirect format is enabled (matches DEFAULT_SETTINGS).
-    return new Set(
-      Object.keys(REDIRECT_FORMATS).filter((f) => formats?.[f] !== false),
-    );
+    return new Set(known.filter((f) => formats?.[f] !== false));
   } catch {
-    return new Set(Object.keys(REDIRECT_FORMATS));
+    return new Set(known);
   }
+}
+
+async function hasRemotePermission(): Promise<boolean> {
+  try {
+    return await chrome.permissions.contains({ origins: [REMOTE_PERMISSION_ORIGIN] });
+  } catch {
+    return false;
+  }
+}
+
+function buildRule(
+  id: number,
+  fmt: string,
+  scheme: "file" | "https",
+  viewerUrl: string,
+): chrome.declarativeNetRequest.Rule {
+  const regex =
+    scheme === "file"
+      ? `^file:///.*\\.${fmt}(\\?.*)?$`
+      : `^https?://.*\\.${fmt}(\\?.*)?$`;
+  return {
+    id,
+    priority: 1,
+    action: {
+      type: chrome.declarativeNetRequest.RuleActionType.REDIRECT,
+      redirect: { regexSubstitution: `${viewerUrl}?openFile=\\0` },
+    },
+    condition: {
+      regexFilter: regex,
+      resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME],
+    },
+  };
 }
 
 async function syncRedirectRules() {
   const viewerUrl = chrome.runtime.getURL("src/app/index.html");
-  const enabled = await readEnabledFormats();
+  const fileEnabled = await readEnabledSet(Object.keys(FILE_DOWNLOAD_FORMATS));
+  const httpsEnabled = await readEnabledSet(Object.keys(HTTPS_DOWNLOAD_FORMATS));
+  const remoteOk = await hasRemotePermission();
 
   const addRules: chrome.declarativeNetRequest.Rule[] = [];
-  for (const [fmt, id] of Object.entries(REDIRECT_FORMATS)) {
-    if (!enabled.has(fmt)) continue;
-    addRules.push({
-      id,
-      priority: 1,
-      action: {
-        type: chrome.declarativeNetRequest.RuleActionType.REDIRECT,
-        redirect: {
-          regexSubstitution: `${viewerUrl}?openFile=\\0`,
-        },
-      },
-      condition: {
-        // Anchor to file:// + this exact extension at the end (allowing a
-        // trailing query string). One rule per format keeps removal
-        // surgical when the user toggles a single format off.
-        regexFilter: `^file:///.*\\.${fmt}(\\?.*)?$`,
-        resourceTypes: [
-          chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
-        ],
-      },
-    });
+  for (const [fmt, id] of Object.entries(FILE_DOWNLOAD_FORMATS)) {
+    if (fileEnabled.has(fmt)) addRules.push(buildRule(id, fmt, "file", viewerUrl));
+  }
+  if (remoteOk) {
+    for (const [fmt, id] of Object.entries(HTTPS_DOWNLOAD_FORMATS)) {
+      if (httpsEnabled.has(fmt)) addRules.push(buildRule(id, fmt, "https", viewerUrl));
+    }
   }
 
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: Object.values(REDIRECT_FORMATS),
+      removeRuleIds: ALL_RULE_IDS,
       addRules,
     });
   } catch (err) {
     console.warn("Filemark: failed to update DNR redirect rules", err);
   }
 }
+
+// ---------------------------------------------------------------------------
+// http(s) inject — listen for tab navigations, inject content.js when the
+// URL matches a render-format AND the user has granted the remote perm.
+
+function extOf(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const path = u.pathname;
+    const m = /\.([a-z0-9]+)$/i.exec(path);
+    return m ? m[1].toLowerCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+  // 'complete' fires after the page DOM is built and any browser-default
+  // text/plain rendering of a .md is in place — we read that text and
+  // hand it to the viewer.
+  if (info.status !== "complete") return;
+  const url = tab.url;
+  if (!url) return;
+
+  const isFile = url.startsWith("file://");
+  const isHttp = /^https?:/i.test(url);
+  if (!isFile && !isHttp) return;
+
+  const ext = extOf(url);
+  if (!ext) return;
+  const norm = ext === "markdown" ? "md" : ext;
+  if (!INJECT_FORMATS.has(norm)) return;
+
+  // For http(s) tabs the optional "*://*/*" permission must be granted.
+  // For file:// tabs the user must have "Allow access to file URLs" on
+  // the extension's details page (Chrome enforces that gate itself when
+  // executeScript runs against a file URL).
+  if (isHttp && !(await hasRemotePermission())) return;
+
+  console.log("[Filemark] inject candidate:", { tabId, url });
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["bootstrap.js"],
+    });
+    console.log("[Filemark] inject OK:", url);
+  } catch (e) {
+    console.error("[Filemark] inject FAILED:", url, e);
+  }
+});
 
 chrome.runtime.onInstalled.addListener(() => {
   syncRedirectRules();
@@ -130,5 +218,12 @@ chrome.runtime.onStartup.addListener(() => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync") return;
   if (!changes[SETTINGS_KEY]) return;
+  syncRedirectRules();
+});
+
+chrome.permissions.onAdded.addListener(() => {
+  syncRedirectRules();
+});
+chrome.permissions.onRemoved.addListener(() => {
   syncRedirectRules();
 });

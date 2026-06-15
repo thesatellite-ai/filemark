@@ -9,10 +9,13 @@ import type { LibraryFile } from "./store";
  *      chrome.storage.session under <key>, and redirected here.
  *   2. `#fv-inline=<b64>` — same as above but inline-encoded fallback for
  *      browsers where chrome.storage.session is unavailable.
- *   3. `?openFile=<file-url>` — declarativeNetRequest rule redirected a
- *      file:// URL Chrome would otherwise download (CSV/TSV) here. We
- *      fetch the content ourselves using <all_urls> host permission.
- *      Requires "Allow access to file URLs" enabled on the extension.
+ *   3. `?openFile=<url>` — declarativeNetRequest rule redirected a URL
+ *      here. Two flavors:
+ *       - file:// (CSV/TSV that Chrome would download) → needs "Allow
+ *         access to file URLs" enabled on the extension.
+ *       - http(s):// (any supported format on a remote URL) → needs the
+ *         optional "all sites" host permission granted via Options.
+ *      In both cases we own the fetch using the granted host permission.
  */
 export async function pickupIntercept(): Promise<LibraryFile | null> {
   // Hash fallback first — doesn't require chrome APIs
@@ -40,8 +43,11 @@ export async function pickupIntercept(): Promise<LibraryFile | null> {
       history.replaceState(null, "", location.pathname);
       return buildFile(openFile, content);
     } catch (e) {
+      const isFile = openFile.startsWith("file:");
       console.error(
-        "Filemark: openFile fetch failed — is 'Allow access to file URLs' enabled on the extension?",
+        isFile
+          ? "Filemark: openFile fetch failed — is 'Allow access to file URLs' enabled on the extension?"
+          : "Filemark: openFile fetch failed — is the remote URL toggle enabled in Options?",
         e,
       );
       history.replaceState(null, "", location.pathname);
