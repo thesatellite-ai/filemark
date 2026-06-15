@@ -1,8 +1,8 @@
 node_modules/
 dist/
 dist-cf/
-.env
 .wrangler/
+.env
 .tanstack/
 *.log
 .DS_Store

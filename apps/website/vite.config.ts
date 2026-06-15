@@ -1,17 +1,36 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { defineConfig } from 'vite'
 
-// Production assets serve under khanakia.com/apps/filemark/ via the
-// edge gateway (which forwards the path UNCHANGED). Dev uses '/' so
-// `pnpm dev` works at http://localhost:5173. See Taskfile build:cf and
-// the khanakia_com_cfare_gateway README for the full routing chain.
-export default defineConfig(({ command }) => ({
-  base: command === "build" ? "/apps/filemark/" : "/",
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+
+import viteReact from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+// SPA + prerender. The four marketing routes (home, features, changelog,
+// privacy) get prerendered to static HTML at build time — real per-route
+// title / meta / OG / canonical and full rendered body. The demo routes
+// (ssr: false in demo.tsx) stay client-rendered against the SPA shell.
+// Output goes to dist/ as static files; no Cloudflare Worker runtime is
+// needed — the existing gateway routes khanakia.com/apps/filemark/* to a
+// Static Assets binding.
+const config = defineConfig({
+  // The Cloudflare gateway forwards khanakia.com/apps/filemark/* to this
+  // app's Static Assets binding unchanged — base prefixes every asset
+  // URL in the built HTML so /assets/* resolves under /apps/filemark/.
+  base: '/apps/filemark/',
+  resolve: { tsconfigPaths: true },
   plugins: [
-    tanstackRouter({ target: "react", autoCodeSplitting: true }),
-    react(),
     tailwindcss(),
+    tanstackStart({
+      spa: { enabled: true },
+      pages: [
+        { path: '/' },
+        { path: '/features' },
+        { path: '/changelog' },
+        { path: '/privacy' },
+      ],
+    }),
+    viteReact(),
   ],
-}));
+})
+
+export default config

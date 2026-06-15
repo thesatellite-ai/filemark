@@ -1,11 +1,13 @@
 import {
   HeadContent,
   Outlet,
+  Scripts,
   createRootRoute,
   Link,
   useRouterState,
 } from "@tanstack/react-router";
 import { Github, ExternalLink } from "lucide-react";
+import appCss from "../styles.css?url";
 
 const SITE = "https://khanakia.com/apps/filemark";
 const OG_IMAGE = `${SITE}/screenshots/promo-tile.png`;
@@ -15,10 +17,6 @@ const DEFAULT_DESC =
   "Free Chrome extension that opens local and remote .md, .mdx, .json, .jsonc, .csv, .tsv, .sql, .prisma and .dbml files with real interactive renderers. 100% client-side, MIT licensed.";
 
 export const Route = createRootRoute({
-  // Defaults — child routes override via their own head(). HeadContent in
-  // the layout below renders these into the document head at runtime;
-  // social-card crawlers without JS still get the values baked into the
-  // build's prerendered HTML (see build:prerender task).
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -26,6 +24,9 @@ export const Route = createRootRoute({
       { title: DEFAULT_TITLE },
       { name: "description", content: DEFAULT_DESC },
       { name: "author", content: "khanakia" },
+      { name: "color-scheme", content: "light dark" },
+      { name: "theme-color", content: "#ffffff", media: "(prefers-color-scheme: light)" },
+      { name: "theme-color", content: "#0a0a0a", media: "(prefers-color-scheme: dark)" },
       // Social
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "khanakia.com" },
@@ -41,35 +42,42 @@ export const Route = createRootRoute({
       { name: "twitter:image", content: OG_IMAGE },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
       { rel: "canonical", href: `${SITE}/` },
-      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/svg+xml", href: "/apps/filemark/favicon.svg" },
+      { rel: "manifest", href: "/apps/filemark/manifest.webmanifest" },
     ],
   }),
-  component: RootLayout,
+  shellComponent: RootDocument,
 });
 
-function RootLayout(): React.ReactElement {
-  // /demo IS the playground — it brings its own header + footer, so we
-  // skip the site chrome there to give it the full viewport (otherwise
-  // the editor competes with our header for vertical space).
+function RootDocument({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" data-theme="light" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <RootLayout>{children}</RootLayout>
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+function RootLayout({ children }: { children: React.ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const chromeless =
     path === "/demo" || path.startsWith("/demo/") || path.endsWith("/demo");
   if (chromeless) {
     return (
-      <div className="h-full bg-background text-foreground">
-        <HeadContent />
-        <Outlet />
-      </div>
+      <div className="h-full bg-background text-foreground">{children}</div>
     );
   }
   return (
-    <div className="flex min-h-full flex-col bg-background text-foreground">
-      <HeadContent />
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Header />
-      <div className="flex-1">
-        <Outlet />
-      </div>
+      <div className="flex-1">{children}</div>
       <Footer />
     </div>
   );
@@ -108,7 +116,7 @@ function Header(): React.ReactElement {
           <span className="hidden sm:inline">GitHub</span>
         </a>
         <a
-          href="#install"
+          href="/#install"
           aria-label="Jump to install section"
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
         >
@@ -126,7 +134,7 @@ function Footer(): React.ReactElement {
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex items-center gap-2">
           <Logo />
-          <span>© {new Date().getFullYear()} Filemark</span>
+          <span>© Filemark</span>
         </div>
         <div className="flex items-center gap-4">
           <Link to="/privacy" className="hover:text-foreground">

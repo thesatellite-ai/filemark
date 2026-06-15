@@ -11,6 +11,11 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 const SITE = "https://khanakia.com/apps/filemark";
 
 export const Route = createFileRoute("/demo")({
+  // Demo is the interactive playground — Monaco editor + heavy renderers
+  // don't render cleanly under SSR and there's no SEO value for any of
+  // the gallery URLs. CSR-only via Start's `ssr: false`; child routes
+  // (/demo/, /demo/play, /demo/gallery/$exampleId) inherit it.
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Demo — Filemark playground" },
