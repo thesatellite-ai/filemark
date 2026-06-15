@@ -5,6 +5,7 @@ import {
   FileJson,
   FileSpreadsheet,
   FileText,
+  Globe,
   Keyboard,
   RotateCcw,
   Settings as SettingsIcon,
@@ -82,6 +83,8 @@ export function OptionsApp() {
 
           <FormatsSection />
           <Divider />
+          <RemoteUrlsSection />
+          <Divider />
           <JsonSection />
           <Divider />
           <ShortcutsSection />
@@ -156,6 +159,68 @@ function FormatsSection() {
           );
         })}
       </div>
+    </section>
+  );
+}
+
+/* ─── Remote URLs ──────────────────────────────────────────────────────── */
+
+const REMOTE_ORIGIN = "*://*/*";
+
+function RemoteUrlsSection() {
+  const [granted, setGranted] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    chrome.permissions
+      .contains({ origins: [REMOTE_ORIGIN] })
+      .then(setGranted)
+      .catch(() => setGranted(false));
+    const onChange = () =>
+      chrome.permissions
+        .contains({ origins: [REMOTE_ORIGIN] })
+        .then(setGranted)
+        .catch(() => setGranted(false));
+    chrome.permissions.onAdded.addListener(onChange);
+    chrome.permissions.onRemoved.addListener(onChange);
+    return () => {
+      chrome.permissions.onAdded.removeListener(onChange);
+      chrome.permissions.onRemoved.removeListener(onChange);
+    };
+  }, []);
+
+  const toggle = async (v: boolean) => {
+    if (v) {
+      const ok = await chrome.permissions.request({ origins: [REMOTE_ORIGIN] });
+      setGranted(ok);
+    } else {
+      await chrome.permissions.remove({ origins: [REMOTE_ORIGIN] });
+      setGranted(false);
+    }
+  };
+
+  return (
+    <section>
+      <SectionHeading
+        icon={Globe}
+        title="Render remote files"
+        subtitle="Let Filemark render supported formats on any website (e.g. https://raw.githubusercontent.com/…/README.md). Disabled by default — Chrome will prompt you once on enable."
+      />
+      <label className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm">
+        <div>
+          <div className="text-foreground font-medium">
+            Enable on all sites
+          </div>
+          <div className="text-muted-foreground text-xs">
+            Required for remote .md / .json / .csv / .sql URLs. The extension never sends your traffic anywhere — verify in DevTools' Network tab.
+          </div>
+        </div>
+        <Toggle
+          checked={granted === true}
+          onChange={(v) => void toggle(v)}
+          label={granted === true ? "Granted" : "Not granted"}
+          disabled={granted === null}
+        />
+      </label>
     </section>
   );
 }

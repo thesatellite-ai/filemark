@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Filemark",
   "version": "0.1.0",
-  "description": "Beautiful in-browser viewer for markdown and other text files. Open local .md / .mdx files directly, organize, search, and read your docs without leaving Chrome.",
+  "description": "Beautiful in-browser viewer for markdown, JSON, CSV, SQL. Open local files in Chrome — search, organize, no upload.",
   "action": {
     "default_title": "Open Filemark"
   },
@@ -14,19 +14,12 @@
     "service_worker": "service-worker.js",
     "type": "module"
   },
-  "permissions": ["storage", "declarativeNetRequest"],
-  "host_permissions": ["<all_urls>"],
-  "content_scripts": [
-    {
-      "matches": ["file:///*"],
-      "js": ["content.js"],
-      "run_at": "document_end",
-      "all_frames": false
-    }
-  ],
+  "permissions": ["storage", "declarativeNetRequest", "scripting"],
+  "host_permissions": ["file:///*"],
+  "optional_host_permissions": ["*://*/*"],
   "web_accessible_resources": [
     {
-      "resources": ["src/app/index.html", "assets/*"],
+      "resources": ["src/app/index.html", "assets/*", "content/main.js", "content/assets/*"],
       "matches": ["file:///*", "<all_urls>"]
     }
   ],

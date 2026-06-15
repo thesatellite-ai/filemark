@@ -13,6 +13,19 @@ import { useLibrary } from "./store";
  * The hash (`#heading-slug`) is preserved untouched so anchor links keep
  * working for copy-paste navigation.
  */
+/**
+ * When Filemark is injected into a third-party page (content script over a
+ * remote .md / .json URL), the tab URL belongs to the host site — we MUST
+ * NOT touch it. The inject entrypoint sets this to true before mounting.
+ */
+let injectModeActive = false;
+export function setInjectMode(v: boolean) {
+  injectModeActive = v;
+}
+export function isInjectMode(): boolean {
+  return injectModeActive;
+}
+
 export function useUrlSync() {
   const activeFileId = useLibrary((s) => s.activeFileId);
   const files = useLibrary((s) => s.files);
@@ -21,6 +34,7 @@ export function useUrlSync() {
 
   // URL → store (runs once after hydrate, and on browser back/forward)
   useEffect(() => {
+    if (injectModeActive) return;
     if (!hydrated) return;
     const apply = () => {
       const params = new URLSearchParams(location.search);
@@ -37,6 +51,7 @@ export function useUrlSync() {
 
   // store → URL (runs whenever the active file changes)
   useEffect(() => {
+    if (injectModeActive) return;
     if (!hydrated) return;
     const url = new URL(location.href);
     if (activeFileId) {

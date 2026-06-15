@@ -6,6 +6,7 @@ import {
   ChevronsUpDown,
   ClipboardCopy,
   FileText,
+  Globe,
   MoreHorizontal,
   Pencil,
   RotateCw,
@@ -14,6 +15,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useWebRecents, removeWebRecent, clearWebRecents, type WebRecent } from "../webRecents";
+import { isInjectMode } from "../urlSync";
 import {
   useLibrary,
   SIDEBAR_MIN_WIDTH,
@@ -58,6 +61,7 @@ export function Sidebar() {
   const sectionOpen = useLibrary((s) => s.sidebarSections);
   const setSectionOpen = useLibrary((s) => s.setSidebarSection);
   const setSidebarCollapseState = useLibrary((s) => s.setSidebarCollapseState);
+  const webRecents = useWebRecents();
   const revealRequest = useLibrary((s) => s.revealRequest);
   const [needsPermission, setNeedsPermission] = useState<Record<string, boolean>>({});
   const [folderQuery, setFolderQuery] = useState<Record<string, string>>({});
@@ -311,6 +315,34 @@ export function Sidebar() {
                     subtitle={fileSubtitleFor(f)}
                   />
                 ))}
+            </Section>
+          )}
+
+          {webRecents.length > 0 && (
+            <Section
+              title="Web docs"
+              open={getSectionOpen("web-recents")}
+              onOpenChange={(v) => setSectionOpen("web-recents", v)}
+              onRemove={() => clearWebRecents()}
+              removeLabel="Clear web docs list"
+            >
+              {webRecents.slice(0, 10).map((r) => (
+                <WebRecentRow
+                  key={r.url}
+                  recent={r}
+                  onOpen={() => {
+                    // In inject mode we're sitting on a host page — navigate
+                    // the current tab. In the standalone app, open in a new
+                    // tab so the user keeps their library context.
+                    if (isInjectMode()) {
+                      window.location.href = r.url;
+                    } else {
+                      window.open(r.url, "_blank");
+                    }
+                  }}
+                  onRemove={() => removeWebRecent(r.url)}
+                />
+              ))}
             </Section>
           )}
 
@@ -695,6 +727,54 @@ function Section({
         )}
       </div>
       {open && !editing && <div className="mt-0.5 flex flex-col gap-px">{children}</div>}
+    </div>
+  );
+}
+
+function WebRecentRow({
+  recent,
+  onOpen,
+  onRemove,
+}: {
+  recent: WebRecent;
+  onOpen: () => void;
+  onRemove: () => void;
+}) {
+  let host = "";
+  try {
+    host = new URL(recent.url).host;
+  } catch {
+    /* malformed url — leave host empty */
+  }
+  return (
+    <div
+      className="group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 min-w-0 w-full items-center gap-1.5 rounded-sm pr-1 text-[13px] leading-tight transition-colors"
+      title={recent.url}
+    >
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex min-w-0 flex-1 items-center gap-1.5 py-1 pl-2 text-left"
+      >
+        <Globe className="text-muted-foreground size-3.5 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate">{recent.name}</div>
+          {host && (
+            <div className="text-muted-foreground truncate text-[10.5px]">
+              {host}
+            </div>
+          )}
+        </div>
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="text-muted-foreground hover:text-destructive opacity-0 transition-opacity group-hover/row:opacity-100"
+        title="Remove from web docs"
+        aria-label="Remove"
+      >
+        <X className="size-3.5" />
+      </button>
     </div>
   );
 }

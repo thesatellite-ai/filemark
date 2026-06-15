@@ -3,6 +3,7 @@ import {
   List,
   PanelLeft,
   Crosshair,
+  ExternalLink,
   RefreshCw,
   Search,
   Settings,
@@ -14,6 +15,7 @@ import {
   ListTodo,
 } from "lucide-react";
 import { useLibrary } from "../store";
+import { isInjectMode } from "../urlSync";
 import { pickFolder } from "../fs";
 import { sessionHandles } from "../sessionHandles";
 import { Button } from "@/components/ui/button";
@@ -185,6 +187,18 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         >
           <BookOpen className="size-4" />
         </IconBtn>
+        {isInjectMode() && activeFile?.sourceUrl && (
+          <IconBtn
+            onClick={() => {
+              const target = `${chrome.runtime.getURL("src/app/index.html")}?openFile=${encodeURIComponent(activeFile.sourceUrl ?? "")}`;
+              window.open(target, "_blank");
+            }}
+            title="Open in full Filemark (new tab)"
+            aria-label="Open in full Filemark"
+          >
+            <ExternalLink className="size-4" />
+          </IconBtn>
+        )}
         <ThemePopover>
           <Button
             variant="ghost"
