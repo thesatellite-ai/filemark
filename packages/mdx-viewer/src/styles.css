@@ -112,6 +112,7 @@
   border-radius: 4px;
   font-size: 0.9em;
   font-family: var(--fm-prose-code-font, ui-monospace, SFMono-Regular, Menlo, monospace);
+  overflow-wrap: anywhere;
 }
 
 
@@ -540,6 +541,7 @@
   border-radius: 4px;
   font-size: 0.9em;
   font-family: var(--fm-prose-code-font, ui-monospace, SFMono-Regular, Menlo, monospace);
+  overflow-wrap: anywhere;
 }
 
 

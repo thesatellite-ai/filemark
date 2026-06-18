@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Filemark",
-  "version": "0.1.0",
-  "description": "Beautiful in-browser viewer for markdown, JSON, CSV, SQL. Open local files in Chrome — search, organize, no upload.",
+  "version": "0.1.1",
+  "description": "Read local markdown, structured data, and database-schema files in Chrome with real interactive renderers. 100% client-side.",
   "action": {
     "default_title": "Open Filemark"
   },

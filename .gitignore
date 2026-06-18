@@ -20,3 +20,4 @@ filemark.zip
 .lore/lore.db-wal
 .lore/state/
 .lore/backups/
+.claude/settings.local.json
