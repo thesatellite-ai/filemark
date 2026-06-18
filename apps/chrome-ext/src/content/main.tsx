@@ -154,6 +154,12 @@ try {
     tasksOpen: false,
   });
 
+  // The seed above skips the full IDB hydrate, so the persisted theme (mode,
+  // font, content width) would otherwise reset to defaults on every reload of
+  // an injected viewer. Restore it from chrome.storage.local, which — unlike
+  // IDB — is extension-global and survives across origins and sandboxed pages.
+  void useLibrary.getState().hydrateTheme();
+
   // Inject CSS into <head> (safer than replacing — keep host meta tags).
   const style = document.createElement("style");
   style.setAttribute("data-filemark", "css");

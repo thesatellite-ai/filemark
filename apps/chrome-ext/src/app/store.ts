@@ -130,6 +130,7 @@ export interface LibraryState {
   setSelectedTag(tag: string | null): void;
   setTheme(patch: Partial<ThemeSettings>): Promise<void>;
   resetTheme(): Promise<void>;
+  hydrateTheme(): Promise<void>;
   toggleSidebar(): void;
   setSidebarWidth(px: number): void;
   toggleToc(): void;
@@ -171,6 +172,51 @@ const KEYS = {
   tabs: "lib:tabs",
   ui: "lib:ui",
 };
+
+/**
+ * Theme (mode, font, content width) is persisted in `chrome.storage.local`
+ * rather than IndexedDB. IDB in a content script is partitioned by the host
+ * page's origin (every `file://` doc, every `https://` site, and the
+ * chrome-extension app page get a *different* database) and is denied
+ * outright on sandboxed pages — so an IDB-backed theme silently fails to
+ * survive a reload of an injected viewer. `chrome.storage.local` is
+ * extension-global and works in content scripts regardless of page CSP, so
+ * the theme set on any page sticks everywhere. Falls back to IDB only when
+ * `chrome.storage` is unavailable (e.g. unit tests). See `content/main.tsx`,
+ * which seeds store state directly and calls `hydrateTheme()` instead of the
+ * full IDB `hydrate()`.
+ */
+async function loadTheme(): Promise<ThemeSettings | null> {
+  try {
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      const bag = await chrome.storage.local.get(KEYS.theme);
+      if (bag[KEYS.theme]) return bag[KEYS.theme] as ThemeSettings;
+      // One-time migration: lift a pre-existing IDB theme into storage.local
+      // so users who set a theme before this change keep it.
+      const legacy = await idbStorage.get<ThemeSettings>(KEYS.theme);
+      if (legacy) {
+        await chrome.storage.local.set({ [KEYS.theme]: legacy });
+        return legacy;
+      }
+      return null;
+    }
+  } catch {
+    /* fall through to IDB */
+  }
+  return idbStorage.get<ThemeSettings>(KEYS.theme);
+}
+
+async function saveTheme(theme: ThemeSettings): Promise<void> {
+  try {
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      await chrome.storage.local.set({ [KEYS.theme]: theme });
+      return;
+    }
+  } catch {
+    /* fall through to IDB */
+  }
+  await idbStorage.set(KEYS.theme, theme);
+}
 
 interface UIPrefs {
   sidebarOpen: boolean;
@@ -262,7 +308,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       idbStorage.get<Record<string, LibraryFile>>(KEYS.files),
       idbStorage.get<Record<string, LibraryFolder>>(KEYS.folders),
       idbStorage.get<string[]>(KEYS.recent),
-      idbStorage.get<ThemeSettings>(KEYS.theme),
+      loadTheme(),
       idbStorage.get<string>(KEYS.active),
       idbStorage.get<string[]>(KEYS.tabs),
       idbStorage.get<UIPrefs>(KEYS.ui),
@@ -632,12 +678,20 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   async setTheme(patch) {
     const next = { ...get().theme, ...patch };
     set({ theme: next });
-    await idbStorage.set(KEYS.theme, next);
+    await saveTheme(next);
   },
 
   async resetTheme() {
     set({ theme: { ...DEFAULT_THEME } });
-    await idbStorage.set(KEYS.theme, DEFAULT_THEME);
+    await saveTheme(DEFAULT_THEME);
+  },
+
+  // Restore just the persisted theme without touching files/tabs/UI. The
+  // injected content-script viewer seeds its own state and skips the full
+  // IDB hydrate(), so it calls this to recover the saved theme on reload.
+  async hydrateTheme() {
+    const stored = await loadTheme();
+    if (stored) set({ theme: { ...DEFAULT_THEME, ...stored } });
   },
 
   toggleSidebar() {
