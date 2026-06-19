@@ -116,11 +116,13 @@ function Header(): React.ReactElement {
           <span className="hidden sm:inline">GitHub</span>
         </a>
         <a
-          href="/#install"
-          aria-label="Jump to install section"
+          href="https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Add Filemark to Chrome (Chrome Web Store)"
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
         >
-          Install
+          Add to Chrome
           <ExternalLink size={12} aria-hidden />
         </a>
       </div>

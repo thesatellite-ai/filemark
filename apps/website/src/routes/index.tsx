@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 
 const SITE = "https://khanakia.com/apps/filemark";
+const STORE_URL =
+  "https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -100,10 +102,12 @@ function Hero(): React.ReactElement {
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a
-            href="#install"
+            href={STORE_URL}
+            target="_blank"
+            rel="noreferrer"
             className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-[14px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Install for Chrome
+            Add to Chrome
             <ArrowRight size={15} />
           </a>
           <Link
@@ -382,29 +386,33 @@ function Install(): React.ReactElement {
               Install
             </p>
             <h2 className="mt-3 text-balance text-[34px] font-semibold leading-[1.1] tracking-tight sm:text-[44px]">
-              Coming to the
+              Add Filemark
               <br />
-              Chrome Web Store.
+              to Chrome.
             </h2>
             <p className="mt-5 max-w-md text-[15px] leading-relaxed text-background/70 sm:text-base">
-              Until it's live, the unpacked extension installs in 30 seconds.
+              Free, open source, 100% local. One click from the Chrome Web
+              Store — or build from source in 30 seconds.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
-                href="https://github.com/thesatellite-ai/filemark"
+                href={STORE_URL}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex h-11 items-center gap-2 rounded-full bg-background px-6 text-[14px] font-medium text-foreground transition-opacity hover:opacity-90"
               >
+                Add to Chrome
+                <ArrowRight size={15} />
+              </a>
+              <a
+                href="https://github.com/thesatellite-ai/filemark"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-background/30 px-6 text-[14px] font-medium text-background hover:bg-background/10"
+              >
                 <GithubIcon size={15} />
                 Get it on GitHub
               </a>
-              <Link
-                to="/demo"
-                className="inline-flex h-11 items-center gap-2 rounded-full border border-background/30 px-6 text-[14px] font-medium text-background hover:bg-background/10"
-              >
-                Try without installing
-              </Link>
             </div>
           </div>
           <ol className="space-y-5 text-[14px] text-background/85">
@@ -498,8 +506,8 @@ function HeroPreview(): React.ReactElement {
           Launch plan — v0.1
         </h3>
         <p className="mt-3 text-[12px] leading-relaxed text-foreground/75">
-          Filemark goes live on the Chrome Web Store this week. The site
-          ships first, then the listing flips when the review clears.
+          Filemark is live on the Chrome Web Store. Install in one click, or
+          build from source — the renderer is identical either way.
         </p>
         <div className="mt-4 rounded-md border-l-2 border-emerald-500/70 bg-emerald-500/[0.07] p-3 text-[11px]">
           <p className="font-semibold text-emerald-700 dark:text-emerald-400">

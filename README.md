@@ -104,10 +104,15 @@ Every file can also be viewed in a syntax-highlighted raw source mode (toggle wi
 
 ## Install
 
-### From source (today)
+### From the Chrome Web Store (recommended)
 
-Filemark is heading to the Chrome Web Store. Until then, loading it as an
-unpacked extension takes 30 seconds:
+**[Add Filemark to Chrome →](https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm)**
+
+One click. Then, to render local files, open `chrome://extensions` → Filemark → **Details** → enable **Allow access to file URLs** (see below).
+
+### From source
+
+Prefer to build it yourself? Loading the unpacked extension takes 30 seconds:
 
 1. Clone and build
 

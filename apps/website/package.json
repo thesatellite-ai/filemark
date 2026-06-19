@@ -11,7 +11,7 @@
     "build": "vite build",
     "build:cf": "vite build && rm -rf dist-cf && mkdir -p dist-cf/apps/filemark && cp -R dist/client/. dist-cf/apps/filemark/ && cp dist/client/index.html dist-cf/index.html",
     "preview": "vite preview",
-    "deploy": "pnpm run build && wrangler deploy"
+    "deploy": "pnpm run build:cf && wrangler deploy"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.26.0",

@@ -734,13 +734,14 @@ function CTA(): React.ReactElement {
               Open the demo
               <ArrowRight size={14} />
             </Link>
-            <Link
-              to="/"
-              hash="install"
+            <a
+              href="https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm"
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex h-11 items-center gap-2 rounded-full border border-background/30 px-6 text-[14px] font-medium text-background hover:border-background/60"
             >
-              Install
-            </Link>
+              Add to Chrome
+            </a>
           </div>
         </div>
       </div>
