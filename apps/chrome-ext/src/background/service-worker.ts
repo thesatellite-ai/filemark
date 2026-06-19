@@ -173,12 +173,84 @@ function extOf(url: string): string | null {
   }
 }
 
+// True when the user has enabled "Allow access to file URLs" for Filemark.
+async function isFileAccessAllowed(): Promise<boolean> {
+  try {
+    return await chrome.extension.isAllowedFileSchemeAccess();
+  } catch {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Setup nudge — the core trap: when "Allow access to file URLs" is OFF, our
+// content script can't run on the file:// page AND the service worker can't
+// even read that tab's URL (no file host access → tab.url is empty), so we
+// can't detect the blocked page per-tab. The escape: don't depend on the
+// blocked tab at all. `isAllowedFileSchemeAccess()` is queryable directly,
+// regardless of any tab — so we drive a GLOBAL toolbar badge + a setup popup
+// off the gate state itself.
+//
+//   - Setup incomplete (file access off, not dismissed) → "!" badge + the
+//     setup popup is attached to the action. Clicking the icon opens the
+//     popup, which explains both gates and links the fixes.
+//   - Setup done (or dismissed) → no popup, no badge; the icon click falls
+//     through to onClicked and opens the app (normal behavior).
+//
+// There is no Chrome event for the file-URL toggle flipping, so we re-check
+// on install/startup, on permission changes, on storage changes (dismiss),
+// and cheaply on every tab load.
+
+const SETUP_DISMISS_KEY = "fv:setupDismissed";
+
+async function refreshSetupBadge() {
+  try {
+    const [fileOk, remoteOk] = await Promise.all([
+      isFileAccessAllowed(),
+      hasRemotePermission(),
+    ]);
+    let dismissed = false;
+    try {
+      const bag = await chrome.storage.local.get(SETUP_DISMISS_KEY);
+      dismissed = bag[SETUP_DISMISS_KEY] === true;
+    } catch {
+      /* default not dismissed */
+    }
+    // Either gate being off means some files won't render (local OR remote),
+    // so keep the badge until both are configured — or the user dismisses it
+    // (drag/drop-only users who want neither). This is also how the remote
+    // gate gets surfaced: after enabling file access the badge persists
+    // because remote is still off, so the next icon click reveals it.
+    const needsSetup = (!fileOk || !remoteOk) && !dismissed;
+    if (needsSetup) {
+      await chrome.action.setPopup({ popup: "src/popup/index.html" });
+      await chrome.action.setBadgeText({ text: "!" });
+      await chrome.action.setBadgeBackgroundColor({ color: "#f59e0b" });
+      await chrome.action.setTitle({ title: "Filemark — finish setup" });
+    } else {
+      await chrome.action.setPopup({ popup: "" });
+      await chrome.action.setBadgeText({ text: "" });
+      await chrome.action.setTitle({ title: "Open Filemark" });
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   // 'complete' fires after the page DOM is built and any browser-default
   // text/plain rendering of a .md is in place — we read that text and
   // hand it to the viewer.
   if (info.status !== "complete") return;
+  // Cheap opportunity to keep the setup badge in sync (no event exists for
+  // the file-URL toggle flipping).
+  void refreshSetupBadge();
+
   const url = tab.url;
+  // tab.url is only populated when we hold host permission for the tab
+  // (file:///* once file access is granted; *://*/* once remote is granted).
+  // When a gate is off we can't see the URL — that's exactly why the badge
+  // above is gate-driven rather than tab-driven.
   if (!url) return;
 
   const isFile = url.startsWith("file://");
@@ -186,14 +258,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   if (!isFile && !isHttp) return;
 
   const ext = extOf(url);
-  if (!ext) return;
-  const norm = ext === "markdown" ? "md" : ext;
-  if (!INJECT_FORMATS.has(norm)) return;
+  if (!ext || !INJECT_FORMATS.has(ext === "markdown" ? "md" : ext)) return;
 
-  // For http(s) tabs the optional "*://*/*" permission must be granted.
-  // For file:// tabs the user must have "Allow access to file URLs" on
-  // the extension's details page (Chrome enforces that gate itself when
-  // executeScript runs against a file URL).
+  if (isFile && !(await isFileAccessAllowed())) return;
   if (isHttp && !(await hasRemotePermission())) return;
 
   console.log("[Filemark] inject candidate:", { tabId, url });
@@ -208,14 +275,27 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   }
 });
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
   syncRedirectRules();
+  void refreshSetupBadge();
+  // First install → open the welcome / setup page so the two permission
+  // gates get explained before the user hits a silent failure.
+  if (details.reason === "install") {
+    void chrome.tabs.create({
+      url: chrome.runtime.getURL("src/welcome/index.html"),
+    });
+  }
 });
 chrome.runtime.onStartup.addListener(() => {
   syncRedirectRules();
+  void refreshSetupBadge();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
+  // Re-evaluate the setup badge when the user dismisses the nudge.
+  if (area === "local" && changes[SETUP_DISMISS_KEY]) {
+    void refreshSetupBadge();
+  }
   if (area !== "sync") return;
   if (!changes[SETTINGS_KEY]) return;
   syncRedirectRules();
@@ -223,7 +303,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 chrome.permissions.onAdded.addListener(() => {
   syncRedirectRules();
+  void refreshSetupBadge();
 });
 chrome.permissions.onRemoved.addListener(() => {
   syncRedirectRules();
+  void refreshSetupBadge();
 });
+
+// Run on every service-worker cold start. Toggling "Allow access to file URLs"
+// reloads the extension (restarting this worker) but fires no permission
+// event, so this top-level call is what restores the badge after that toggle.
+void refreshSetupBadge();

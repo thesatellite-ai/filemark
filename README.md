@@ -126,13 +126,19 @@ unpacked extension takes 30 seconds:
 
 5. The Filemark icon appears in your toolbar. Click it — you're in.
 
-### Enable `file://` auto-render (strongly recommended)
+### Enable `file://` auto-render (required for local files)
 
 To make Filemark take over when you navigate straight to a local file:
 
 1. On [`chrome://extensions`](chrome://extensions), click **Details** on Filemark
 2. Flip on **Allow access to file URLs**
 3. Visit `file:///Users/you/notes/README.md` — it renders automatically, and the URL becomes shareable
+
+> **This toggle is OFF by default and there is no way around it.** `file:///*` access lets any extension read every file on your disk, so Chrome (and Chromium-based browsers like Edge, Brave, Opera) force a manual, per-extension opt-in. No manifest key or permission prompt can pre-enable it. Filemark *declares* `file:///*` in its manifest, but you still have to flip the switch once.
+>
+> **Symptom if it's off:** a local `.md` opens but shows only bare content — no toolbar, sidebar, or tabs — and the console logs `Unsafe attempt to load URL file://… 'file:' URLs are treated as unique security origins`. Enabling **Allow access to file URLs** fixes it.
+>
+> After updating Filemark from the store, fully **quit and reopen** the browser so the new version actually runs — the version number can update before the running bundle does.
 
 ## AI skill — teach your coding agent filemark syntax
 

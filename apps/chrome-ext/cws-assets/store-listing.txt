@@ -1,0 +1,60 @@
+==================================================================
+FILEMARK — CHROME WEB STORE LISTING (copy-paste)
+==================================================================
+
+------------------------------------------------------------------
+EXTENSION NAME  (set in manifest -> auto-updates on package upload)
+------------------------------------------------------------------
+Filemark: Markdown & Data Viewer
+
+------------------------------------------------------------------
+SHORT DESCRIPTION / SUMMARY  (<=132 chars)
+NOTE: comes from manifest "description" -> auto-updates on package
+upload. It is NOT editable in the dev console.
+------------------------------------------------------------------
+Markdown viewer for Chrome that also renders JSON, CSV, and SQL/Prisma/DBML schemas as interactive views — 100% local, no uploads.
+
+------------------------------------------------------------------
+DETAILED DESCRIPTION  (paste into Dev Console -> Store listing ->
+Description). Plain text only.
+------------------------------------------------------------------
+Open every text-based document Chrome can't already display beautifully — locally, in your browser, with nothing ever uploaded to a server.
+
+Filemark turns plain markdown, structured data, comma-separated values, and schema definitions into rich interactive views. Drop a folder onto the page and the extension walks the directory, skips noise like node_modules, and gives you a real reader: tab strip, sidebar with stars and recents, command-K search across everything you've opened, themes, typography controls, raw-source toggle, and persistent task checkboxes per document.
+
+SUPPORTED FILE TYPES
+.md · .mdx · .markdown · .json · .jsonc · .csv · .tsv · .sql · .prisma · .dbml
+
+WHAT IT READS
+
+• Markdown with full GitHub-flavored syntax — tables, task lists, footnotes, autolinks, math, diagrams, and inline components like callouts, tabs, kanban boards, and charts. Author tasks as ordinary bullets and the same document also renders as a board.
+
+• Structured data (JSON / JSONC) as a collapsible tree with nine themes, clipboard on every node, line-numbered parse errors when a comma misbehaves.
+
+• Comma- and tab-separated data (CSV / TSV) as a sortable, filterable datagrid. Type-aware cells: status badges, tags, ratings, currency, dates. Export the filtered view back out.
+
+• Database schemas (SQL / Prisma / DBML) as interactive entity-relationship diagrams with foreign keys and indexes. Works for the major SQL dialects plus Prisma and DBML. Falls back gracefully to highlighted source when a parser can't read the input.
+
+PRIVACY THAT YOU CAN AUDIT
+
+Nothing leaves your browser. No server, no analytics, no telemetry, no remote code execution. Manifest V3 strict content-security policy means every rendering library ships bundled into the extension at build time. Open Chrome DevTools — the extension issues zero outbound network requests during normal use. The source is on GitHub under the MIT license; verify the permission list yourself.
+
+REMOTE PAGES — OPT IN
+
+By default the extension only touches local documents you choose. Enable "Render remote files" in Options to opt in to displaying raw text URLs from the web in place — open a markdown URL on a hosting site and the page becomes the rendered view, browser address bar untouched, back button still works.
+
+FAST ON BIG FOLDERS
+
+Lazy-loaded syntax highlighting per language, code-split diagram engines, local-storage-backed library. Browse thousands of entries without slowdown.
+
+CUSTOMIZE EVERYTHING
+
+Three built-in themes (light, dark, sepia) plus typography sliders for font family, size, line height, and content width — each individually resettable. Every keyboard shortcut is listed and rebindable; bindings use physical key position so they work on every layout.
+
+FIRST-TIME SETUP
+
+To render local files, open chrome://extensions, click Details on Filemark, and turn on "Allow access to file URLs." To render web URLs, enable "Render remote files" in the extension's Options. Both are off by default for your security; Filemark guides you through them on first run.
+
+LIVE DEMO
+
+Try it in your browser with no install: https://khanakia.com/apps/filemark/demo

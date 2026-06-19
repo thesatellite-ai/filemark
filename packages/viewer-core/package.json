@@ -1,6 +1,6 @@
 {
   "name": "@filemark/core",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -12,7 +12,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

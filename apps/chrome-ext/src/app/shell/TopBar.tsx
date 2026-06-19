@@ -13,9 +13,16 @@ import {
   BookOpenText,
   BookOpen,
   ListTodo,
+  Rocket,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useLibrary } from "../store";
 import { isInjectMode } from "../urlSync";
+import {
+  isFileAccessAllowed,
+  isRemoteAllowed,
+  openWelcome,
+} from "@/lib/permissions";
 import { pickFolder } from "../fs";
 import { sessionHandles } from "../sessionHandles";
 import { Button } from "@/components/ui/button";
@@ -45,6 +52,36 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
     s.activeFileId ? s.files[s.activeFileId] : null
   );
   const toggleStar = useLibrary((s) => s.toggleStar);
+
+  // Setup status for the toolbar "Setup" button. Only meaningful in the
+  // standalone app (the injected viewer's content-script context has no
+  // chrome.permissions / chrome.extension). `null` = unknown/not-app; the dot
+  // shows only when we positively know a gate is off.
+  const [setupComplete, setSetupComplete] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (isInjectMode()) return;
+    let active = true;
+    const check = () => {
+      void Promise.all([isFileAccessAllowed(), isRemoteAllowed()]).then(
+        ([file, remote]) => {
+          if (active) setSetupComplete(file && remote);
+        },
+      );
+    };
+    check();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") check();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    chrome.permissions?.onAdded?.addListener(check);
+    chrome.permissions?.onRemoved?.addListener(check);
+    return () => {
+      active = false;
+      document.removeEventListener("visibilitychange", onVisible);
+      chrome.permissions?.onAdded?.removeListener(check);
+      chrome.permissions?.onRemoved?.removeListener(check);
+    };
+  }, []);
 
   const openOptions = () => {
     // chrome.runtime.openOptionsPage is available in extension contexts;
@@ -197,6 +234,24 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             aria-label="Open in full Filemark"
           >
             <ExternalLink className="size-4" />
+          </IconBtn>
+        )}
+        {!isInjectMode() && (
+          <IconBtn
+            onClick={openWelcome}
+            title={
+              setupComplete === false
+                ? "Finish setup — some local or remote files won't render yet"
+                : "Setup & help"
+            }
+            aria-label="Setup and help"
+          >
+            <span className="relative inline-flex">
+              <Rocket className="size-4" />
+              {setupComplete === false && (
+                <span className="ring-background absolute -right-1 -top-1 size-2 rounded-full bg-amber-500 ring-2" />
+              )}
+            </span>
           </IconBtn>
         )}
         <ThemePopover>

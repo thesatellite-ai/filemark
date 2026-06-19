@@ -36,6 +36,31 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.3",
+    date: "2026-06-19",
+    tag: "onboarding + store polish",
+    notes: [
+      "First-run welcome page that guides you through the two optional permissions",
+      "Toolbar badge + setup popup when a local or remote file needs a permission enabled — with one-click enable for remote rendering",
+      "Setup button in the app toolbar to revisit the guide anytime",
+      "Store listing: clearer name (Filemark: Markdown & Data Viewer) and a website link",
+    ],
+  },
+  {
+    version: "0.1.2",
+    date: "2026-06-18",
+    notes: [
+      "Theme, font, and content width now persist across reloads in the injected file viewer (stored in chrome.storage so they stick on file:// and remote pages too)",
+    ],
+  },
+  {
+    version: "0.1.1",
+    date: "2026-06-18",
+    notes: [
+      "Long inline code wraps instead of overflowing the page",
+    ],
+  },
+  {
     version: "0.1.0",
     date: "2026-05-25",
     tag: "first public build",

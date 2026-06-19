@@ -44,6 +44,8 @@ export default defineConfig({
       input: {
         app: "src/app/index.html",
         options: "src/options/index.html",
+        welcome: "src/welcome/index.html",
+        popup: "src/popup/index.html",
         "service-worker": "src/background/service-worker.ts",
       },
       output: {
