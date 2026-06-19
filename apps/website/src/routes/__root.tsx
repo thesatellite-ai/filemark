@@ -8,8 +8,18 @@ import {
 } from "@tanstack/react-router";
 import { Github, ExternalLink } from "lucide-react";
 import appCss from "../styles.css?url";
+import {
+  GoogleTagManagerNoScript,
+  GoogleTagManagerScript,
+} from "../components/GoogleTagManager";
 
 const SITE = "https://khanakia.com/apps/filemark";
+// GA4 flows through this GTM container (khanakia.com domain). The id is
+// public (it ships in page HTML). Overridable via VITE_GTM_ID at build time.
+const GTM_ID = import.meta.env.VITE_GTM_ID || "GTM-W5RL34X";
+// Only load analytics in production builds — never on localhost/dev, so dev
+// traffic doesn't pollute the property.
+const GTM_ENABLED = import.meta.env.PROD && Boolean(GTM_ID);
 const OG_IMAGE = `${SITE}/screenshots/promo-tile.png`;
 const DEFAULT_TITLE =
   "Filemark — Markdown, MDX, JSON, CSV & schema viewer for Chrome";
@@ -56,8 +66,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
         <HeadContent />
+        {GTM_ENABLED && <GoogleTagManagerScript gtmId={GTM_ID} />}
       </head>
       <body>
+        {GTM_ENABLED && <GoogleTagManagerNoScript gtmId={GTM_ID} />}
         <RootLayout>{children}</RootLayout>
         <Scripts />
       </body>
