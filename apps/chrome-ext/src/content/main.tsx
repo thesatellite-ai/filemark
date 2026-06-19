@@ -109,6 +109,15 @@ try {
   const url = location.href;
   const ext = extOf(url);
   if (!ext) return;
+  // Defense-in-depth (bootstrap.ts already bails on this before importing us):
+  // never take over a full HTML web app whose URL merely ends in a supported
+  // extension, e.g. github.com/<o>/<r>/blob/<b>/X.md (served as text/html).
+  // Raw files are text/plain; JSON is application/json — both pass.
+  if (
+    document.contentType === "text/html" ||
+    document.contentType === "application/xhtml+xml"
+  )
+    return;
   const normalizedExt = ext === "markdown" ? "md" : ext;
   if (!(await isEnabledFormat(ext))) return;
 

@@ -7,6 +7,17 @@
 // demand, well under any size limit.
 
 (async () => {
+  // Only take over documents Chrome is actually displaying as raw text/data
+  // (file:// text, raw markdown, JSON, …). Many web apps have a supported
+  // extension in their URL but are full HTML pages — e.g.
+  // github.com/<o>/<r>/blob/<b>/X.md is served as text/html, NOT raw markdown.
+  // `document.contentType` is the page's MIME label (text/html for web apps,
+  // text/plain for raw files, application/json for JSON). Bailing here — in the
+  // tiny bootstrap, before importing the heavy renderer bundle — skips those
+  // pages cheaply. (Verified: file:// JSON reports "application/json", so it
+  // still loads; only HTML is excluded.)
+  const ct = document.contentType;
+  if (ct === "text/html" || ct === "application/xhtml+xml") return;
   try {
     const url = chrome.runtime.getURL("content/main.js");
     await import(/* @vite-ignore */ url);
