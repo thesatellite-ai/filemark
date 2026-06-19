@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type SelectHTMLAttributes } from "react";
 import {
   Ban,
+  ChevronDown,
   Database,
   FileCode2,
   FileJson,
   FileSpreadsheet,
   FileText,
   Globe,
+  HelpCircle,
   Keyboard,
   Plus,
   RotateCcw,
@@ -35,7 +37,6 @@ import {
   type SiteRuleMode,
 } from "@/lib/siteRules";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,26 @@ const FORMAT_META: Record<FormatId, { label: string; icon: typeof FileText; desc
   dbml: { label: ".dbml", icon: Database, description: "DBML schema definitions — rendered as an interactive ER diagram" },
 };
 
+// Options is a left-nav settings shell: one section visible at a time (the page
+// got too long as a single scroll). NAV drives both the sidebar links and which
+// section component renders on the right.
+type SectionId =
+  | "formats"
+  | "remote"
+  | "siterules"
+  | "json"
+  | "shortcuts"
+  | "reset";
+
+const NAV: { id: SectionId; label: string; icon: typeof FileText }[] = [
+  { id: "formats", label: "File formats", icon: FileCode2 },
+  { id: "remote", label: "Remote URLs", icon: Globe },
+  { id: "siterules", label: "Site rules", icon: Ban },
+  { id: "json", label: "JSON viewer", icon: FileJson },
+  { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
+  { id: "reset", label: "Reset", icon: RotateCcw },
+];
+
 export function OptionsApp() {
   const hydrateLib = useLibrary((s) => s.hydrate);
   const theme = useLibrary((s) => s.theme);
@@ -59,6 +80,7 @@ export function OptionsApp() {
 
   const hydrateSettings = useSettings((s) => s.hydrate);
   const hydrated = useSettings((s) => s.hydrated);
+  const [active, setActive] = useState<SectionId>("formats");
 
   useEffect(() => {
     Promise.all([hydrateLib(), hydrateSettings()]);
@@ -77,38 +99,83 @@ export function OptionsApp() {
   return (
     <ThemeProvider value={theme} onChange={setTheme}>
       <div className="bg-background text-foreground min-h-screen">
-        <div className="mx-auto max-w-3xl px-6 py-10">
-          <header className="mb-8 flex items-center gap-3">
-            <SettingsIcon className="text-muted-foreground size-6" />
-            <div>
-              <h1 className="text-foreground text-2xl font-semibold tracking-tight">
-                Filemark
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Options · sync across Chrome profiles
-              </p>
+        <div className="mx-auto flex max-w-4xl gap-8 px-6 py-10">
+          {/* Left nav */}
+          <nav className="w-52 shrink-0">
+            <div className="mb-5 flex items-center gap-2 px-2">
+              <SettingsIcon className="text-muted-foreground size-5 shrink-0" />
+              <div className="min-w-0">
+                <div className="text-foreground text-sm font-semibold leading-tight">
+                  Filemark
+                </div>
+                <div className="text-muted-foreground text-[11px]">
+                  Options · syncs across profiles
+                </div>
+              </div>
             </div>
-          </header>
+            <div className="space-y-0.5">
+              {NAV.map((s) => {
+                const Icon = s.icon;
+                const isActive = active === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setActive(s.id)}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-foreground/80 hover:bg-muted/60",
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
 
-          <FormatsSection />
-          <Divider />
-          <RemoteUrlsSection />
-          <Divider />
-          <SiteRulesSection />
-          <Divider />
-          <JsonSection />
-          <Divider />
-          <ShortcutsSection />
-          <Divider />
-          <DangerZone />
+          {/* Content */}
+          <main className="min-w-0 flex-1">
+            {active === "formats" && <FormatsSection />}
+            {active === "remote" && <RemoteUrlsSection />}
+            {active === "siterules" && <SiteRulesSection />}
+            {active === "json" && <JsonSection />}
+            {active === "shortcuts" && <ShortcutsSection />}
+            {active === "reset" && <DangerZone />}
+          </main>
         </div>
       </div>
     </ThemeProvider>
   );
 }
 
-function Divider() {
-  return <Separator className="my-8" />;
+// Sleek native <select>: appearance-none + lucide chevron so it matches the
+// h-7 Input height (raw <select> ships OS chrome that breaks row alignment).
+function NativeSelect({
+  className,
+  children,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <div className="relative inline-block shrink-0">
+      <select
+        className={cn(
+          "border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring h-7 w-full cursor-pointer appearance-none rounded-md border pl-2.5 pr-7 text-[12px] outline-none focus-visible:ring-1",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        aria-hidden
+        className="text-muted-foreground pointer-events-none absolute right-2 top-1/2 size-3 -translate-y-1/2"
+      />
+    </div>
+  );
 }
 
 function SectionHeading({
@@ -121,12 +188,12 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="mb-4 flex items-start gap-3">
-      <Icon className="text-muted-foreground mt-0.5 size-5 shrink-0" />
-      <div>
+    <div className="mb-4">
+      <div className="flex items-center gap-2">
+        <Icon className="text-muted-foreground size-4 shrink-0" />
         <h2 className="text-foreground text-base font-semibold">{title}</h2>
-        <p className="text-muted-foreground text-xs">{subtitle}</p>
       </div>
+      <p className="text-muted-foreground mt-0.5 text-xs">{subtitle}</p>
     </div>
   );
 }
@@ -238,12 +305,35 @@ function RemoteUrlsSection() {
 
 /* ─── Site rules ───────────────────────────────────────────────────────── */
 
+const SITE_RULE_EXAMPLES = [
+  "*://*.github.com/*",
+  "https://docs.example.com/*",
+  "file:///Users/me/notes/*",
+  "*://*/*",
+];
+
+const SITE_RULE_RECIPES: { mode: SiteRuleMode; pattern: string; label: string }[] =
+  [
+    { mode: "exclude", pattern: "*://news.ycombinator.com/*", label: "Turn off on one site" },
+    { mode: "exclude", pattern: "*://*.github.com/*", label: "Turn off on a domain + its subdomains" },
+    { mode: "exclude", pattern: "file:///Users/me/private/*", label: "Turn off for local files in a folder" },
+    { mode: "exclude", pattern: "*://*/*", label: "Turn off everywhere (kill switch)" },
+    { mode: "include", pattern: "*://gist.githubusercontent.com/*", label: "Force-allow one host (carve-out)" },
+  ];
+
+// Per-site rules editor. Lets users add Exclude/Include rules (Chrome match
+// patterns) controlling where Filemark runs, with live pattern validation,
+// clickable examples + recipes, and a table to enable/disable/delete each rule.
+// The actual skip/allow decision lives in lib/siteRules.ts (shouldRun); this is
+// purely the management UI. See docsi/SITE_RULES_PLAN.md.
 function SiteRulesSection() {
   const settings = useSettings((s) => s.settings);
   const addSiteRule = useSettings((s) => s.addSiteRule);
   const removeSiteRule = useSettings((s) => s.removeSiteRule);
+  const toggleSiteRule = useSettings((s) => s.toggleSiteRule);
   const [pattern, setPattern] = useState("");
   const [mode, setMode] = useState<SiteRuleMode>("exclude");
+  const [showHelp, setShowHelp] = useState(false);
 
   const rules = settings.siteRules;
   const normalized = normalizePattern(pattern);
@@ -251,7 +341,12 @@ function SiteRulesSection() {
 
   const add = () => {
     if (!valid) return;
-    void addSiteRule({ id: crypto.randomUUID(), pattern: normalized, mode });
+    void addSiteRule({
+      id: crypto.randomUUID(),
+      pattern: normalized,
+      mode,
+      enabled: true,
+    });
     setPattern("");
   };
 
@@ -264,15 +359,14 @@ function SiteRulesSection() {
       />
 
       <div className="flex items-center gap-2">
-        <select
+        <NativeSelect
           value={mode}
           onChange={(e) => setMode(e.target.value as SiteRuleMode)}
-          className="border-border bg-background text-foreground h-9 rounded-md border px-2 text-sm"
           aria-label="Rule mode"
         >
           <option value="exclude">Exclude</option>
           <option value="include">Include</option>
-        </select>
+        </NativeSelect>
         <Input
           value={pattern}
           onChange={(e) => setPattern(e.target.value)}
@@ -280,11 +374,16 @@ function SiteRulesSection() {
             if (e.key === "Enter") add();
           }}
           placeholder="*://*.github.com/*"
-          className="flex-1 font-mono text-xs"
+          className="h-7 flex-1 font-mono text-[12px]"
           aria-label="Match pattern"
         />
-        <Button size="sm" disabled={!valid} onClick={add}>
-          <Plus className="size-4" /> Add
+        <Button
+          size="sm"
+          className="h-7 shrink-0 px-3 text-[12px]"
+          disabled={!valid}
+          onClick={add}
+        >
+          <Plus className="size-3.5" /> Add
         </Button>
       </div>
       {pattern.trim() && !valid && (
@@ -299,41 +398,143 @@ function SiteRulesSection() {
         </p>
       )}
 
-      <div className="mt-3 space-y-1">
-        {rules.length === 0 && (
-          <p className="text-muted-foreground px-3 py-2 text-sm">
-            No rules — Filemark runs on every supported file. Add an Exclude to
-            turn it off for a site.
-          </p>
-        )}
-        {rules.map((r) => (
-          <div
-            key={r.id}
-            className="hover:bg-muted/50 flex items-center gap-3 rounded-md px-3 py-2 text-sm"
+      {/* Clickable example patterns — fill the input on click. */}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+        <span className="text-muted-foreground">Examples:</span>
+        {SITE_RULE_EXAMPLES.map((ex) => (
+          <button
+            key={ex}
+            type="button"
+            onClick={() => setPattern(ex)}
+            className="border-border bg-muted/40 hover:bg-muted text-foreground rounded border px-1.5 py-0.5 font-mono"
           >
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                r.mode === "include"
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                  : "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-              )}
-            >
-              {r.mode === "include" ? "Include" : "Exclude"}
-            </span>
-            <code className="text-foreground min-w-0 flex-1 truncate text-xs">
-              {r.pattern}
-            </code>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => void removeSiteRule(r.id)}
-              aria-label="Delete rule"
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
+            {ex}
+          </button>
         ))}
+        <button
+          type="button"
+          onClick={() => setShowHelp((v) => !v)}
+          className="text-primary ml-auto inline-flex items-center gap-1 hover:underline"
+        >
+          <HelpCircle className="size-3.5" />
+          {showHelp ? "Hide help" : "Recipes & help"}
+        </button>
+      </div>
+
+      {showHelp && (
+        <div className="border-border bg-muted/30 mt-2 space-y-2 rounded-md border p-3 text-xs">
+          <p className="text-muted-foreground">
+            Click a recipe to fill the form, then press Add. Patterns use Chrome
+            match syntax: <code className="text-foreground">scheme://host/path</code>{" "}
+            with <code className="text-foreground">*</code> wildcards.
+          </p>
+          <div className="space-y-1">
+            {SITE_RULE_RECIPES.map((r) => (
+              <button
+                key={r.label}
+                type="button"
+                onClick={() => {
+                  setMode(r.mode);
+                  setPattern(r.pattern);
+                  setShowHelp(false);
+                }}
+                className="hover:bg-muted/60 flex w-full items-center gap-2 rounded px-2 py-1 text-left"
+              >
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                    r.mode === "include"
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                      : "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+                  )}
+                >
+                  {r.mode === "include" ? "Include" : "Exclude"}
+                </span>
+                <code className="text-foreground shrink-0 font-mono">
+                  {r.pattern}
+                </code>
+                <span className="text-muted-foreground truncate">{r.label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-muted-foreground border-border border-t pt-2">
+            <strong className="text-foreground">Include wins over Exclude</strong>{" "}
+            — combine a broad Exclude with a narrow Include to carve out an
+            exception (e.g. exclude <code>*://*.github.com/*</code> but include{" "}
+            <code>*://gist.githubusercontent.com/*</code>). Rules only decide
+            skip-or-not — a page still needs a supported file type to render.
+          </p>
+        </div>
+      )}
+
+      <div className="border-border mt-3 overflow-hidden rounded-md border">
+        <table className="w-full table-fixed text-[12px]">
+          <thead className="bg-muted/50 border-border border-b">
+            <tr className="text-muted-foreground text-left">
+              <th className="w-20 px-3 py-1.5 font-semibold">Mode</th>
+              <th className="px-3 py-1.5 font-semibold">Pattern</th>
+              <th className="w-12 px-2 py-1.5 text-center font-semibold">On</th>
+              <th className="w-10 px-2 py-1.5"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-border divide-y">
+            {rules.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="text-muted-foreground px-3 py-3 text-center"
+                >
+                  No rules — Filemark runs on every supported file.
+                </td>
+              </tr>
+            )}
+            {rules.map((r) => (
+              <tr
+                key={r.id}
+                className={cn(
+                  "even:bg-muted/25 hover:bg-muted/60 transition-colors",
+                  r.enabled === false && "opacity-55",
+                )}
+              >
+                <td className="px-3 py-1.5 align-middle">
+                  <span
+                    className={cn(
+                      "inline-block rounded-full px-2 py-0.5 text-[11px] font-medium",
+                      r.mode === "include"
+                        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                        : "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+                    )}
+                  >
+                    {r.mode === "include" ? "Include" : "Exclude"}
+                  </span>
+                </td>
+                <td className="px-3 py-1.5 align-middle">
+                  <code className="text-foreground block truncate font-mono">
+                    {r.pattern}
+                  </code>
+                </td>
+                <td className="px-2 py-1.5 text-center align-middle">
+                  <Toggle
+                    checked={r.enabled !== false}
+                    onChange={() => void toggleSiteRule(r.id)}
+                    label={r.enabled === false ? "Disabled" : "Enabled"}
+                  />
+                </td>
+                <td className="px-2 py-1 text-right align-middle">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive size-7"
+                    onClick={() => void removeSiteRule(r.id)}
+                    aria-label="Delete rule"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );
@@ -355,21 +556,21 @@ function JsonSection() {
       />
       <div className="space-y-5">
         <Row label="Theme" hint="'Auto' tracks the app's light/dark mode.">
-          <select
+          <NativeSelect
             value={j.theme}
             onChange={(e) => patchJson({ theme: e.target.value as JsonThemeId })}
-            className="bg-background h-8 min-w-[180px] rounded-md border px-2 text-sm"
+            className="min-w-[180px]"
           >
             {JSON_THEMES.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </Row>
 
         <Row label="Collapse depth" hint="How deep to expand by default. 'All' collapses everything below the root.">
-          <select
+          <NativeSelect
             value={j.collapsedDepth === false ? "none" : String(j.collapsedDepth)}
             onChange={(e) =>
               patchJson({
@@ -377,7 +578,7 @@ function JsonSection() {
                   e.target.value === "none" ? false : Number(e.target.value),
               })
             }
-            className="bg-background h-8 min-w-[140px] rounded-md border px-2 text-sm"
+            className="min-w-[140px]"
           >
             <option value="none">None — expand all</option>
             <option value="1">1 — root only</option>
@@ -385,7 +586,7 @@ function JsonSection() {
             <option value="3">3</option>
             <option value="4">4</option>
             <option value="5">5</option>
-          </select>
+          </NativeSelect>
         </Row>
 
         <Row label="Shorten strings after" hint="Values longer than this are truncated with a toggle; 0 disables truncation.">
@@ -413,7 +614,7 @@ function JsonSection() {
             max={8}
             value={j.indent}
             onChange={(e) => patchJson({ indent: Number(e.target.value) || 0 })}
-            className="h-8 w-20"
+            className="w-20"
           />
         </Row>
 
@@ -675,6 +876,10 @@ function Row({
   );
 }
 
+// Shared compact switch (h-4 w-7) used by every toggle on the options page —
+// formats, remote, shortcut-disable, and per-rule enable/disable. `invert`
+// flips the visual on/off vs the stored value (e.g. an "enabled" toggle backed
+// by an "allShortcutsDisabled" field).
 function Toggle({
   checked,
   onChange,
@@ -700,15 +905,15 @@ function Toggle({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={
-        "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 " +
+        "relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 " +
         (on ? "bg-primary" : "bg-muted border")
       }
       title={label}
     >
       <span
         className={
-          "inline-block size-3.5 transform rounded-full bg-white transition-transform " +
-          (on ? "translate-x-[18px]" : "translate-x-[2px]")
+          "inline-block size-3 transform rounded-full bg-white shadow-sm transition-transform " +
+          (on ? "translate-x-[14px]" : "translate-x-[2px]")
         }
       />
       {hovered && (

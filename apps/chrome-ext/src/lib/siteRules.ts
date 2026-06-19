@@ -12,6 +12,9 @@ export interface SiteRule {
   /** Chrome match pattern, e.g. "*://*.github.com/*", "https://x.com/docs/*". */
   pattern: string;
   mode: SiteRuleMode;
+  /** Disabled rules are ignored without deleting them. Missing = enabled
+   *  (back-compat for rules saved before this field existed). */
+  enabled?: boolean;
 }
 
 const SPECIAL = /[.+?^${}()|[\]\\]/g;
@@ -109,6 +112,7 @@ export function shouldRun(url: string, rules: SiteRule[] | undefined): boolean {
   if (!rules || rules.length === 0) return true;
   let excluded = false;
   for (const r of rules) {
+    if (r.enabled === false) continue; // disabled rules are ignored
     if (!matches(r, url)) continue;
     if (r.mode === "include") return true; // include wins outright
     if (r.mode === "exclude") excluded = true;

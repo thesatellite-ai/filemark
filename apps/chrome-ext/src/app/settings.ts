@@ -177,6 +177,7 @@ interface SettingsStore {
   setAllShortcutsDisabled(disabled: boolean): Promise<void>;
   addSiteRule(rule: SiteRule): Promise<void>;
   removeSiteRule(id: string): Promise<void>;
+  toggleSiteRule(id: string): Promise<void>;
   reset(): Promise<void>;
 }
 
@@ -279,6 +280,20 @@ export const useSettings = create<SettingsStore>((set, get) => ({
     const next = {
       ...get().settings,
       siteRules: get().settings.siteRules.filter((r) => r.id !== id),
+    };
+    set({ settings: next });
+    await sync.set(next);
+  },
+
+  // Flip a rule's enabled flag in place — lets users temporarily disable a
+  // rule (to test) without deleting and re-adding it. `enabled === false` is
+  // the only "off" state; undefined/true both mean on.
+  async toggleSiteRule(id) {
+    const next = {
+      ...get().settings,
+      siteRules: get().settings.siteRules.map((r) =>
+        r.id === id ? { ...r, enabled: r.enabled === false } : r,
+      ),
     };
     set({ settings: next });
     await sync.set(next);
