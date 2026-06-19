@@ -314,3 +314,12 @@ chrome.permissions.onRemoved.addListener(() => {
 // reloads the extension (restarting this worker) but fires no permission
 // event, so this top-level call is what restores the badge after that toggle.
 void refreshSetupBadge();
+
+// Content scripts (injected file viewer) can't call chrome.runtime.openOptionsPage
+// themselves — it's not exposed to content-script contexts — so they ask the
+// service worker to open it.
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg?.type === "fv:open-options") {
+    chrome.runtime.openOptionsPage();
+  }
+});

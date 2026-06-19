@@ -6,6 +6,7 @@ import { getRenderer } from "../registry";
 import { idbStorage } from "../adapters/idbStorage";
 import { createFSAAssetResolver } from "../adapters/fsaAssets";
 import { sessionHandles } from "../sessionHandles";
+import { isInjectMode } from "../urlSync";
 import { readFileAsText } from "../fs";
 import { MDXViewer, BacklinksProvider, type Backlink } from "@filemark/mdx";
 import { WELCOME_DOC } from "../welcomeDoc";
@@ -165,6 +166,10 @@ export function Viewer() {
   // to avoid triggering re-renders when nothing has changed on disk.
   useEffect(() => {
     if (!autoRefresh || !file) return;
+    // The injected viewer runs in the page's opaque origin, where fetching a
+    // file:// URL is CORS-blocked — refresh there is a full page reload, not
+    // a re-read. Skip the fetch-based loop to avoid console errors.
+    if (isInjectMode()) return;
     const refreshable = fileIsRefreshable(file, sessionHandles);
     if (!refreshable) return;
 
@@ -197,6 +202,8 @@ export function Viewer() {
   // having to drop the file again.
   useEffect(() => {
     if (!file) return;
+    // See note above — no fetch-based re-read in the injected viewer.
+    if (isInjectMode()) return;
     if (!fileIsRefreshable(file, sessionHandles)) return;
 
     let cancelled = false;

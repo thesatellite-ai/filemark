@@ -84,10 +84,15 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   }, []);
 
   const openOptions = () => {
-    // chrome.runtime.openOptionsPage is available in extension contexts;
-    // fall back to constructing the URL when running under localhost for dev.
+    // In the extension app/options context openOptionsPage is available. In a
+    // content script (injected file:// viewer) it is NOT, and the options page
+    // isn't web-accessible, so window.open(getURL(...)) is blocked too — ask
+    // the service worker to open it instead. Plain localhost dev falls back to
+    // a relative URL.
     if (typeof chrome !== "undefined" && chrome.runtime?.openOptionsPage) {
       chrome.runtime.openOptionsPage();
+    } else if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+      chrome.runtime.sendMessage({ type: "fv:open-options" });
     } else {
       window.open("../options/index.html", "_blank");
     }
@@ -113,13 +118,18 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   return (
     <header className="bg-background flex h-11 shrink-0 items-center gap-1 px-2">
       <div className="flex items-center gap-1">
-        <IconBtn
-          onClick={toggleSidebar}
-          title="Toggle sidebar (⌘B)"
-          aria-label="Toggle sidebar"
-        >
-          <PanelLeft className="size-4" />
-        </IconBtn>
+        {/* Library/multi-file controls (sidebar toggle, Open Folder, reveal-in-
+            sidebar) are hidden in the injected file:// viewer: it shows a single
+            file with the sidebar collapsed, so they have nothing to act on. */}
+        {!isInjectMode() && (
+          <IconBtn
+            onClick={toggleSidebar}
+            title="Toggle sidebar (⌘B)"
+            aria-label="Toggle sidebar"
+          >
+            <PanelLeft className="size-4" />
+          </IconBtn>
+        )}
         <span className="flex items-center gap-1.5 px-1.5 text-sm font-semibold tracking-tight">
           <BookOpenText className="text-primary size-4" />
           <span className="hidden sm:inline">Filemark</span>
@@ -153,7 +163,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
       </div>
 
       <div className="flex items-center gap-1">
-        {hasDirectoryPicker() && (
+        {!isInjectMode() && hasDirectoryPicker() && (
           <Button
             variant="outline"
             size="sm"
@@ -166,23 +176,37 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             <span className="hidden sm:inline"> Open Folder</span>
           </Button>
         )}
-        <IconBtn
-          onClick={toggleAutoRefresh}
-          title={
-            autoRefresh
-              ? `Auto-refresh on — polling active file + all folders every ${(autoRefreshMs / 1000).toFixed(1)}s. Click to stop.`
-              : `Auto-refresh off — click to poll every ${(autoRefreshMs / 1000).toFixed(1)}s.`
-          }
-          aria-label="Auto-refresh"
-          aria-pressed={autoRefresh}
-        >
-          <RefreshCw
-            className={cn(
-              "size-4 transition-colors",
-              autoRefresh && "text-emerald-500",
-            )}
-          />
-        </IconBtn>
+        {isInjectMode() ? (
+          <IconBtn
+            // file:// pages have an opaque (null) origin, so the content
+            // script can't fetch the file to re-read it (CORS blocks the
+            // file: scheme). Reloading the page makes Chrome re-read the
+            // file from disk and re-inject with fresh content.
+            onClick={() => window.location.reload()}
+            title="Reload this file from disk"
+            aria-label="Reload from source"
+          >
+            <RefreshCw className="size-4" />
+          </IconBtn>
+        ) : (
+          <IconBtn
+            onClick={toggleAutoRefresh}
+            title={
+              autoRefresh
+                ? `Auto-refresh on — polling active file + all folders every ${(autoRefreshMs / 1000).toFixed(1)}s. Click to stop.`
+                : `Auto-refresh off — click to poll every ${(autoRefreshMs / 1000).toFixed(1)}s.`
+            }
+            aria-label="Auto-refresh"
+            aria-pressed={autoRefresh}
+          >
+            <RefreshCw
+              className={cn(
+                "size-4 transition-colors",
+                autoRefresh && "text-emerald-500",
+              )}
+            />
+          </IconBtn>
+        )}
         <IconBtn onClick={onOpenSearch} title="Search (⌘K)" aria-label="Search">
           <Search className="size-4" />
         </IconBtn>
@@ -194,7 +218,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         >
           <List className="size-4" />
         </IconBtn>
-        {activeFile && (
+        {activeFile && !isInjectMode() && (
           <IconBtn
             onClick={revealActiveInSidebar}
             title="Reveal current file in sidebar"
