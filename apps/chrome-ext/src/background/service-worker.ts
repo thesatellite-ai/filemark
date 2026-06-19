@@ -4,6 +4,8 @@
 // for formats Chrome would otherwise download (CSV/TSV) get redirected
 // into the viewer instead.
 
+import { shouldRun, type SiteRule } from "@/lib/siteRules";
+
 function connectDevReload() {
   try {
     const ws = new WebSocket("ws://localhost:8791");
@@ -87,6 +89,7 @@ const INJECT_FORMATS = new Set([
 
 type StoredSettings = {
   formats?: Record<string, boolean>;
+  siteRules?: SiteRule[];
 };
 
 async function readEnabledSet(known: string[]): Promise<Set<string>> {
@@ -97,6 +100,16 @@ async function readEnabledSet(known: string[]): Promise<Set<string>> {
     return new Set(known.filter((f) => formats?.[f] !== false));
   } catch {
     return new Set(known);
+  }
+}
+
+async function readSiteRules(): Promise<SiteRule[]> {
+  try {
+    const bag = await chrome.storage.sync.get(SETTINGS_KEY);
+    const settings = bag[SETTINGS_KEY] as StoredSettings | undefined;
+    return Array.isArray(settings?.siteRules) ? settings.siteRules : [];
+  } catch {
+    return [];
   }
 }
 
@@ -263,6 +276,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   if (isFile && !(await isFileAccessAllowed())) return;
   if (isHttp && !(await hasRemotePermission())) return;
 
+  // Per-site rules — skip/allow overlay (include wins, then exclude, then
+  // default-run). Primary enforcement point: don't even inject when skipped.
+  if (!shouldRun(url, await readSiteRules())) return;
+
   console.log("[Filemark] inject candidate:", { tabId, url });
   try {
     await chrome.scripting.executeScript({
@@ -275,9 +292,67 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Quick toggle — right-click the toolbar icon to add a per-site rule for the
+// current tab's host, without changing left-click (which opens the app).
+async function addSiteRuleForHost(host: string, mode: "exclude" | "include") {
+  const pattern = `*://${host}/*`;
+  try {
+    const bag = await chrome.storage.sync.get(SETTINGS_KEY);
+    const settings = (bag[SETTINGS_KEY] as StoredSettings | undefined) ?? {};
+    const rules = Array.isArray(settings.siteRules) ? settings.siteRules : [];
+    // De-dupe identical pattern+mode; an include/exclude flip is allowed.
+    const next = rules.filter(
+      (r) => !(r.pattern === pattern && r.mode === mode),
+    );
+    next.push({ id: crypto.randomUUID(), pattern, mode });
+    await chrome.storage.sync.set({
+      [SETTINGS_KEY]: { ...settings, siteRules: next },
+    });
+  } catch (e) {
+    console.warn("Filemark: failed to add site rule", e);
+  }
+}
+
+function setupContextMenus() {
+  if (!chrome.contextMenus) return;
+  chrome.contextMenus.removeAll(() => {
+    const mk = (id: string, title: string) =>
+      chrome.contextMenus.create({ id, title, contexts: ["action"] });
+    mk("fv-exclude-site", "Don't render this site");
+    mk("fv-include-site", "Always render this site");
+    chrome.contextMenus.create({ id: "fv-sep", type: "separator", contexts: ["action"] });
+    mk("fv-manage-rules", "Manage site rules…");
+  });
+}
+
+chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === "fv-manage-rules") {
+    chrome.runtime.openOptionsPage();
+    return;
+  }
+  let host = "";
+  try {
+    host = tab?.url ? new URL(tab.url).host : "";
+  } catch {
+    /* opaque/unsupported url */
+  }
+  if (!host) return;
+  if (info.menuItemId === "fv-exclude-site") {
+    await addSiteRuleForHost(host, "exclude");
+  } else if (info.menuItemId === "fv-include-site") {
+    await addSiteRuleForHost(host, "include");
+  } else {
+    return;
+  }
+  // Reload so the new rule takes effect on the current page immediately.
+  if (tab?.id != null) chrome.tabs.reload(tab.id);
+});
+
 chrome.runtime.onInstalled.addListener((details) => {
   syncRedirectRules();
   void refreshSetupBadge();
+  setupContextMenus();
   // First install → open the welcome / setup page so the two permission
   // gates get explained before the user hits a silent failure.
   if (details.reason === "install") {
@@ -289,6 +364,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.runtime.onStartup.addListener(() => {
   syncRedirectRules();
   void refreshSetupBadge();
+  setupContextMenus();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {

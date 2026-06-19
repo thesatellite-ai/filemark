@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { idbStorage } from "./adapters/idbStorage";
+import type { SiteRule } from "@/lib/siteRules";
 
 /**
  * User-configurable settings surfaced on the options page. Persisted via
@@ -102,6 +103,12 @@ export interface Settings {
 
   /** Disable every keyboard shortcut at once. */
   allShortcutsDisabled: boolean;
+
+  /** Per-site activation rules (skip/allow overlay). `exclude` = don't run on
+   *  match; `include` = run on match (carve-out from a broader exclude).
+   *  include wins over exclude; rules never override the ext/content-type
+   *  eligibility check. See lib/siteRules.ts + docsi/SITE_RULES_PLAN.md. */
+  siteRules: SiteRule[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -128,6 +135,7 @@ export const DEFAULT_SETTINGS: Settings = {
   shortcuts: {},
   shortcutBindings: {},
   allShortcutsDisabled: false,
+  siteRules: [],
 };
 
 const SYNC_KEY = "fv:settings";
@@ -167,6 +175,8 @@ interface SettingsStore {
   setShortcut(id: ShortcutId, enabled: boolean): Promise<void>;
   setShortcutBinding(id: ShortcutId, code: string | null): Promise<void>;
   setAllShortcutsDisabled(disabled: boolean): Promise<void>;
+  addSiteRule(rule: SiteRule): Promise<void>;
+  removeSiteRule(id: string): Promise<void>;
   reset(): Promise<void>;
 }
 
@@ -180,6 +190,7 @@ function merge(stored: Partial<Settings> | null | undefined): Settings {
     shortcuts: { ...(s.shortcuts ?? {}) },
     shortcutBindings: { ...(s.shortcutBindings ?? {}) },
     allShortcutsDisabled: s.allShortcutsDisabled ?? false,
+    siteRules: Array.isArray(s.siteRules) ? s.siteRules : [],
   };
 }
 
@@ -250,6 +261,25 @@ export const useSettings = create<SettingsStore>((set, get) => ({
 
   async setAllShortcutsDisabled(disabled) {
     const next = { ...get().settings, allShortcutsDisabled: disabled };
+    set({ settings: next });
+    await sync.set(next);
+  },
+
+  async addSiteRule(rule) {
+    // De-dupe identical pattern+mode so repeated quick-toggles don't pile up.
+    const existing = get().settings.siteRules.filter(
+      (r) => !(r.pattern === rule.pattern && r.mode === rule.mode),
+    );
+    const next = { ...get().settings, siteRules: [...existing, rule] };
+    set({ settings: next });
+    await sync.set(next);
+  },
+
+  async removeSiteRule(id) {
+    const next = {
+      ...get().settings,
+      siteRules: get().settings.siteRules.filter((r) => r.id !== id),
+    };
     set({ settings: next });
     await sync.set(next);
   },

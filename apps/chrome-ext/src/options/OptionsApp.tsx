@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Ban,
   Database,
   FileCode2,
   FileJson,
@@ -7,8 +8,10 @@ import {
   FileText,
   Globe,
   Keyboard,
+  Plus,
   RotateCcw,
   Settings as SettingsIcon,
+  Trash2,
 } from "lucide-react";
 import { ThemeProvider } from "@filemark/core";
 import { useLibrary } from "../app/store";
@@ -26,10 +29,16 @@ import {
   getKeyboardLabels,
   type KeyboardLabels,
 } from "../app/keyboardLabels";
+import {
+  isValidPattern,
+  normalizePattern,
+  type SiteRuleMode,
+} from "@/lib/siteRules";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const FORMAT_META: Record<FormatId, { label: string; icon: typeof FileText; description: string }> = {
   md: { label: ".md", icon: FileText, description: "Markdown (CommonMark + GFM)" },
@@ -84,6 +93,8 @@ export function OptionsApp() {
           <FormatsSection />
           <Divider />
           <RemoteUrlsSection />
+          <Divider />
+          <SiteRulesSection />
           <Divider />
           <JsonSection />
           <Divider />
@@ -221,6 +232,109 @@ function RemoteUrlsSection() {
           disabled={granted === null}
         />
       </label>
+    </section>
+  );
+}
+
+/* ─── Site rules ───────────────────────────────────────────────────────── */
+
+function SiteRulesSection() {
+  const settings = useSettings((s) => s.settings);
+  const addSiteRule = useSettings((s) => s.addSiteRule);
+  const removeSiteRule = useSettings((s) => s.removeSiteRule);
+  const [pattern, setPattern] = useState("");
+  const [mode, setMode] = useState<SiteRuleMode>("exclude");
+
+  const rules = settings.siteRules;
+  const normalized = normalizePattern(pattern);
+  const valid = normalized.length > 0 && isValidPattern(normalized);
+
+  const add = () => {
+    if (!valid) return;
+    void addSiteRule({ id: crypto.randomUUID(), pattern: normalized, mode });
+    setPattern("");
+  };
+
+  return (
+    <section>
+      <SectionHeading
+        icon={Ban}
+        title="Site rules"
+        subtitle="Control where Filemark runs. Exclude = never run here; Include = run here (carve-out from a broader exclude — Include wins). Rendering still requires a supported file type + content."
+      />
+
+      <div className="flex items-center gap-2">
+        <select
+          value={mode}
+          onChange={(e) => setMode(e.target.value as SiteRuleMode)}
+          className="border-border bg-background text-foreground h-9 rounded-md border px-2 text-sm"
+          aria-label="Rule mode"
+        >
+          <option value="exclude">Exclude</option>
+          <option value="include">Include</option>
+        </select>
+        <Input
+          value={pattern}
+          onChange={(e) => setPattern(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") add();
+          }}
+          placeholder="*://*.github.com/*"
+          className="flex-1 font-mono text-xs"
+          aria-label="Match pattern"
+        />
+        <Button size="sm" disabled={!valid} onClick={add}>
+          <Plus className="size-4" /> Add
+        </Button>
+      </div>
+      {pattern.trim() && !valid && (
+        <p className="text-destructive mt-1.5 text-xs">
+          Invalid match pattern. Try a host (github.com) or a pattern like
+          *://*.github.com/*.
+        </p>
+      )}
+      {pattern.trim() && valid && normalized !== pattern.trim() && (
+        <p className="text-muted-foreground mt-1.5 text-xs">
+          Saves as <code className="text-foreground">{normalized}</code>
+        </p>
+      )}
+
+      <div className="mt-3 space-y-1">
+        {rules.length === 0 && (
+          <p className="text-muted-foreground px-3 py-2 text-sm">
+            No rules — Filemark runs on every supported file. Add an Exclude to
+            turn it off for a site.
+          </p>
+        )}
+        {rules.map((r) => (
+          <div
+            key={r.id}
+            className="hover:bg-muted/50 flex items-center gap-3 rounded-md px-3 py-2 text-sm"
+          >
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[11px] font-medium",
+                r.mode === "include"
+                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                  : "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+              )}
+            >
+              {r.mode === "include" ? "Include" : "Exclude"}
+            </span>
+            <code className="text-foreground min-w-0 flex-1 truncate text-xs">
+              {r.pattern}
+            </code>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => void removeSiteRule(r.id)}
+              aria-label="Delete rule"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

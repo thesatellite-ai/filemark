@@ -22,6 +22,7 @@ import { useSettings } from "../app/settings";
 import { Shell } from "../app/shell/Shell";
 import { setInjectMode } from "../app/urlSync";
 import { recordWebRecent } from "../app/webRecents";
+import { shouldRun, type SiteRule } from "@/lib/siteRules";
 import type { LibraryFile } from "../app/store";
 
 // Mark inject mode globally so useUrlSync skips writing ?file=<id> to the
@@ -66,6 +67,16 @@ async function isEnabledFormat(ext: string): Promise<boolean> {
     return settings.formats[normalized] !== false;
   } catch {
     return true;
+  }
+}
+
+async function readSiteRules(): Promise<SiteRule[]> {
+  try {
+    const bag = await chrome.storage.sync.get(SYNC_KEY);
+    const settings = bag[SYNC_KEY] as { siteRules?: SiteRule[] } | undefined;
+    return Array.isArray(settings?.siteRules) ? settings.siteRules : [];
+  } catch {
+    return [];
   }
 }
 
@@ -120,6 +131,9 @@ try {
     return;
   const normalizedExt = ext === "markdown" ? "md" : ext;
   if (!(await isEnabledFormat(ext))) return;
+
+  // Per-site rules — backup gate (the service worker is the primary one).
+  if (!shouldRun(url, await readSiteRules())) return;
 
   if (document.documentElement.getAttribute(SENTINEL) === url) return;
   document.documentElement.setAttribute(SENTINEL, url);
