@@ -208,7 +208,8 @@ function Footer(): React.ReactElement {
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex items-center gap-2">
           <Logo />
-          <span>© Filemark</span>
+          {/* Year is baked at prerender/build time — refreshes on each deploy. */}
+          <span>© {new Date().getFullYear()} Filemark</span>
         </div>
         <div className="flex items-center gap-4">
           <Link to="/ai" className="hover:text-foreground">

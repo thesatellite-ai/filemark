@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  ArrowDown,
+  Check,
   Lock,
   Zap,
   Layers,
@@ -10,6 +12,16 @@ import {
   Table2,
   Database,
   Sparkles,
+  Download,
+  Upload,
+  Code2,
+  Bot,
+  PenLine,
+  Chrome,
+  X,
+  Minus,
+  MousePointerClick,
+  FolderOpen,
 } from "lucide-react";
 import {
   ldScript,
@@ -32,7 +44,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Open .md, .mdx, .json, .csv, .sql, .prisma in Chrome — real renderers, tabs, search, themes, kanban from markdown. 100% client-side.",
+          "Stop downloading files just to read them. Filemark renders Markdown, JSON, CSV and SQL/Prisma/DBML schemas as real interactive views right in Chrome — 100% local, free, open source.",
       },
       { property: "og:url", content: `${SITE}/` },
     ],
@@ -83,17 +95,374 @@ function Home(): React.ReactElement {
   return (
     <main className="bg-background text-foreground">
       <Hero />
+      <TrustStrip />
+      <Problem />
+      <BeforeAfter />
+      <HowItWorks />
+      <WhoFor />
       <Marquee />
       <ShowcaseMarkdown />
       <ShowcaseJSON />
       <ShowcaseSchema />
       <ShowcaseTable />
       <ShowcaseTasks />
-      <AISkill />
+      <VsAlternatives />
       <WhyFilemark />
+      <AISkill />
       <FAQSection />
       <Install />
     </main>
+  );
+}
+
+/* ─────────── How it works ─────────────────────────────────────────── */
+
+function HowItWorks(): React.ReactElement {
+  const steps = [
+    {
+      icon: Chrome,
+      title: "Add to Chrome",
+      body: "One click from the Chrome Web Store. No account, no sign-up, nothing to configure.",
+    },
+    {
+      icon: FolderOpen,
+      title: "Allow file access",
+      body: "Flip “Allow access to file URLs” once on the extension's details page so Filemark can open local files.",
+    },
+    {
+      icon: MousePointerClick,
+      title: "Open any file",
+      body: "Double-click a .md, .json, .csv or .sql file — or paste its path — and it renders in the tab, instantly.",
+    },
+  ];
+  return (
+    <section className="border-b border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            How it works
+          </p>
+          <h2 className="mt-3 text-balance text-[32px] font-semibold leading-[1.1] tracking-tight sm:text-[42px]">
+            Installed in a minute. Then invisible.
+          </h2>
+        </div>
+        <ol className="mt-14 grid gap-6 sm:grid-cols-3">
+          {steps.map((s, i) => (
+            <li
+              key={s.title}
+              className="relative rounded-2xl border border-border bg-card p-6"
+            >
+              <div className="flex items-center gap-3">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-foreground text-[13px] font-semibold text-background">
+                  {i + 1}
+                </span>
+                <s.icon
+                  size={18}
+                  strokeWidth={1.7}
+                  className="text-muted-foreground"
+                  aria-hidden
+                />
+              </div>
+              <h3 className="mt-5 text-[17px] font-semibold tracking-tight">
+                {s.title}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+                {s.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────── vs alternatives ──────────────────────────────────────── */
+
+function VsAlternatives(): React.ReactElement {
+  // Differentiation made explicit, against named alternatives (Fletch rule).
+  // y = yes, n = no, p = partial/depends.
+  const cols = ["Filemark", "Online viewers", "Open in an IDE"] as const;
+  const rows: { label: string; cells: ("y" | "n" | "p")[] }[] = [
+    { label: "Renders right in your browser tab", cells: ["y", "y", "n"] },
+    { label: "Files never leave your machine", cells: ["y", "n", "y"] },
+    { label: "Works offline", cells: ["y", "n", "y"] },
+    { label: "Markdown, JSON, CSV and schemas — all of them", cells: ["y", "p", "p"] },
+    { label: "One click, zero setup", cells: ["y", "p", "n"] },
+    { label: "Free & open source", cells: ["y", "p", "p"] },
+  ];
+  return (
+    <section className="border-b border-border bg-muted/25">
+      <div className="mx-auto max-w-5xl px-6 py-24 sm:py-28">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Why not just…
+          </p>
+          <h2 className="mt-3 text-balance text-[32px] font-semibold leading-[1.1] tracking-tight sm:text-[42px]">
+            Better than the workarounds.
+          </h2>
+          <p className="mt-4 text-balance leading-relaxed text-muted-foreground sm:text-lg">
+            You already have ways to read these files. Each one costs you privacy, a context switch, or a setup tax.
+          </p>
+        </div>
+        <div className="mt-14 overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="grid grid-cols-[1fr_repeat(3,72px)] items-center gap-2 border-b border-border bg-muted/50 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider sm:grid-cols-[1fr_repeat(3,120px)] sm:px-6">
+            <span className="text-muted-foreground">Capability</span>
+            {cols.map((c, i) => (
+              <span
+                key={c}
+                className={`text-center ${i === 0 ? "text-foreground" : "text-muted-foreground"}`}
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+          {rows.map((r) => (
+            <div
+              key={r.label}
+              className="grid grid-cols-[1fr_repeat(3,72px)] items-center gap-2 border-b border-border/60 px-4 py-3.5 text-[13px] last:border-0 sm:grid-cols-[1fr_repeat(3,120px)] sm:px-6 sm:text-[14px]"
+            >
+              <span>{r.label}</span>
+              {r.cells.map((cell, i) => (
+                <span
+                  key={i}
+                  className={`flex justify-center ${i === 0 ? "rounded-md bg-emerald-500/[0.06] py-1" : ""}`}
+                >
+                  <Cell v={cell} primary={i === 0} />
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Cell({ v, primary }: { v: "y" | "n" | "p"; primary: boolean }) {
+  if (v === "y")
+    return (
+      <Check
+        size={17}
+        className={primary ? "text-emerald-500" : "text-foreground/70"}
+        aria-label="yes"
+      />
+    );
+  if (v === "n")
+    return <X size={16} className="text-muted-foreground/50" aria-label="no" />;
+  return (
+    <Minus size={16} className="text-muted-foreground/50" aria-label="partial" />
+  );
+}
+
+/* ─────────── Trust strip ──────────────────────────────────────────── */
+
+function TrustStrip(): React.ReactElement {
+  const items = [
+    "Free & MIT open source",
+    "100% local — no upload",
+    "No account, no telemetry",
+    "Works offline (MV3)",
+  ];
+  return (
+    <section className="border-b border-border bg-muted/30">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-6 py-4 text-[12px] text-muted-foreground sm:gap-x-12">
+        {items.map((t) => (
+          <span key={t} className="inline-flex items-center gap-1.5">
+            <Check size={13} className="text-emerald-500" aria-hidden />
+            {t}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─────────── Problem ──────────────────────────────────────────────── */
+
+function Problem(): React.ReactElement {
+  const pains = [
+    {
+      icon: Download,
+      title: "Chrome downloads them",
+      body: "Click a .csv or .tsv link and Chrome dumps a file into Downloads instead of showing it. Now you're hunting for it in Finder.",
+    },
+    {
+      icon: FileText,
+      title: "…or shows raw text",
+      body: "Markdown renders as monospace soup. JSON is an unindented wall. A .sql schema is hundreds of lines you have to read by eye.",
+    },
+    {
+      icon: Upload,
+      title: "So you paste it somewhere",
+      body: "Into an online JSON formatter or markdown previewer — uploading your data to a server you don't control, or opening a whole IDE just to preview one file.",
+    },
+  ];
+  return (
+    <section className="border-b border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            The problem
+          </p>
+          <h2 className="mt-3 text-balance text-[32px] font-semibold leading-[1.1] tracking-tight sm:text-[42px]">
+            Your browser treats your files wrong.
+          </h2>
+          <p className="mt-4 text-balance leading-relaxed text-muted-foreground sm:text-lg">
+            You open dozens of <Mono>.md</Mono>, <Mono>.json</Mono>,{" "}
+            <Mono>.csv</Mono> and <Mono>.sql</Mono> files a day. Chrome does one
+            of three unhelpful things with every one of them.
+          </p>
+        </div>
+        <div className="mt-14 grid gap-6 sm:grid-cols-3">
+          {pains.map((p) => (
+            <div
+              key={p.title}
+              className="rounded-2xl border border-border bg-card p-6"
+            >
+              <div className="grid size-10 place-items-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                <p.icon size={18} strokeWidth={1.7} aria-hidden />
+              </div>
+              <h3 className="mt-5 text-[17px] font-semibold tracking-tight">
+                {p.title}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+                {p.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────── Before / After ───────────────────────────────────────── */
+
+function BeforeAfter(): React.ReactElement {
+  const rows = [
+    { ext: ".md", before: "Plain monospace text", after: "Rendered GitHub-flavored markdown + diagrams" },
+    { ext: ".json", before: "Unindented wall of text", after: "Collapsible tree, 9 themes, copy any node" },
+    { ext: ".csv", before: "Downloads a file", after: "Sortable, filterable datagrid in the tab" },
+    { ext: ".sql", before: "Hundreds of lines of DDL", after: "Interactive entity-relationship diagram" },
+  ];
+  return (
+    <section className="border-b border-border bg-muted/25">
+      <div className="mx-auto max-w-5xl px-6 py-24 sm:py-28">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            The fix
+          </p>
+          <h2 className="mt-3 text-balance text-[32px] font-semibold leading-[1.1] tracking-tight sm:text-[42px]">
+            Same file. Opened the way you meant.
+          </h2>
+          <p className="mt-4 text-balance leading-relaxed text-muted-foreground sm:text-lg">
+            Filemark is a local file viewer for Chrome. It intercepts the files
+            your browser fumbles and renders each one with a real, interactive
+            viewer — instantly, in place, without sending a byte anywhere.
+          </p>
+        </div>
+
+        <div className="mt-14 overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="grid grid-cols-[64px_1fr_1fr] items-center border-b border-border bg-muted/50 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:grid-cols-[88px_1fr_1fr]">
+            <span>File</span>
+            <span>Chrome today</span>
+            <span className="text-foreground">With Filemark</span>
+          </div>
+          {rows.map((r) => (
+            <div
+              key={r.ext}
+              className="grid grid-cols-[64px_1fr_1fr] items-center border-b border-border/60 px-4 py-4 text-[13px] last:border-0 sm:grid-cols-[88px_1fr_1fr] sm:text-[14px]"
+            >
+              <span className="font-mono text-[12px] font-semibold sm:text-[13px]">
+                {r.ext}
+              </span>
+              <span className="pr-3 text-muted-foreground line-through decoration-rose-500/40">
+                {r.before}
+              </span>
+              <span className="inline-flex items-start gap-1.5 font-medium">
+                <Check
+                  size={15}
+                  className="mt-0.5 shrink-0 text-emerald-500"
+                  aria-hidden
+                />
+                {r.after}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href={STORE_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-[14px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Add to Chrome — free
+            <ArrowRight size={15} />
+          </a>
+          <Link
+            to="/demo"
+            className="inline-flex h-11 items-center gap-2 rounded-full border border-border px-6 text-[14px] font-medium hover:bg-muted"
+          >
+            See it live first
+            <ArrowDown size={14} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────── Who it's for ─────────────────────────────────────────── */
+
+function WhoFor(): React.ReactElement {
+  const personas = [
+    {
+      icon: Code2,
+      who: "Developers",
+      body: "Your repo is full of READMEs, configs, fixtures, and schemas. Open any of them, rendered, without leaving the browser or firing up an editor.",
+    },
+    {
+      icon: Bot,
+      who: "AI-assisted coders",
+      body: "Claude Code, Cursor and Codex write Markdown all day. Filemark renders their kanban boards, charts and ER diagrams — and ships a skill so they author them correctly.",
+    },
+    {
+      icon: PenLine,
+      who: "Technical writers",
+      body: "Preview docs exactly as they'll publish — GFM, callouts, tabs, math, Mermaid — straight from the file, with live task checkboxes and a table of contents.",
+    },
+  ];
+  return (
+    <section className="border-b border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Who it's for
+          </p>
+          <h2 className="mt-3 text-balance text-[32px] font-semibold leading-[1.1] tracking-tight sm:text-[42px]">
+            Made for people who live in files.
+          </h2>
+        </div>
+        <div className="mt-14 grid gap-6 sm:grid-cols-3">
+          {personas.map((p) => (
+            <div key={p.who} className="rounded-2xl border border-border bg-card p-6">
+              <div className="grid size-10 place-items-center rounded-xl bg-foreground/[0.05] text-foreground">
+                <p.icon size={18} strokeWidth={1.6} aria-hidden />
+              </div>
+              <h3 className="mt-5 text-[17px] font-semibold tracking-tight">
+                {p.who}
+              </h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+                {p.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -185,23 +554,23 @@ function Hero(): React.ReactElement {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,oklch(0.96_0_0_/_0.9),transparent_70%)] dark:bg-[radial-gradient(60%_50%_at_50%_0%,oklch(0.22_0_0_/_0.8),transparent_70%)]"
       />
       <div className="relative mx-auto max-w-6xl px-6 pb-28 pt-24 text-center sm:pt-32">
-        <div className="mx-auto mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground backdrop-blur">
-          <span className="size-1 rounded-full bg-emerald-500" />
-          Free · local-first · no telemetry
+        <div className="mx-auto mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3.5 py-1.5 text-[12px] font-medium text-foreground/80 shadow-sm backdrop-blur">
+          <Chrome size={14} className="text-foreground" aria-hidden />
+          Free Chrome extension
+          <span className="mx-0.5 h-3 w-px bg-border" />
+          <span className="text-muted-foreground">100% local</span>
         </div>
         <h1 className="mx-auto max-w-4xl text-balance text-[44px] font-semibold leading-[1.05] tracking-tight sm:text-[64px] sm:leading-[1.02]">
-          Every file Chrome
+          Stop downloading files
           <br />
           <span className="bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent">
-            should already open. Beautifully.
+            just to read them.
           </span>
         </h1>
         <p className="mx-auto mt-7 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
-          One Chrome extension. Real renderers for{" "}
-          <Mono>.md</Mono>, <Mono>.mdx</Mono>, <Mono>.json</Mono>,{" "}
-          <Mono>.csv</Mono>, <Mono>.tsv</Mono>, <Mono>.sql</Mono>,{" "}
-          <Mono>.prisma</Mono> and <Mono>.dbml</Mono>. No server, no upload,
-          no telemetry.
+          Filemark renders Markdown, JSON, CSV, and SQL schemas as real
+          interactive views — right in the Chrome tab you're already in.
+          100% local. Nothing ever uploaded.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a
@@ -222,7 +591,7 @@ function Hero(): React.ReactElement {
         </div>
 
         <div className="mt-16">
-          <BrowserFrame title="docs/launch-plan.md — Filemark">
+          <BrowserFrame url="file:///Users/you/launch/launch-plan.md">
             <HeroPreview />
           </BrowserFrame>
         </div>
@@ -267,7 +636,7 @@ function Marquee(): React.ReactElement {
         <ul className="grid grid-cols-3 gap-2.5 sm:grid-cols-5 lg:grid-cols-9">
           {FORMATS.map((f) => (
             <li key={f.ext}>
-              <div className="group flex aspect-square flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-card p-2 text-center transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md">
+              <div className="group flex aspect-square flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-card p-2 text-center transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-muted/40">
                 <f.Icon
                   size={16}
                   strokeWidth={1.7}
@@ -550,24 +919,36 @@ function Mono({ children }: { children: React.ReactNode }) {
 
 function BrowserFrame({
   title,
+  url,
   children,
   compact,
 }: {
   title?: string;
+  /** When set, renders a Chrome-style address bar showing this URL —
+   *  signals "this opens in Chrome" and (with a file:// path) "it renders
+   *  your local files". */
+  url?: string;
   children: React.ReactNode;
   compact?: boolean;
 }): React.ReactElement {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_30px_80px_-20px_rgba(0,0,0,0.25)]">
-      <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-3 py-2">
+    // Flat: clean border only, no drop shadow (the previous elevation read as
+    // heavy boxes while scrolling). Modern, calm, lets the screenshot lead.
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-3 py-2.5">
         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
         <span className="size-2.5 rounded-full bg-[#28c840]" />
-        {title && (
+        {url ? (
+          <div className="ml-2 flex h-6 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-border bg-background/70 px-2.5 text-[11px] text-muted-foreground">
+            <Lock size={10} className="shrink-0" aria-hidden />
+            <span className="truncate font-mono">{url}</span>
+          </div>
+        ) : title ? (
           <span className="ml-3 truncate text-[11px] text-muted-foreground">
             {title}
           </span>
-        )}
+        ) : null}
       </div>
       <div className={compact ? "h-[380px] overflow-hidden" : "min-h-[420px]"}>
         {children}
@@ -719,7 +1100,7 @@ function JsonMock(): React.ReactElement {
       <div className="ml-4">
         <span className="text-[#79c0ff]">"version"</span>
         <span className="text-[#7d8590]">: </span>
-        <span className="text-[#a5d6ff]">"0.1.0"</span>
+        <span className="text-[#a5d6ff]">"0.1.4"</span>
         <span className="text-[#7d8590]">,</span>
       </div>
       <div className="ml-4">
@@ -794,7 +1175,7 @@ function SchemaMock(): React.ReactElement {
       {tables.map((t) => (
         <div
           key={t.name}
-          className="absolute w-[150px] overflow-hidden rounded-md border border-border bg-card shadow-sm"
+          className="absolute w-[150px] overflow-hidden rounded-md border border-border bg-card"
           style={{ left: t.x, top: t.y }}
         >
           <div className="border-b border-border bg-muted/60 px-2.5 py-1 font-mono text-[11px] font-semibold">
@@ -909,7 +1290,7 @@ function TasksMock(): React.ReactElement {
               {c.cards.map((t) => (
                 <div
                   key={t}
-                  className="rounded border border-border bg-background p-2 text-[11px] leading-snug shadow-sm"
+                  className="rounded border border-border bg-background p-2 text-[11px] leading-snug"
                 >
                   {t}
                 </div>
