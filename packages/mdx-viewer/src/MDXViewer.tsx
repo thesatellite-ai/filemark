@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkBreaks from "remark-breaks";
+import remarkGemoji from "remark-gemoji";
+import { remarkGithubEmoji } from "./remarkGithubEmoji";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
 import rehypeRaw from "rehype-raw";
@@ -476,7 +478,12 @@ export function MDXViewer(props: ViewerProps) {
         <MDXComponentsProvider value={components as never}>
           <TasksProvider value={tasks}>
             <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath, remarkBreaks, remarkCodeMeta]}
+              remarkPlugins={[remarkGfm, remarkGemoji, remarkGithubEmoji, remarkMath, remarkBreaks, remarkCodeMeta]}
+              // Default urlTransform strips data: URLs; allow our bundled
+              // base64 emoji images (remarkGithubEmoji) through.
+              urlTransform={(url) =>
+                url.startsWith("data:image/") ? url : defaultUrlTransform(url)
+              }
               rehypePlugins={[
                 rehypeRaw,
                 rehypeSlug,

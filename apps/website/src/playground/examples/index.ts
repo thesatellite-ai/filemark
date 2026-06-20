@@ -15,6 +15,8 @@ import richdocsTier3 from "../../../../../examples/richdocs-tier3.md?raw";
 import schemaDbml from "../../../../../examples/schema.dbml?raw";
 import schemaPrisma from "../../../../../examples/schema.prisma?raw";
 import schemaSql from "../../../../../examples/schema.sql?raw";
+import gfmEmojiVerify from "../../../../../examples/gfm-emoji-verify.md?raw";
+import emojiCheatsheet from "../../../../../examples/emoji-cheatsheet.md?raw";
 
 export interface Example {
   id: string;
@@ -97,6 +99,24 @@ function wrapSchema(kind: "sql" | "prisma" | "dbml", source: string): string {
 }
 
 export const EXAMPLES: Example[] = [
+  {
+    id: "gfm-emoji-verify",
+    title: "Rendering verification — GFM, emoji, code, math",
+    description:
+      "Kitchen-sink doc to eyeball the pipeline: GFM formatting, emoji shortcodes, tables, code, math, and a callout.",
+    section: "Verify",
+    content: gfmEmojiVerify,
+    filename: "gfm-emoji-verify.md",
+  },
+  {
+    id: "emoji-cheatsheet",
+    title: "Emoji cheat sheet (full GitHub list)",
+    description:
+      "The canonical GitHub emoji list — verifies gemoji shortcodes. GitHub-proprietary customs (bowtie, octocat, trollface…) stay literal by design.",
+    section: "Verify",
+    content: emojiCheatsheet,
+    filename: "emoji-cheatsheet.md",
+  },
   {
     id: "datagrid-full",
     title: "Datagrid — full feature tour",

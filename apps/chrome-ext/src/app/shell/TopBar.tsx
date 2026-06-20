@@ -238,16 +238,19 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         >
           <ListTodo className="size-4" />
         </IconBtn>
-        <IconBtn
-          onClick={toggleReadingMode}
-          title={readingMode ? "Exit reading mode (⇧F)" : "Reading mode (⇧F)"}
-          aria-label="Reading mode"
-          className={cn(
-            readingMode && "bg-accent text-accent-foreground"
-          )}
-        >
-          <BookOpen className="size-4" />
-        </IconBtn>
+        {/* Reading mode only hides the sidebar + tasks panel — both already
+            off in the injected single-file viewer, so the toggle is a no-op
+            there. Hide it in inject (like the other library-only controls). */}
+        {!isInjectMode() && (
+          <IconBtn
+            onClick={toggleReadingMode}
+            title={readingMode ? "Exit reading mode (⇧F)" : "Reading mode (⇧F)"}
+            aria-label="Reading mode"
+            className={cn(readingMode && "bg-accent text-accent-foreground")}
+          >
+            <BookOpen className="size-4" />
+          </IconBtn>
+        )}
         {isInjectMode() && activeFile?.sourceUrl && (
           <IconBtn
             onClick={() => {

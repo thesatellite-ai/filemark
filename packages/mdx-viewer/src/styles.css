@@ -105,6 +105,18 @@
   border-radius: var(--fm-image-radius, var(--radius-md));
   border: var(--fm-image-border, 1px solid var(--border));
 }
+/* GitHub-custom emoji (remarkGithubEmoji) — render inline like a glyph, not as
+   a bordered block image. */
+.fv-mdx-body img.emoji {
+  display: inline-block;
+  height: 1.15em;
+  width: 1.15em;
+  margin: 0 0.05em;
+  vertical-align: -0.2em;
+  border: 0;
+  border-radius: 0;
+  max-width: none;
+}
 .fv-mdx-body code:not(.fv-code-shiki code) {
   background: var(--fm-prose-code-bg, var(--code-bg));
   border: 1px solid var(--border);
