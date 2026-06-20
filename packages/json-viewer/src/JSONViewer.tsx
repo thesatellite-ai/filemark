@@ -143,6 +143,13 @@ export function JSONViewer(
         ? "githubLight"
         : "githubDark";
   const viewTheme = THEMES[pickedTheme];
+  // The JSON tree paints its own theme background (e.g. githubDark #0d1117)
+  // only on its own box. The content wrapper below must match that color or
+  // its `p-3` padding shows as a mismatched frame around the tree — most
+  // visible when the JSON theme is pinned dark while the app is in light mode.
+  const themeBg = (viewTheme as Record<string, string | undefined>)[
+    "--w-rjv-background-color"
+  ];
 
   const fileType = file.ext.toLowerCase();
 
@@ -244,7 +251,13 @@ export function JSONViewer(
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-b-md border bg-card p-3 text-[13px] leading-relaxed">
+      <div
+        className="bg-card overflow-x-auto rounded-b-md border p-3 text-[13px] leading-relaxed"
+        // Match the JSON theme's own background so the padding blends in
+        // (no light frame around a dark tree). Inline style overrides the
+        // bg-card class fallback when a theme background is present.
+        style={themeBg ? { backgroundColor: themeBg } : undefined}
+      >
         {renderJsonTree({
           value: parsed.value,
           pickedTheme,
