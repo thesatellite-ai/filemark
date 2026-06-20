@@ -9,7 +9,7 @@
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
     "build": "vite build",
-    "build:cf": "vite build && rm -rf dist-cf && mkdir -p dist-cf/apps/filemark && cp -R dist/client/. dist-cf/apps/filemark/ && cp dist/client/index.html dist-cf/index.html",
+    "build:cf": "vite build && rm -rf dist-cf && mkdir -p dist-cf/apps/filemark && cp -R dist/client/. dist-cf/apps/filemark/ && cp dist/client/index.html dist-cf/index.html && cp dist/client/404.html dist-cf/404.html && cp _headers dist-cf/_headers",
     "preview": "vite preview",
     "deploy": "pnpm run build:cf && wrangler deploy"
   },

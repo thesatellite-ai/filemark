@@ -11,6 +11,12 @@ import {
   Database,
   Sparkles,
 } from "lucide-react";
+import {
+  ldScript,
+  softwareApplicationLd,
+  softwareSourceCodeLd,
+  faqLd,
+} from "../lib/schema";
 
 const SITE = "https://khanakia.com/apps/filemark";
 const STORE_URL =
@@ -32,30 +38,42 @@ export const Route = createFileRoute("/")({
     ],
     links: [{ rel: "canonical", href: `${SITE}/` }],
     scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          name: "Filemark",
-          url: `${SITE}/`,
-          description:
-            "Chrome extension that renders local and remote markdown, MDX, JSON, CSV, TSV, SQL, Prisma and DBML files with rich interactive components.",
-          applicationCategory: "DeveloperApplication",
-          operatingSystem: "Chrome",
-          isAccessibleForFree: true,
-          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-          author: {
-            "@type": "Person",
-            name: "khanakia",
-            url: "https://github.com/khanakia",
-          },
-        }),
-      },
+      ldScript(softwareApplicationLd()),
+      ldScript(softwareSourceCodeLd()),
+      ldScript(faqLd(FAQ)),
     ],
   }),
   component: Home,
 });
+
+// Real product FAQ — also rendered on the page (FAQPage schema must match
+// visible content). Keep answers honest and concrete.
+const FAQ = [
+  {
+    q: "Is Filemark free?",
+    a: "Yes. Filemark is completely free and open source under the MIT license. There is no paid tier, account, or sign-up.",
+  },
+  {
+    q: "Does Filemark upload my files anywhere?",
+    a: "No. Every renderer runs entirely in your browser. No file contents, search queries, settings, or telemetry are ever sent to any server — you can verify zero outbound requests in Chrome DevTools.",
+  },
+  {
+    q: "Which file types does it open?",
+    a: "Markdown (.md, .mdx), JSON (.json, .jsonc), CSV/TSV (.csv, .tsv), and database schemas (.sql, .prisma, .dbml) — each with a real interactive viewer.",
+  },
+  {
+    q: "Can it open local files from my computer?",
+    a: "Yes. Enable 'Allow access to file URLs' on the extension's details page in chrome://extensions, then double-click any supported file and Chrome opens it rendered. Drag-and-drop and Open Folder also work without that toggle.",
+  },
+  {
+    q: "Does it work offline?",
+    a: "Yes. All rendering libraries are bundled into the extension at build time (Manifest V3, strict CSP, no remote code), so Filemark works with no network connection.",
+  },
+  {
+    q: "Can an AI coding agent author Filemark documents?",
+    a: "Yes. Filemark ships an AI skill that teaches Claude Code, Cursor, or Codex the full component grammar. Install it with: npx skills add thesatellite-ai/filemark.",
+  },
+];
 
 function Home(): React.ReactElement {
   return (
@@ -69,8 +87,40 @@ function Home(): React.ReactElement {
       <ShowcaseTasks />
       <AISkill />
       <WhyFilemark />
+      <FAQSection />
       <Install />
     </main>
+  );
+}
+
+/* ─────────── FAQ ──────────────────────────────────────────────────── */
+
+function FAQSection(): React.ReactElement {
+  return (
+    <section className="border-b border-border">
+      <div className="mx-auto max-w-3xl px-6 py-24 sm:py-32">
+        <div className="text-center">
+          <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            FAQ
+          </div>
+          <h2 className="mt-3 text-balance text-[34px] font-semibold leading-[1.1] tracking-tight sm:text-[44px]">
+            Questions, answered
+          </h2>
+        </div>
+        <dl className="mt-12 divide-y divide-border">
+          {FAQ.map((item) => (
+            <div key={item.q} className="py-6">
+              <dt className="text-base font-medium text-foreground">
+                {item.q}
+              </dt>
+              <dd className="mt-2 text-balance leading-relaxed text-muted-foreground">
+                {item.a}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
   );
 }
 

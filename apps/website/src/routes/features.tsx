@@ -28,6 +28,7 @@ import {
   Zap,
 } from "lucide-react";
 import { asset } from "../lib/asset";
+import { pageScripts } from "../lib/schema";
 
 const SITE = "https://khanakia.com/apps/filemark";
 
@@ -48,35 +49,15 @@ export const Route = createFileRoute("/features")({
         { name: "twitter:description", content: desc },
       ],
       links: [{ rel: "canonical", href: url }],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            name: title,
-            description: desc,
-            url,
-            breadcrumb: {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                {
-                  "@type": "ListItem",
-                  position: 1,
-                  name: "Filemark",
-                  item: `${SITE}/`,
-                },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "Features",
-                  item: url,
-                },
-              ],
-            },
-          }),
-        },
-      ],
+      scripts: pageScripts({
+        name: title,
+        description: desc,
+        url,
+        crumbs: [
+          { name: "Filemark", url: `${SITE}/` },
+          { name: "Features", url },
+        ],
+      }),
     };
   },
   component: FeaturesPage,

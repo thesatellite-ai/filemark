@@ -15,6 +15,7 @@ import richdocsTier3 from "../../../../../examples/richdocs-tier3.md?raw";
 import schemaDbml from "../../../../../examples/schema.dbml?raw";
 import schemaPrisma from "../../../../../examples/schema.prisma?raw";
 import schemaSql from "../../../../../examples/schema.sql?raw";
+import { EXAMPLE_IDS } from "./ids";
 import gfmFull from "../../../../../examples/gfm-full.md?raw";
 import mathFull from "../../../../../examples/math-full.md?raw";
 import gfmEmojiVerify from "../../../../../examples/gfm-emoji-verify.md?raw";
@@ -295,6 +296,21 @@ export const EXAMPLES: Example[] = [
     filename: "schema.dbml",
   },
 ];
+
+// Drift guard: EXAMPLE_IDS (used by the Vite prerender config) must list every
+// example id exactly once, in order. If you add/remove/reorder an example
+// above, update ./ids.ts — otherwise the new gallery page won't be prerendered
+// (and would 404 under `not_found_handling: "404-page"`). This throws at module
+// load (dev + build) so the mismatch can't ship silently.
+{
+  const actual = EXAMPLES.map((e) => e.id).join(",");
+  const declared = (EXAMPLE_IDS as readonly string[]).join(",");
+  if (actual !== declared) {
+    throw new Error(
+      `examples/ids.ts is out of sync with index.ts.\n  index.ts: ${actual}\n  ids.ts:   ${declared}`,
+    );
+  }
+}
 
 export function getExample(id: string): Example | undefined {
   return EXAMPLES.find((e) => e.id === id);

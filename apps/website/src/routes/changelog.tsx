@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pageScripts } from "../lib/schema";
 
 const SITE = "https://khanakia.com/apps/filemark";
 
@@ -19,6 +20,15 @@ export const Route = createFileRoute("/changelog")({
         { name: "twitter:description", content: desc },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: pageScripts({
+        name: title,
+        description: desc,
+        url,
+        crumbs: [
+          { name: "Filemark", url: `${SITE}/` },
+          { name: "Changelog", url },
+        ],
+      }),
     };
   },
   component: Changelog,

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Filemark">
+  <rect width="1200" height="630" fill="#0a0a0a"/>
+  <!-- icon glyph (scaled from the 32x32 master, stroke white) -->
+  <g transform="translate(96,232) scale(5)" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M8 8h12l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z"/>
+    <path d="M20 8v4h4"/>
+    <path d="M10 17h8M10 21h6"/>
+  </g>
+  <text x="280" y="300" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="92" font-weight="700" fill="#ffffff" letter-spacing="-2">Filemark</text>
+  <text x="282" y="360" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="400" fill="#a1a1aa">Markdown · JSON · CSV · SQL — rendered in Chrome</text>
+  <text x="282" y="408" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="26" font-weight="400" fill="#71717a">100% local · open source · free</text>
+</svg>

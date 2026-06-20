@@ -12,6 +12,7 @@ import {
   GoogleTagManagerScript,
 } from "../components/GoogleTagManager";
 import { env } from "../env/client";
+import { ldScript, webSiteLd } from "../lib/schema";
 
 const SITE = "https://khanakia.com/apps/filemark";
 
@@ -28,7 +29,8 @@ const NAV = [
 // validated in src/env/client.ts — a bad/missing id throws at build).
 // Production-only so dev traffic isn't tracked.
 const GTM_ENABLED = import.meta.env.PROD;
-const OG_IMAGE = `${SITE}/screenshots/promo-tile.png`;
+// 1200x630 social-preview banner (Twitter/LinkedIn/Slack minimum).
+const OG_IMAGE = `${SITE}/screenshots/og-cover.png`;
 const DEFAULT_TITLE =
   "Filemark — Markdown, MDX, JSON, CSV & schema viewer for Chrome";
 const DEFAULT_DESC =
@@ -47,24 +49,32 @@ export const Route = createRootRoute({
       { name: "theme-color", content: "#0a0a0a", media: "(prefers-color-scheme: dark)" },
       // Social
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "khanakia.com" },
+      { property: "og:site_name", content: "Filemark" },
       { property: "og:title", content: DEFAULT_TITLE },
       { property: "og:description", content: DEFAULT_DESC },
       { property: "og:url", content: `${SITE}/` },
       { property: "og:image", content: OG_IMAGE },
-      { property: "og:image:width", content: "440" },
-      { property: "og:image:height", content: "280" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Filemark — markdown, JSON, CSV and schema viewer for Chrome" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@khanakia" },
+      { name: "twitter:creator", content: "@khanakia" },
       { name: "twitter:title", content: DEFAULT_TITLE },
       { name: "twitter:description", content: DEFAULT_DESC },
       { name: "twitter:image", content: OG_IMAGE },
     ],
+    // NOTE: no `canonical` here. Each route sets its own self-referencing
+    // canonical; emitting one at the root too produced TWO canonical tags on
+    // every inner page (root's "/" won, collapsing all pages to the homepage).
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "canonical", href: `${SITE}/` },
       { rel: "icon", type: "image/svg+xml", href: "/apps/filemark/favicon.svg" },
       { rel: "manifest", href: "/apps/filemark/manifest.webmanifest" },
     ],
+    // Sitewide WebSite node (author/publisher graph). Per-page routes add
+    // their own SoftwareApplication / WebPage / FAQ nodes on top.
+    scripts: [ldScript(webSiteLd())],
   }),
   shellComponent: RootDocument,
   // Branded 404 — renders inside the layout (Header/Footer intact) instead of

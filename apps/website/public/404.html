@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Static 404 served by Cloudflare (not_found_handling: "404-page") with a
+         real HTTP 404 status for unknown paths. Self-contained: no JS/app deps,
+         since it's served outside the SPA. The in-app notFoundComponent handles
+         client-side route misses. -->
+    <meta name="robots" content="noindex" />
+    <title>404 — Page not found · Filemark</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/apps/filemark/favicon.svg"
+    />
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: #ffffff;
+        color: #0a0a0a;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #0a0a0a; color: #fafafa; }
+        .muted { color: #a1a1aa !important; }
+        .btn-secondary { border-color: #27272a !important; }
+      }
+      .wrap { text-align: center; max-width: 30rem; }
+      .code {
+        font-size: clamp(72px, 18vw, 120px);
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: #d4d4d8;
+        margin: 0;
+      }
+      @media (prefers-color-scheme: dark) { .code { color: #3f3f46; } }
+      h1 { font-size: 1.5rem; font-weight: 600; margin: 1rem 0 0; letter-spacing: -0.01em; }
+      .muted { color: #52525b; margin: 0.75rem 0 0; line-height: 1.6; }
+      .actions { margin-top: 2rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+      a {
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        height: 2.5rem;
+        padding: 0 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      .btn-primary { background: #0a0a0a; color: #fafafa; }
+      @media (prefers-color-scheme: dark) { .btn-primary { background: #fafafa; color: #0a0a0a; } }
+      .btn-secondary { color: inherit; border: 1px solid #e4e4e7; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <p class="code">404</p>
+      <h1>This page doesn't exist</h1>
+      <p class="muted">
+        The link may be broken or the page may have moved. Head back and keep
+        exploring Filemark.
+      </p>
+      <div class="actions">
+        <a class="btn-primary" href="/apps/filemark/">Go home</a>
+        <a class="btn-secondary" href="/apps/filemark/demo">Open the demo</a>
+      </div>
+    </main>
+  </body>
+</html>

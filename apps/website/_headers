@@ -1,0 +1,19 @@
+# Cloudflare Workers Static Assets _headers file.
+# Lives at the ASSETS ROOT (copied to dist-cf/_headers by build:cf — NOT under
+# public/, which would nest it under /apps/filemark/ where CF ignores it).
+# Path patterns match the request URL the worker sees, i.e. /apps/filemark/*.
+#
+# Scope note: deliberately NO Strict-Transport-Security or Content-Security-
+# Policy here — HSTS is domain-wide and belongs to the parent khanakia.com
+# gateway, and a wrong CSP would break GTM / inline scripts. These four are
+# safe, universally-recommended hardening headers.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+# Hashed build assets are content-addressed — cache them forever.
+/apps/filemark/assets/*
+  Cache-Control: public, max-age=31536000, immutable

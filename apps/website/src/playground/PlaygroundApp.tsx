@@ -44,6 +44,9 @@ export function PlaygroundApp({ view, exampleId }: Props) {
   return (
     <ThemeProvider>
       <div className="flex h-screen min-h-0 flex-col bg-background">
+        {/* Visually-hidden page H1 — every page should have exactly one for
+            SEO/a11y; the visible chrome is just the brand link + tabs. */}
+        <h1 className="sr-only">Filemark live demo &amp; playground</h1>
         <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 py-2 sm:px-4">
           <div className="flex items-center gap-2 min-w-0 sm:gap-3">
             <Link

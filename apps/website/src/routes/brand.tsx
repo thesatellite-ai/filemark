@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, Palette } from "lucide-react";
 import { asset } from "../lib/asset";
+import { pageScripts } from "../lib/schema";
 
 const SITE = "https://khanakia.com/apps/filemark";
 
@@ -21,6 +22,15 @@ export const Route = createFileRoute("/brand")({
         { name: "twitter:description", content: desc },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: pageScripts({
+        name: title,
+        description: desc,
+        url,
+        crumbs: [
+          { name: "Filemark", url: `${SITE}/` },
+          { name: "Brand", url },
+        ],
+      }),
     };
   },
   component: BrandPage,

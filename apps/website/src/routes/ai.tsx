@@ -7,6 +7,7 @@ import {
   Sparkles,
   Terminal,
 } from "lucide-react";
+import { pageScripts } from "../lib/schema";
 
 const SITE = "https://khanakia.com/apps/filemark";
 const SKILL_URL =
@@ -31,6 +32,15 @@ export const Route = createFileRoute("/ai")({
         { name: "twitter:description", content: desc },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: pageScripts({
+        name: title,
+        description: desc,
+        url,
+        crumbs: [
+          { name: "Filemark", url: `${SITE}/` },
+          { name: "AI skill", url },
+        ],
+      }),
     };
   },
   component: AIPage,

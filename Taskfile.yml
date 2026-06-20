@@ -124,6 +124,8 @@ tasks:
       # glyph (no background) stays usable on any color.
       - for s in {{.SIZES}}; do rsvg-convert -w $s -h $s brand/filemark-icon.svg  -o {{.OUT}}/filemark-icon-$s.png; done
       - for s in {{.SIZES}}; do rsvg-convert -w $s -h $s brand/filemark-glyph.svg -o {{.OUT}}/filemark-glyph-$s.png; done
+      # Social preview image — 1200x630 (the size Twitter/LinkedIn/Slack want).
+      - rsvg-convert -w 1200 -h 630 brand/og-cover.svg -o apps/website/public/screenshots/og-cover.png
       - 'echo "✓ brand assets written to {{.OUT}}"'
 
   # ── packaging ───────────────────────────────────────────────────────────

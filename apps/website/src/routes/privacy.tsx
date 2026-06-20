@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pageScripts } from "../lib/schema";
 
 const SITE = "https://khanakia.com/apps/filemark";
 
@@ -20,6 +21,18 @@ export const Route = createFileRoute("/privacy")({
         { name: "robots", content: "index,follow" },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: pageScripts({
+        name: title,
+        description: desc,
+        url,
+        // PrivacyPolicy co-type — valid WebPage subtype, aids compliance /
+        // answer-engine context.
+        extraType: "PrivacyPolicy",
+        crumbs: [
+          { name: "Filemark", url: `${SITE}/` },
+          { name: "Privacy policy", url },
+        ],
+      }),
     };
   },
   component: Privacy,

@@ -3,16 +3,22 @@
   // pre-rendered HTML per route to dist-cf/apps/filemark/ (nested under
   // the gateway's public path), Cloudflare serves them directly. The
   // existing gateway worker `khanakia_com_cfare_gateway` routes
-  // khanakia.com/apps/filemark/* to this worker; for any path that
-  // doesn't match a prerendered file, SPA fallback rewrites to
-  // index.html so client-side TanStack Router (basepath /apps/filemark)
-  // takes over.
+  // khanakia.com/apps/filemark/* to this worker.
+  //
+  // EVERY route is prerendered to a static file (see vite.config.ts `pages`),
+  // so there are no SPA-fallback-only routes. That lets us use "404-page"
+  // instead of "single-page-application": unknown paths now return a real
+  // HTTP 404 (serving the nearest 404.html) instead of index.html + 200,
+  // fixing the soft-404 SEO issue.
+  // IMPORTANT: any new client route that is NOT prerendered will 404 here —
+  // add it to the prerender `pages` list (gallery ids come from
+  // examples/ids.ts automatically).
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "filemark",
   "account_id": "f4d9ab24f2ab1eec54b9bfbb13506e5a",
   "compatibility_date": "2025-09-02",
   "assets": {
     "directory": "./dist-cf",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "404-page"
   }
 }
