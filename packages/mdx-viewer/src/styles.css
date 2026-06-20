@@ -82,24 +82,79 @@
 .fv-mdx-body ul ul { list-style-type: circle; }
 .fv-mdx-body ul ul ul { list-style-type: square; }
 .fv-mdx-body li { margin: 0.2em 0; }
+/* Nested lists shouldn't add the 1em bottom margin (that left a big gap after
+   a sub-list, e.g. between "Wholegrain" and "Butter"). Spacing comes from the
+   li margins, so every item is evenly spaced regardless of nesting. */
+.fv-mdx-body li > ul,
+.fv-mdx-body li > ol { margin: 0; }
 .fv-mdx-body ul.contains-task-list,
 .fv-mdx-body li.task-list-item { list-style-type: none; }
 .fv-mdx-body li.task-list-item { margin-left: -1.4em; padding-left: 0.3em; }
 .fv-mdx-body li.task-list-item input { margin-right: 0.5em; transform: translateY(1px); }
 .fv-mdx-body blockquote {
   margin: 0 0 1em;
-  padding: 0.2em 1em;
+  padding: 0.6em 1em;
   color: var(--muted-foreground);
   border-left: 3px solid var(--border);
   background: var(--fm-prose-blockquote-bg, var(--muted));
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
+/* Children (p, lists, …) keep their own margins so multiple paragraphs stay
+   spaced, but the first/last shouldn't add gaps inside the padded box. */
+.fv-mdx-body blockquote > :first-child { margin-top: 0; }
+.fv-mdx-body blockquote > :last-child { margin-bottom: 0; }
 .fv-mdx-body hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
-.fv-mdx-body a {
-  color: var(--fm-prose-link-color, var(--primary));
-  text-decoration: none;
+
+/* ─── GFM footnotes (remark-gfm `.footnotes` section) ──────────────────── */
+.fv-mdx-body .footnotes {
+  margin-top: 2.5em;
+  padding-top: 0.8em;
+  border-top: 1px solid var(--border);
+  font-size: 0.82em;
+  color: var(--muted-foreground);
 }
-.fv-mdx-body a:hover { text-decoration: underline; }
+/* The "Footnotes" heading is an accessibility label — keep it visually hidden
+   (don't let it render as a big H2 if the host lacks an sr-only utility). */
+.fv-mdx-body .footnotes #footnote-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.fv-mdx-body .footnotes ol { margin: 0; padding-left: 1.3em; }
+.fv-mdx-body .footnotes li { margin: 0.3em 0; }
+.fv-mdx-body .footnotes li p { margin: 0; }
+.fv-mdx-body .footnotes li p + p { margin-top: 0.35em; }
+.fv-mdx-body .footnotes .data-footnote-backref { text-decoration: none; }
+/* Prose link styling — blue + underlined (the theme `--primary` is near-black
+   in light mode, so links were indistinguishable from body text).
+   SCOPE: `a:not([class])` targets ONLY markdown-generated links. Plain
+   markdown links (rendered via SmartLink) carry no className; component
+   links — DocCard wrappers, Steps, nav, etc. — always have a class and own
+   their own look. Without this guard the rule's specificity beats Tailwind's
+   `no-underline` on `.fv-doccard-link`, forcing blue+underline that then
+   INHERITS into every card's title/body. Keep the `:not([class])`. */
+.fv-mdx-body a:not([class]) {
+  color: var(--fm-prose-link-color, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+}
+.fv-mdx-body a:not([class]):hover {
+  color: var(--fm-prose-link-color-hover, #1d4ed8);
+  text-decoration-thickness: 2px;
+}
+[data-theme="dark"] .fv-mdx-body a:not([class]) {
+  color: var(--fm-prose-link-color, #60a5fa);
+}
+[data-theme="dark"] .fv-mdx-body a:not([class]):hover {
+  color: var(--fm-prose-link-color-hover, #93c5fd);
+}
 .fv-mdx-body img {
   max-width: 100%;
   border-radius: var(--fm-image-radius, var(--radius-md));

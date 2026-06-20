@@ -1,8 +1,6 @@
 # Datagrid — fenced csv / tsv
 
-Drop this file into Filemark. Every fenced `csv` / `tsv` block below
-renders as an interactive grid: sort by clicking headers, filter per
-column, or type in the top-right search box.
+Drop this file into Filemark. Every fenced `csv` / `tsv` block below renders as an interactive grid: sort by clicking headers, filter per column, or type in the top-right search box.
 
 ---
 
@@ -55,9 +53,7 @@ Add CSV export,`[ ] todo`,@margaret,[issue #42](https://example.com/42)
 ```csv src=./sales.csv sort=revenue:desc
 ```
 
-If you opened this file as a single drop, the block above will render
-an inline warning — that's expected. Open the parent folder instead
-(`Open Folder…`) and both this file and `sales.csv` become accessible.
+If you opened this file as a single drop, the block above will render an inline warning — that's expected. Open the parent folder instead (`Open Folder…`) and both this file and `sales.csv` become accessible.
 
 ## Custom delimiter
 

@@ -29,8 +29,7 @@ id,name,state
 6,archive,cancelled
 ```
 
-Convention: `done/ok/active/passed` → success, `pending/todo/wip/review` → warn,
-`failed/blocked/cancelled` → danger, `info/note/new` → info, else muted.
+Convention: `done/ok/active/passed` → success, `pending/todo/wip/review` → warn, `failed/blocked/cancelled` → danger, `info/note/new` → info, else muted.
 
 ### `status` with explicit color overrides
 
@@ -42,9 +41,7 @@ T-3,upgrade deps,P1
 T-4,doc polish,P3
 ```
 
-Color-map syntax: `status(key1:tone1,key2:tone2,…)`. Tones accepted:
-`success`, `warn`, `danger`, `info`, `muted`, `primary`, `secondary`.
-Aliases accepted: `red/green/amber/yellow/orange/blue/gray/grey/neutral`.
+Color-map syntax: `status(key1:tone1,key2:tone2,…)`. Tones accepted: `success`, `warn`, `danger`, `info`, `muted`, `primary`, `secondary`. Aliases accepted: `red/green/amber/yellow/orange/blue/gray/grey/neutral`.
 
 ---
 
@@ -98,8 +95,7 @@ t-07,theming polish,false
 t-08,VS Code host,false
 ```
 
-Toggling any checkbox above writes to `StorageAdapter`; reload the page and
-your state persists. Keyed by `filemark:datagrid:<block>:cell:<rowId>:<colKey>`.
+Toggling any checkbox above writes to `StorageAdapter`; reload the page and your state persists. Keyed by `filemark:datagrid:<block>:cell:<rowId>:<colKey>`.
 
 ---
 
@@ -130,8 +126,7 @@ P5,tests,20
 P6,a11y,0
 ```
 
-Explicit scale: `progress(0:50)` for a 0–50 range. Color ramps:
-muted → amber → primary → emerald as fill grows.
+Explicit scale: `progress(0:50)` for a 0–50 range. Color ramps: muted → amber → primary → emerald as fill grows.
 
 ---
 
@@ -324,33 +319,20 @@ Every feature in one block:
 ```csv src=./sales.csv type:revenue=currency(USD) sort=revenue:desc title="From sibling file"
 ```
 
-Relative paths (`./…` / `../…`) go through the injected `AssetResolver`,
-which only resolves when this `.md` is opened via **Open Folder…** (FSA
-handle) or via a drag-dropped folder (in-memory file map). Single-file
-drops have no siblings — the block renders an actionable error instead
-of an empty grid.
+Relative paths (`./…` / `../…`) go through the injected `AssetResolver`, which only resolves when this `.md` is opened via **Open Folder…** (FSA handle) or via a drag-dropped folder (in-memory file map). Single-file drops have no siblings — the block renders an actionable error instead of an empty grid.
 
 ### External CSV — absolute URL (direct fetch, no folder needed)
 
 ```csv src=https://cdn.wsform.com/wp-content/uploads/2020/06/industry.csv title="WS Form industry list"
 ```
 
-Absolute URLs (`http://`, `https://`, `file://`, `blob:`, `data:`) are
-fetched directly, bypassing `AssetResolver`. Works from any ingest
-context — single-file drop, folder, intercepted file://. The only
-caveats are the usual HTTP ones: the remote server must send
-`Access-Control-Allow-Origin` (or be same-origin), and the URL has to
-actually resolve. CORS / DNS / 4xx errors surface as a clear message in
-the block, not an empty grid.
+Absolute URLs (`http://`, `https://`, `file://`, `blob:`, `data:`) are fetched directly, bypassing `AssetResolver`. Works from any ingest context — single-file drop, folder, intercepted file://. The only caveats are the usual HTTP ones: the remote server must send `Access-Control-Allow-Origin` (or be same-origin), and the URL has to actually resolve. CORS / DNS / 4xx errors surface as a clear message in the block, not an empty grid.
 
 ---
 
 ## 21b. `<Datagrid>` tag — component-style invocation
 
-The `<Datagrid>` / `<datagrid>` tag is the component-style equivalent
-of the fenced ` ```csv ` block. It always loads from `src=` (a relative
-path or absolute URL); inline data isn't supported because HTML
-attributes can't cleanly hold multi-line CSV.
+The `<Datagrid>` / `<datagrid>` tag is the component-style equivalent of the fenced ` ```csv ` block. It always loads from `src=` (a relative path or absolute URL); inline data isn't supported because HTML attributes can't cleanly hold multi-line CSV.
 
 ### Minimal — just a URL
 
@@ -359,29 +341,18 @@ attributes can't cleanly hold multi-line CSV.
 ### Relative path + common options via top-level attrs
 
 <Datagrid
-  src="./sales.csv"
-  title="Q2 Sales"
-  sort="revenue:desc"
-  row-numbers="true"
-  height="260"></Datagrid>
+  src="./sales.csv" title="Q2 Sales" sort="revenue:desc" row-numbers="true" height="260"></Datagrid>
 
 ### Complex `type:<col>=…` specs via the `meta` attribute
 
-HTML attribute names can't carry colons cleanly, so type specs ride in
-a single `meta=` attribute whose value is the same info-string grammar
-used after a fenced `csv`. Simple top-level attrs still override / merge
-on top.
+HTML attribute names can't carry colons cleanly, so type specs ride in a single `meta=` attribute whose value is the same info-string grammar used after a fenced `csv`. Simple top-level attrs still override / merge on top.
 
 <Datagrid
-  src="./sales.csv"
-  title="Typed sales"
-  sort="revenue:desc"
-  meta="type:region=status(North:info,South:warn,East:primary,West:success) type:revenue=currency(USD)"></Datagrid>
+  src="./sales.csv" title="Typed sales" sort="revenue:desc" meta="type:region=status(North:info,South:warn,East:primary,West:success) type:revenue=currency(USD)"></Datagrid>
 
 ### Error path — missing `src`
 
-The tag without a `src=` renders an inline warning (Rule 3 — skeleton
-honesty), not an empty grid:
+The tag without a `src=` renders an inline warning (Rule 3 — skeleton honesty), not an empty grid:
 
 <Datagrid title="Oops no src"></Datagrid>
 
@@ -427,9 +398,7 @@ id,title,status,priority,owner,tags,spend,progress,score,size,url,done,updated
 
 ## 23. v1.1 — Multi-column sort (shift-click a second header)
 
-Shift-clicking a second header keeps the first sort and layers a secondary
-on top. Each active sort shows its ordinal (1, 2, 3) next to the arrow.
-The footer text shows "N-col sort" while multi-sort is active.
+Shift-clicking a second header keeps the first sort and layers a secondary on top. Each active sort shows its ordinal (1, 2, 3) next to the arrow. The footer text shows "N-col sort" while multi-sort is active.
 
 ```csv type:status=status title="Sort by priority, then status" sort=priority:asc,status:asc
 id,title,priority,status
@@ -443,16 +412,13 @@ T-7,Export xlsx,P2,todo
 T-8,Presentation mode,P3,todo
 ```
 
-Comma-separated sort specs in the info-string seed the initial multi-sort.
-Shift-click any header at runtime to add / remove secondary sorts.
+Comma-separated sort specs in the info-string seed the initial multi-sort. Shift-click any header at runtime to add / remove secondary sorts.
 
 ---
 
 ## 24. v1.1 — Match highlight
 
-Filter or search → matching substrings inside string cells wrap in
-`<mark>`. Structured cells (status, tags, avatar, currency, etc.) ignore
-highlight — their content isn't free text.
+Filter or search → matching substrings inside string cells wrap in `<mark>`. Structured cells (status, tags, avatar, currency, etc.) ignore highlight — their content isn't free text.
 
 ```csv title="Try typing 'apollo' or 'eng' in the search box"
 name,title,note
@@ -467,9 +433,7 @@ Barbara Liskov,engineer,Abstract data types and the Liskov substitution principl
 
 ## 25. v1.1 — Density toggle
 
-Toolbar button cycles **Compact → Comfy → Relaxed** row heights. Choice
-persists per grid via `StorageAdapter`. You can also seed it in the
-info-string with `density=compact`.
+Toolbar button cycles **Compact → Comfy → Relaxed** row heights. Choice persists per grid via `StorageAdapter`. You can also seed it in the info-string with `density=compact`.
 
 ```csv density=compact title="Born in compact mode"
 id,metric,value
@@ -485,10 +449,7 @@ m5,releases,27
 ## 26. v1.1 — Aggregation footer
 
 `agg:<col>=sum|avg|min|max|count|uniq` renders a sticky footer row with
-computed values. The footer recomputes on every filter change — it
-reflects what you see, not the raw dataset. Formatting respects the
-column type (sum of a `currency` column uses currency, `filesize` sums
-bytes and auto-units).
+computed values. The footer recomputes on every filter change — it reflects what you see, not the raw dataset. Formatting respects the column type (sum of a `currency` column uses currency, `filesize` sums bytes and auto-units).
 
 ```csv type:spend=currency(USD) type:size=filesize agg:spend=sum agg:size=sum agg:team=uniq title="Q2 spend" sort=spend:desc
 team,owner,spend,size
@@ -506,11 +467,7 @@ Try filtering `team=Frontend` in the filter row — the `sum` updates live.
 
 ## 27. v1.1 — Row selection + bulk copy
 
-`selection` flag enables a checkbox column on the far left. Click rows
-to pick; shift-click for range; the header checkbox toggles all
-(currently filtered) rows. The toolbar then shows **Copy CSV / Copy MD
-/ Copy JSON** buttons that write the selected rows (in visible-column
-projection) to the clipboard.
+`selection` flag enables a checkbox column on the far left. Click rows to pick; shift-click for range; the header checkbox toggles all (currently filtered) rows. The toolbar then shows **Copy CSV / Copy MD / Copy JSON** buttons that write the selected rows (in visible-column projection) to the clipboard.
 
 ```csv selection type:id=id type:priority=status(P0:danger,P1:warn,P2:info,P3:muted) title="Pick a few and copy them"
 id,title,priority,owner
@@ -522,10 +479,7 @@ id,title,priority,owner
 019db6fd-dddd-71a1-863f-3910a1be461d,Presentation mode,P3,Tim
 ```
 
-Select a few rows → click **Copy CSV** → paste anywhere (Slack, issue
-tracker, spreadsheet). Row ids come from the `id` column (because
-`type:<col>=id` is set); without an id column, selection still works
-but keys by row index.
+Select a few rows → click **Copy CSV** → paste anywhere (Slack, issue tracker, spreadsheet). Row ids come from the `id` column (because `type:<col>=id` is set); without an id column, selection still works but keys by row index.
 
 ---
 
@@ -565,11 +519,7 @@ id,task,status,owner
 
 ## 29. v1.1 — Pinned (frozen) columns
 
-`freeze=<col1>,<col2>` pins columns to the left during horizontal
-scroll. The selection column (`selection`) and row-number column
-(`row-numbers`) are *always* pinned — they're UI columns. Frozen
-columns get a subtle right-edge shadow and stacked `position: sticky`
-offsets so they stack correctly in any order.
+`freeze=<col1>,<col2>` pins columns to the left during horizontal scroll. The selection column (`selection`) and row-number column (`row-numbers`) are *always* pinned — they're UI columns. Frozen columns get a subtle right-edge shadow and stacked `position: sticky` offsets so they stack correctly in any order.
 
 ```csv selection row-numbers freeze=id,title type:id=id type:priority=status(P0:danger,P1:warn,P2:info,P3:muted) type:owner=avatar type:tags=tags type:spend=currency(USD) type:progress=progress type:score=rating type:size=filesize type:url=url type:done=checkbox type:updated=relative agg:spend=sum agg:progress=avg title="Wide + frozen" sort=priority
 id,title,priority,owner,tags,spend,progress,score,size,url,done,updated
@@ -587,16 +537,13 @@ id,title,priority,owner,tags,spend,progress,score,size,url,done,updated
 019db6fe-4444-71a1-863f-3910a1be461d,Multi-column sort,P3,Brian Kernighan,"grid,power",60.00,0,2,12100,example.com/multi-sort,false,2026-03-28T09:00:00Z
 ```
 
-Scroll horizontally — `#`, selection checkbox, `id`, and `title` stay
-pinned while the rest slides.
+Scroll horizontally — `#`, selection checkbox, `id`, and `title` stay pinned while the rest slides.
 
 ---
 
 ## 29b. Column widths — `width:<col>=<px>`
 
-Per-column initial widths via `width:<col>=<n>` (px). Author override
-wins over auto-size. User can still drag the resize handle or
-double-click to fit; their width then persists via `StorageAdapter`.
+Per-column initial widths via `width:<col>=<n>` (px). Author override wins over auto-size. User can still drag the resize handle or double-click to fit; their width then persists via `StorageAdapter`.
 
 ```csv width:title=320 width:owner=180 width:status=90 type:status=status(ok:success,slow:warn,down:danger) title="Fixed widths"
 id,title,status,owner
@@ -611,9 +558,7 @@ id,title,status,owner
 
 ## 30. v1.2 — Row grouping
 
-`group-by=<col>` collapses identical values in that column into group
-headers with a chevron + count. Aggregations defined via `agg:<col>=…`
-show per-group totals in the group header row.
+`group-by=<col>` collapses identical values in that column into group headers with a chevron + count. Aggregations defined via `agg:<col>=…` show per-group totals in the group header row.
 
 ```csv group-by=region type:region=status(North:info,South:warn,East:primary,West:success) type:revenue=currency(USD) agg:revenue=sum agg:units=sum title="Sales by region" sort=revenue:desc
 region,product,units,revenue
@@ -629,8 +574,7 @@ West,Widget,200,6000
 West,Gadget,55,3300
 ```
 
-Click a group's chevron to expand / collapse. Group state persists via
-`StorageAdapter`.
+Click a group's chevron to expand / collapse. Group state persists via `StorageAdapter`.
 
 ---
 
@@ -638,15 +582,11 @@ Click a group's chevron to expand / collapse. Group state persists via
 
 The filter row adapts to the column's type:
 
-- **numeric columns** (`number`, `currency`, `percentage`, `progress`,
-  `filesize`, `rating`) → min / max input pair.
+- **numeric columns** (`number`, `currency`, `percentage`, `progress`, `filesize`, `rating`) → min / max input pair.
 - **date** / **relative** → date-range pickers.
-- **status** → multi-select dropdown with colored chips, auto-populated
-  from the distinct values in the data.
-- **tags** → multi-select dropdown with hashed-color chips (one per
-  distinct tag).
-- **bool** / **checkmark** / **checkbox** → tri-state button cycling
-  `any → yes → no`.
+- **status** → multi-select dropdown with colored chips, auto-populated from the distinct values in the data.
+- **tags** → multi-select dropdown with hashed-color chips (one per distinct tag).
+- **bool** / **checkmark** / **checkbox** → tri-state button cycling `any → yes → no`.
 - **everything else** → plain substring text filter.
 
 ```csv type:status=status type:started=date type:revenue=currency(USD) type:tags=tags title="Typed filters demo"
@@ -661,18 +601,13 @@ id,title,status,started,revenue,tags
 8,A11y pass,wip,2026-04-17,2400,"a11y"
 ```
 
-Try the status dropdown (shows `done / wip / todo` as chips), the
-`started` date-range pickers, the `revenue` min/max inputs, or the
-`tags` multi-select.
+Try the status dropdown (shows `done / wip / todo` as chips), the `started` date-range pickers, the `revenue` min/max inputs, or the `tags` multi-select.
 
 ---
 
 ## 32. v1.2 — Row expansion (detail panel)
 
-`expandable` prepends a chevron column. Clicking it reveals a vertical
-key/value "record view" beneath the row with every visible column's
-value — ideal for wide tables where scrolling right to see all
-columns is painful.
+`expandable` prepends a chevron column. Clicking it reveals a vertical key/value "record view" beneath the row with every visible column's value — ideal for wide tables where scrolling right to see all columns is painful.
 
 ```csv expandable type:id=id type:priority=status(P0:danger,P1:warn,P2:info,P3:muted) type:owner=avatar type:tags=tags type:spend=currency(USD) type:progress=progress title="Click a chevron to expand"
 id,title,priority,owner,tags,spend,progress,notes
@@ -683,18 +618,13 @@ r-4,Sidepanel UI,P2,Dennis Ritchie,"ui,sidepanel",420.00,30,"Reuses the main app
 r-5,VS Code host,P2,Tim Berners-Lee,"port,vscode",780.00,25,"Validates @filemark/mdx portability claim"
 ```
 
-The detail panel uses the same `CellRenderer`, so rich types (status,
-avatar, tags, currency, progress bar…) render the same as in the row.
+The detail panel uses the same `CellRenderer`, so rich types (status, avatar, tags, currency, progress bar…) render the same as in the row.
 
 ---
 
 ## 33. v1.2 — URL-sync (shareable views)
 
-`url-sync` mirrors the grid's state (sort, filters, hidden columns,
-density, grouping, expansions, global search term) into
-`location.hash#g=…`. Anyone opening the same `.md` with that hash
-present will see exactly that view. Heading anchors (`#heading-slug`)
-continue to work because URL-sync only touches its own `g=` fragment.
+`url-sync` mirrors the grid's state (sort, filters, hidden columns, density, grouping, expansions, global search term) into `location.hash#g=…`. Anyone opening the same `.md` with that hash present will see exactly that view. Heading anchors (`#heading-slug`) continue to work because URL-sync only touches its own `g=` fragment.
 
 ```csv url-sync type:priority=status(P0:danger,P1:warn,P2:info,P3:muted) title="Share the current view"
 id,title,priority,owner
@@ -705,13 +635,9 @@ id,title,priority,owner
 5,Auto-refresh,P2,Dennis
 ```
 
-Sort, filter, or group above → notice `#g=<...>` appear in the URL
-bar. Copy the URL, paste into a new tab → the grid reconstructs the
-same view.
+Sort, filter, or group above → notice `#g=<...>` appear in the URL bar. Copy the URL, paste into a new tab → the grid reconstructs the same view.
 
-When both `url-sync` and a `StorageAdapter` are present, the URL wins
-on hydration (shared views are reproducible even if you've locally
-tweaked the grid).
+When both `url-sync` and a `StorageAdapter` are present, the URL wins on hydration (shared views are reproducible even if you've locally tweaked the grid).
 
 ---
 
@@ -719,8 +645,7 @@ tweaked the grid).
 
 ### `sparkline`
 
-Comma-separated numbers in a cell render as inline mini-charts. Three
-variants: `sparkline(line)` (default), `sparkline(bar)`, `sparkline(area)`.
+Comma-separated numbers in a cell render as inline mini-charts. Three variants: `sparkline(line)` (default), `sparkline(bar)`, `sparkline(area)`.
 
 ```csv type:trend=sparkline(line) type:traffic=sparkline(bar) type:engagement=sparkline(area) title="Sparklines"
 service,trend,traffic,engagement
@@ -731,10 +656,7 @@ worker,"2,2,3,2,4,5,4,6","5,10,8,15,12,20,18,25","0.1,0.15,0.2,0.18,0.25,0.3,0.2
 
 ### `icon`
 
-Curated set of 15 named icons rendered as inline SVGs:
-`check`, `x`, `warning`, `info`, `star`, `heart`, `lock`, `rocket`,
-`bug`, `clock`, `flame`, `bolt`, `shield`, `mail`, `link`. Unknown
-names fall back to raw text.
+Curated set of 15 named icons rendered as inline SVGs: `check`, `x`, `warning`, `info`, `star`, `heart`, `lock`, `rocket`, `bug`, `clock`, `flame`, `bolt`, `shield`, `mail`, `link`. Unknown names fall back to raw text.
 
 ```csv type:kind=icon title="Icons"
 kind,label,description
@@ -748,8 +670,7 @@ flame,hot,trending this week
 
 ### `country`
 
-ISO-2 codes (`US`, `JP`, `BR`) render as flag emoji + code. Non-ISO
-inputs render as text.
+ISO-2 codes (`US`, `JP`, `BR`) render as flag emoji + code. Non-ISO inputs render as text.
 
 ```csv type:country=country title="Countries"
 name,country,note
@@ -765,9 +686,7 @@ Yukihiro,JP,Matsumoto
 
 ### `duration`
 
-Seconds → `1d 2h 3m 4s` (max two most-significant parts shown). Use
-`duration(ms)` / `duration(m)` / `duration(h)` for alternate input
-units.
+Seconds → `1d 2h 3m 4s` (max two most-significant parts shown). Use `duration(ms)` / `duration(m)` / `duration(h)` for alternate input units.
 
 ```csv type:build=duration type:runtime=duration(ms) title="Build & run times"
 pipeline,build,runtime
@@ -780,8 +699,7 @@ Deploy,32,1100
 
 ### `range`
 
-Cell contains `start..end`. Auto-detects date vs numeric. Override
-separator with `range(-)` etc.
+Cell contains `start..end`. Auto-detects date vs numeric. Override separator with `range(-)` etc.
 
 ```csv type:quarter=range type:stock=range(-) title="Ranges"
 team,quarter,stock
@@ -803,8 +721,7 @@ broken,"{not valid json}"
 
 ### `code-block`
 
-Multi-line monospace. Escape newlines with `\n` in the CSV source
-(Papaparse unescapes).
+Multi-line monospace. Escape newlines with `\n` in the CSV source (Papaparse unescapes).
 
 ```csv type:snippet=code-block title="Code blocks"
 name,snippet
@@ -815,9 +732,7 @@ inline,let x = 42;
 
 ### `image`
 
-Absolute URLs render as thumbnails (link opens original in new tab).
-Relative paths fall back to monospace text until AssetResolver
-threading lands (v2.1).
+Absolute URLs render as thumbnails (link opens original in new tab). Relative paths fall back to monospace text until AssetResolver threading lands (v2.1).
 
 ```csv type:avatar=image title="Avatars"
 name,avatar

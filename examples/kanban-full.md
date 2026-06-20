@@ -1,8 +1,6 @@
 # Kanban — full feature tour
 
-Purely visual board — groups a CSV by a column, renders each group as
-a column of cards. No drag-drop (filemark is a reader — edit the CSV
-in your editor, filemark re-renders on auto-refresh).
+Purely visual board — groups a CSV by a column, renders each group as a column of cards. No drag-drop (filemark is a reader — edit the CSV in your editor, filemark re-renders on auto-refresh).
 
 ---
 
@@ -18,8 +16,7 @@ id,title,status,owner
 6,Ship timeline,backlog,Karen
 ```
 
-Columns are created from distinct values in `status`. First-appearance
-order in the data; override with `order=`.
+Columns are created from distinct values in `status`. First-appearance order in the data; override with `order=`.
 
 ---
 
@@ -37,16 +34,13 @@ r-7,Forms MVP,todo,Karen,P1
 r-8,A11y pass,review,Alan,P1
 ```
 
-`order=` pins explicit column positions; any value not listed falls to
-the end in first-appearance order. `card-title=` picks the headline
-column, `card-fields=` chooses the secondary rows.
+`order=` pins explicit column positions; any value not listed falls to the end in first-appearance order. `card-title=` picks the headline column, `card-fields=` chooses the secondary rows.
 
 ---
 
 ## 3. Rich cell types in cards (status / avatar / tags / rating / date)
 
-Since cards render fields through the datagrid's `CellRenderer`,
-every type from the datagrid tour works inline on a card.
+Since cards render fields through the datagrid's `CellRenderer`, every type from the datagrid tour works inline on a card.
 
 ```kanban group-by=stage order=Inbox,Research,Build,Review,Done card-title=task card-fields=owner,priority,tags,due,score type:priority=status(P0:danger,P1:warn,P2:info,P3:muted) type:owner=avatar type:tags=tags type:due=date type:score=rating title="Planning board"
 id,task,stage,priority,owner,tags,due,score
@@ -73,8 +67,7 @@ id,title,status,priority,owner
 5,CI cache tune,todo,P1,Dennis
 ```
 
-`card-badge=` pulls a single column to the top-right corner of each
-card — ideal for a priority pill, a status marker, an avatar.
+`card-badge=` pulls a single column to the top-right corner of each card — ideal for a priority pill, a status marker, an avatar.
 
 ---
 
@@ -91,8 +84,7 @@ id,title,status,owner,score
 7,Dual y-axis,active,Alan,5
 ```
 
-`sort=score:desc` orders cards within each column. Column order stays
-driven by `order=`.
+`sort=score:desc` orders cards within each column. Column order stays driven by `order=`.
 
 ---
 
@@ -105,9 +97,7 @@ i-02,Missing grid sort arrow,open,Grace
 i-03,Sidebar focus trap,closed,Linus
 ```
 
-`no-empty` skips any group with zero cards (there's no "new" issue so
-that column is omitted). `hide=internal_id` drops that column from
-card rendering.
+`no-empty` skips any group with zero cards (there's no "new" issue so that column is omitted). `hide=internal_id` drops that column from card rendering.
 
 ---
 
@@ -130,9 +120,7 @@ id,title,priority,owner
 ```kanban src=./roadmap.csv group-by=status card-title=title card-fields=owner title="From sibling file"
 ```
 
-Works when the file was opened via Open Folder or a dropped folder
-(either gives a persistent FSA handle). Single-file drops don't have
-sibling access; you'll see an error card.
+Works when the file was opened via Open Folder or a dropped folder (either gives a persistent FSA handle). Single-file drops don't have sibling access; you'll see an error card.
 
 ---
 
@@ -148,15 +136,9 @@ Absolute URLs bypass `AssetResolver` and fetch directly.
 ## 10. `<Kanban>` tag — component-style invocation
 
 <Kanban
-  src="./roadmap.csv"
-  group-by="status"
-  order="todo,wip,review,done"
-  card-title="title"
-  card-fields="owner,priority"
-  title="Q2 roadmap — via tag" />
+  src="./roadmap.csv" group-by="status" order="todo,wip,review,done" card-title="title" card-fields="owner,priority" title="Q2 roadmap — via tag" />
 
-Same rules as `<Datagrid>` / `<Chart>` — src-based only; inline data
-belongs in a `\`\`\`kanban` fence.
+Same rules as `<Datagrid>` / `<Chart>` — src-based only; inline data belongs in a `\`\`\`kanban` fence.
 
 ---
 
@@ -168,9 +150,7 @@ id,title,status
 2,Bar,done
 ```
 
-The validator notices `group-by=nonexistent` isn't a real column and
-renders an inline card listing the available columns. No silent
-empty board.
+The validator notices `group-by=nonexistent` isn't a real column and renders an inline card listing the available columns. No silent empty board.
 
 ---
 

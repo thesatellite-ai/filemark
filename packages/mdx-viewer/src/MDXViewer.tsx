@@ -3,7 +3,10 @@ import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkBreaks from "remark-breaks";
+// Standard GitHub emoji shortcodes (~1800) -> Unicode (`:smile:` -> 😄).
 import remarkGemoji from "remark-gemoji";
+// GitHub-proprietary custom emoji (~16, e.g. `:bowtie:`) -> bundled base64 <img>;
+// these have no Unicode equivalent so remark-gemoji leaves them untouched.
 import { remarkGithubEmoji } from "./remarkGithubEmoji";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";

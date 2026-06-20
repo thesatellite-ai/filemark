@@ -2,10 +2,8 @@
 
 Two small, layout-only components for planning / spec docs:
 
-- **`<Stats>` / `<Stat>`** — KPI card grid. Value + delta + optional
-  description. Auto-colors the delta (green for `+`, red for `-`).
-- **`<ADR>`** — Architecture Decision Record block. Status pill,
-  id, date, title; body is free-form markdown.
+- **`<Stats>` / `<Stat>`** — KPI card grid. Value + delta + optional description. Auto-colors the delta (green for `+`, red for `-`).
+- **`<ADR>`** — Architecture Decision Record block. Status pill, id, date, title; body is free-form markdown.
 
 No CSV, no data-layer, no new deps. Pure JSX components.
 
@@ -20,8 +18,7 @@ No CSV, no data-layer, no new deps. Pure JSX components.
   <Stat title="Churn" value="1.8%" />
 </Stats>
 
-Just titles + values. `<Stats>` defaults to a responsive 1/2/3/4-column
-grid (mobile / sm / lg / xl).
+Just titles + values. `<Stats>` defaults to a responsive 1/2/3/4-column grid (mobile / sm / lg / xl).
 
 ---
 
@@ -34,15 +31,13 @@ grid (mobile / sm / lg / xl).
   <Stat title="Churn" value="1.8%" delta="-0.3%" description="lower is better" />
 </Stats>
 
-`+` prefix → up arrow + green. `-` prefix → down arrow + red.
-`description=` adds a muted caption.
+`+` prefix → up arrow + green. `-` prefix → down arrow + red. `description=` adds a muted caption.
 
 ---
 
 ## 3. Stats — override intent (semantic ≠ sign)
 
-For metrics where "down is good" (churn, latency, bug count), override
-the auto-inferred tone with `intent=`:
+For metrics where "down is good" (churn, latency, bug count), override the auto-inferred tone with `intent=`:
 
 <Stats cols="3">
   <Stat title="p95 latency" value="142 ms" delta="-8 ms" intent="success" description="target ≤ 150 ms" />
@@ -50,8 +45,7 @@ the auto-inferred tone with `intent=`:
   <Stat title="Deploys" value="38" delta="+6" intent="info" description="this month" />
 </Stats>
 
-A `-8 ms` drop in latency gets shown as success (green) instead of the
-default danger (red).
+A `-8 ms` drop in latency gets shown as success (green) instead of the default danger (red).
 
 ---
 
@@ -71,8 +65,7 @@ default danger (red).
   <Stat title="Sat" value="94" />
 </Stats>
 
-`cols=` accepts `2` / `3` / `4` / `5` / `6`. Omit for responsive
-auto-fill.
+`cols=` accepts `2` / `3` / `4` / `5` / `6`. Omit for responsive auto-fill.
 
 ---
 
@@ -106,8 +99,7 @@ Zero delta → flat (em-dash) arrow + muted tone.
 
 ### Context
 
-Filemark renders under Chrome MV3 CSP, which forbids `unsafe-eval`.
-We need a chart library that:
+Filemark renders under Chrome MV3 CSP, which forbids `unsafe-eval`. We need a chart library that:
 
 - Works without `new Function()` / `eval`
 - Has SVG (not canvas — MV3 issues)
@@ -115,22 +107,18 @@ We need a chart library that:
 
 ### Decision
 
-Adopt **recharts**. Lazy-loaded via dynamic `import()`, wrapped in a
-`RechartsProvider` context so host apps can pre-register it.
+Adopt **recharts**. Lazy-loaded via dynamic `import()`, wrapped in a `RechartsProvider` context so host apps can pre-register it.
 
 ### Consequences
 
 - **Pro.** Ergonomic React API, composable primitives, ~50 KB gzipped.
 - **Pro.** Already SVG-native; no canvas-context issues.
 - **Con.** Largest of the options evaluated (chart.js ≈ 40 KB + wrapper).
-- **Mitigation.** Dynamic import means the bundle cost only lands on docs
-  that actually render a chart.
+- **Mitigation.** Dynamic import means the bundle cost only lands on docs that actually render a chart.
 
 </ADR>
 
-Attrs: `status`, `id`, `date`, `title`. Body is normal markdown — use
-whatever sectioning fits the decision (conventional: Context / Decision
-/ Consequences).
+Attrs: `status`, `id`, `date`, `title`. Body is normal markdown — use whatever sectioning fits the decision (conventional: Context / Decision / Consequences).
 
 ---
 
@@ -189,9 +177,7 @@ Replaced by Redux Toolkit (see ADR-009) after scaling needs emerged.
 
 </ADR>
 
-Five statuses: **proposed** (info / blue), **accepted** (success /
-green), **rejected** (danger / red), **deprecated** (muted / gray),
-**superseded** (warn / amber).
+Five statuses: **proposed** (info / blue), **accepted** (success / green), **rejected** (danger / red), **deprecated** (muted / gray), **superseded** (warn / amber).
 
 ---
 
@@ -200,20 +186,17 @@ green), **rejected** (danger / red), **deprecated** (muted / gray),
 <ADR status="accepted" id="ADR-009" date="2026-01-20" title="Use Redux Toolkit for app state" supersedes="ADR-003">
 
 ### Context
-Zustand (ADR-003) served well at small scale; we need stricter
-conventions as state surface grew.
+Zustand (ADR-003) served well at small scale; we need stricter conventions as state surface grew.
 
 ### Decision
-Adopt Redux Toolkit for all cross-feature state. Keep Zustand for
-component-local stores only.
+Adopt Redux Toolkit for all cross-feature state. Keep Zustand for component-local stores only.
 
 ### Consequences
 Migration is ticketed per feature slice. No big-bang rewrite.
 
 </ADR>
 
-`supersedes=<id>` / `superseded-by=<id>` render as small inline refs in
-the header's right side.
+`supersedes=<id>` / `superseded-by=<id>` render as small inline refs in the header's right side.
 
 ---
 
@@ -231,16 +214,13 @@ A realistic planning doc:
 <ADR status="accepted" id="ADR-014" date="2026-04-23" title="Ship Stats + ADR components">
 
 ### Context
-Planning docs accumulate KPIs and decisions. Filemark can render data
-(datagrid / chart / kanban) but has no native idiom for either pattern.
+Planning docs accumulate KPIs and decisions. Filemark can render data (datagrid / chart / kanban) but has no native idiom for either pattern.
 
 ### Decision
-Add `<Stats>` / `<Stat>` and `<ADR>` as first-class MDX components.
-Both are pure layout — no data layer, no new deps.
+Add `<Stats>` / `<Stat>` and `<ADR>` as first-class MDX components. Both are pure layout — no data layer, no new deps.
 
 ### Consequences
-- Thesis slice (chart / kanban / stat / ADR from PLANNING_COMPONENTS.md)
-  is complete.
+- Thesis slice (chart / kanban / stat / ADR from PLANNING_COMPONENTS.md) is complete.
 - Next planning-doc beat: Timeline / Gantt + 2×2 matrix.
 
 </ADR>

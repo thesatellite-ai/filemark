@@ -1,12 +1,23 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@filemark/mdx/styles.css";
+/* KaTeX stylesheet — REQUIRED. rehype-katex emits two layers per formula:
+   the visual `.katex-html` and a `.katex-mathml` accessibility layer that
+   this CSS visually hides (clip). Without it the MathML leaks as broken
+   inline text next to every rendered formula. The chrome-ext host imports
+   it in main.tsx; the website must too. */
+@import "katex/dist/katex.min.css";
 
 /* Tailwind v4 only auto-scans this app's sources. The merged playground
-   uses utility classes from @filemark/datagrid + @filemark/mdx that
-   live in their source — opt them in so the classes survive into the
-   final CSS (otherwise hover/resize/etc. silently disappear). */
-@source "../../../../packages/*/src/**/*.{ts,tsx,js,jsx}";
+   uses utility classes from @filemark/datagrid + @filemark/mdx + every
+   other viewer package that live in their source — opt them in so the
+   classes survive into the final CSS (otherwise component styling, hover,
+   resize, etc. silently disappear and the demos look unstyled).
+   NOTE: this file is at apps/website/src/styles.css — THREE levels up
+   reaches the repo root's packages/. (The chrome-ext copy lives one dir
+   deeper at src/styles/, so it correctly uses four ../ — don't blindly
+   copy the glob between the two; the depths differ.) */
+@source "../../../packages/*/src/**/*.{ts,tsx,js,jsx}";
 
 /* Same shadcn token layer used by the chrome extension + desktop app,
    so the marketing site shares visual identity with the product. */

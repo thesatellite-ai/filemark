@@ -25,8 +25,7 @@ PR states: `open` (emerald) · `merged` (violet) · `closed` (rose) · `draft` (
 ## 2. FileTree — interactive folder/file outline
 
 <FileTree>
-filemark/
-  packages/
+filemark/ packages/
     mdx-viewer/
       src/
         components/
@@ -138,17 +137,7 @@ Pure CSS scroll-snap — no JS scroll listener needed.
 ## 7. Treemap — nested rectangles sized by value
 
 <Treemap height="320">
-name,value,group
-React,4500,frontend
-Vue,2100,frontend
-Svelte,900,frontend
-Solid,400,frontend
-Express,3200,backend
-Fastify,1100,backend
-Hono,800,backend
-Postgres,2800,db
-SQLite,1600,db
-Redis,1900,db
+name,value,group React,4500,frontend Vue,2100,frontend Svelte,900,frontend Solid,400,frontend Express,3200,backend Fastify,1100,backend Hono,800,backend Postgres,2800,db SQLite,1600,db Redis,1900,db
 </Treemap>
 
 Tile colour cycles by group. Hover any tile for the exact value. Tiles smaller than ~30px hide labels.

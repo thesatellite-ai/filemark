@@ -104,8 +104,7 @@ Every heading gets an auto-generated slug id (via `rehype-slug`) that lands in t
 
 ![Filemark banner](https://placehold.co/600x200/1f2937/93c5fd/png?text=File+Viewer&font=raleway)
 
-Images from any `https://` origin load in the extension page (MV3's default
-CSP doesn't restrict `img-src`).
+Images from any `https://` origin load in the extension page (MV3's default CSP doesn't restrict `img-src`).
 
 ### Inline SVG badges
 
@@ -117,12 +116,7 @@ CSP doesn't restrict `img-src`).
 
 ### Relative images
 
-Filemark resolves relative image paths against the directory of the
-markdown file, but only when the file was opened from a folder (via
-**Open Folder** or a drag-drop of the enclosing folder) or via a
-`file://` URL. A pure drag-drop of a single `.md` has no sibling
-directory to resolve against, so `![alt](./diagram.png)` only renders
-when you open the file that way.
+Filemark resolves relative image paths against the directory of the markdown file, but only when the file was opened from a folder (via **Open Folder** or a drag-drop of the enclosing folder) or via a `file://` URL. A pure drag-drop of a single `.md` has no sibling directory to resolve against, so `![alt](./diagram.png)` only renders when you open the file that way.
 
 Syntax (works once the sibling file exists next to this one):
 
@@ -321,29 +315,17 @@ Inline: the famous identity $e^{i\pi} + 1 = 0$, Pythagoras $a^2 + b^2 = c^2$, an
 
 Block:
 
-$$
-\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-$$
+$$ \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi} $$
 
 A matrix:
 
-$$
-\mathbf{A} =
-\begin{pmatrix}
-1 & 2 & 3 \\
-4 & 5 & 6 \\
-7 & 8 & 9
-\end{pmatrix}
-$$
+$$ \mathbf{A} = \begin{pmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{pmatrix} $$
 
 Aligned equations:
 
-$$
-\begin{aligned}
-f(x) &= (x + 1)^2 \\
+$$ \begin{aligned} f(x) &= (x + 1)^2 \\
      &= x^2 + 2x + 1
-\end{aligned}
-$$
+\end{aligned} $$
 
 ---
 
@@ -479,20 +461,11 @@ And some **formatted text** inside.
 
 ## 16. ASCII & flow diagrams
 
-Soft line breaks are preserved (via `remark-breaks`) so trees and flow
-sketches render faithfully without needing a fenced code block.
+Soft line breaks are preserved (via `remark-breaks`) so trees and flow sketches render faithfully without needing a fenced code block.
 
 Directory tree:
 
-/Volumes/D/www/projects/
-├── private-repo/
-│   ├── codeskill/
-│   │   └── research/         ← real files live here
-│   ├── repo1/
-│   │   └── research/
-│   └── repo2/
-│       └── research/
-└── skills-ai/codeskill/
+/Volumes/D/www/projects/ ├── private-repo/ │   ├── codeskill/ │   │   └── research/         ← real files live here │   ├── repo1/ │   │   └── research/ │   └── repo2/ │       └── research/ └── skills-ai/codeskill/
     └── research → ../../private-repo/codeskill/research   (symlink)
 
 Pipeline flow:
@@ -506,11 +479,7 @@ body → react-markdown(remark-gfm, remark-math, remark-breaks)
 
 ## 17. Mermaid diagrams
 
-Fence a code block with `mermaid` and Filemark renders it as a
-live diagram (lazy-loaded — the ~800 KB Mermaid bundle only downloads
-the first time you open a file that uses one). Every diagram type
-Mermaid ships works: flowcharts, sequence, state, class, ER, gantt,
-pie, mindmaps, journey, timelines, git graph, sankey, etc.
+Fence a code block with `mermaid` and Filemark renders it as a live diagram (lazy-loaded — the ~800 KB Mermaid bundle only downloads the first time you open a file that uses one). Every diagram type Mermaid ships works: flowcharts, sequence, state, class, ER, gantt, pie, mindmaps, journey, timelines, git graph, sankey, etc.
 
 ### Flowchart
 
@@ -638,10 +607,7 @@ mindmap
 
 ## 18. Database schema blocks
 
-Fence any SQL, Prisma, or DBML schema with `schema`, `prisma`, or `dbml`
-and Filemark parses it via [`db-schema-toolkit`](https://github.com/maxgfr/db-schema-viewer),
-then renders it as an interactive ER diagram — same pan / zoom / fullscreen
-toolbar as the Mermaid blocks.
+Fence any SQL, Prisma, or DBML schema with `schema`, `prisma`, or `dbml` and Filemark parses it via [`db-schema-toolkit`](https://github.com/maxgfr/db-schema-viewer), then renders it as an interactive ER diagram — same pan / zoom / fullscreen toolbar as the Mermaid blocks.
 
 ### `schema` (auto-detected SQL)
 
@@ -753,16 +719,13 @@ Table users {
 }
 ```
 
-All three blocks above use the same parse-to-Mermaid pipeline the
-standalone `.sql` / `.prisma` / `.dbml` file viewers do — so embedded
-diagrams and file-level diagrams stay in lockstep.
+All three blocks above use the same parse-to-Mermaid pipeline the standalone `.sql` / `.prisma` / `.dbml` file viewers do — so embedded diagrams and file-level diagrams stay in lockstep.
 
 ---
 
 ## 19. Footnotes
 
-Filemark supports GFM footnotes[^1]. They collect at the bottom of the
-rendered document and link back to their usage point[^note].
+Filemark supports GFM footnotes[^1]. They collect at the bottom of the rendered document and link back to their usage point[^note].
 
 [^1]: Footnotes are part of the GFM specification and are rendered as a numbered list below the body.
 [^note]: You can name footnotes (`[^note]`) or number them (`[^1]`).

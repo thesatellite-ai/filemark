@@ -22,9 +22,6 @@ Open every text-based document Chrome can't already display beautifully — loca
 
 Filemark turns plain markdown, structured data, comma-separated values, and schema definitions into rich interactive views. Drop a folder onto the page and the extension walks the directory, skips noise like node_modules, and gives you a real reader: tab strip, sidebar with stars and recents, command-K search across everything you've opened, themes, typography controls, raw-source toggle, and persistent task checkboxes per document.
 
-SUPPORTED FILE TYPES
-.md · .mdx · .markdown · .json · .jsonc · .csv · .tsv · .sql · .prisma · .dbml
-
 WHAT IT READS
 
 • Markdown with full GitHub-flavored syntax — tables, task lists, footnotes, autolinks, math, diagrams, and inline components like callouts, tabs, kanban boards, and charts. Author tasks as ordinary bullets and the same document also renders as a board.

@@ -28,11 +28,9 @@ Filemark is reader-first. AI writes markdown, humans grep markdown, filemark vis
 
 ### FAQ
 
-**Q: Does it sync to the cloud?**
-A: No. Everything is local-first. Your files stay on disk; filemark renders them in your browser.
+**Q: Does it sync to the cloud?** A: No. Everything is local-first. Your files stay on disk; filemark renders them in your browser.
 
-**Q: Can my AI agent edit these files?**
-A: Yes — this is the whole point. The skill at `skills/filemark/SKILL.md` teaches Claude / Cursor / Codex the syntax.
+**Q: Can my AI agent edit these files?** A: Yes — this is the whole point. The skill at `skills/filemark/SKILL.md` teaches Claude / Cursor / Codex the syntax.
 
 </DocBlock>
 

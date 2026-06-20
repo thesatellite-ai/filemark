@@ -182,12 +182,20 @@ function readInitial(): string {
   const encoded = params.get(URL_PARAM);
   if (encoded) {
     try {
-      return decodeURIComponent(atob(encoded));
+      return decodeURIComponent(atob(normalizeB64(encoded)));
     } catch {
       /* bad encoding — fall through */
     }
   }
   return getExample(DEFAULT_ID)?.content ?? "";
+}
+
+/** Repair base64 that came through a query string. `URLSearchParams.get()`
+ *  turns a literal `+` into a space, which breaks `atob`; we also accept
+ *  base64url (`-`/`_`). Tolerating both lets externally-built share links
+ *  (e.g. from the Chrome extension) decode regardless of how they escaped. */
+function normalizeB64(s: string): string {
+  return s.replace(/ /g, "+").replace(/-/g, "+").replace(/_/g, "/");
 }
 
 /** Decode a `?srcz=<base64-gzip>` payload back to text. Async — gzip can't
@@ -198,7 +206,7 @@ async function decodeGzipParam(): Promise<string | null> {
   const encoded = params.get(URL_PARAM_GZ);
   if (!encoded) return null;
   try {
-    const binStr = atob(encoded);
+    const binStr = atob(normalizeB64(encoded));
     const bytes = new Uint8Array(binStr.length);
     for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
     const stream = new Response(bytes).body!.pipeThrough(

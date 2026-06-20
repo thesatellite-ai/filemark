@@ -66,7 +66,9 @@ export function FileActions({ file }: { file: LibraryFile }) {
   // typically compresses 3–5x, so 100KB docs end up ~25KB encoded.
   // URLs over ~28KB still exceed Chrome's address-bar limit in some
   // places, so we keep the explicit guard.
-  const PLAYGROUND_BASE = "https://filemark-playground-drab.vercel.app";
+  // Path-routed playground on the live site (TanStack Router `/demo/play`).
+  // NOT the old hash-routed Vercel host — that domain is dead.
+  const PLAYGROUND_BASE = "https://khanakia.com/apps/filemark/demo/play";
   const SHARE_URL_LIMIT = 28_000;
   const shareToPlayground = async () => {
     setShareState("encoding");
@@ -266,8 +268,11 @@ async function buildShareUrl(
   base: string,
   content: string,
 ): Promise<string> {
+  // base64 contains `+` `/` `=`, which a query string mangles (`+` decodes to
+  // a space via URLSearchParams). encodeURIComponent percent-escapes them so
+  // the payload survives `new URL(...).searchParams.get()` on the other side.
   const raw = btoa(encodeURIComponent(content));
-  const rawUrl = `${base}/?src=${raw}#/play`;
+  const rawUrl = `${base}?src=${encodeURIComponent(raw)}`;
   try {
     const stream = new Response(content).body!.pipeThrough(
       new CompressionStream("gzip"),
@@ -276,7 +281,7 @@ async function buildShareUrl(
     let bin = "";
     for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]!);
     const gz = btoa(bin);
-    const gzUrl = `${base}/?srcz=${gz}#/play`;
+    const gzUrl = `${base}?srcz=${encodeURIComponent(gz)}`;
     return gzUrl.length < rawUrl.length ? gzUrl : rawUrl;
   } catch {
     return rawUrl;

@@ -34,7 +34,7 @@ export function ADR(props: Record<string, unknown> & { children?: ReactNode }) {
   const tone = STATUS_TONE[status];
 
   return (
-    <section className="bg-card my-6 rounded-lg border p-5 shadow-sm">
+    <section className="bg-card my-4 rounded-lg border p-5 shadow-sm">
       <header className="mb-3 flex flex-wrap items-center gap-2 border-b pb-3">
         <span
           className={[

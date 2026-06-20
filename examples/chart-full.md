@@ -1,8 +1,6 @@
 # Chart — full feature tour
 
-Every chart type, every flag. Mirror of `datagrid-full.md` for the
-`@filemark/chart` component. Drop this into Filemark (or the playground)
-to see each render.
+Every chart type, every flag. Mirror of `datagrid-full.md` for the `@filemark/chart` component. Drop this into Filemark (or the playground) to see each render.
 
 ---
 
@@ -39,8 +37,7 @@ May,1790,24100,70
 Jun,1920,26800,60
 ```
 
-Multi-column `y=` renders one line per series with deterministic
-palette colors + a legend.
+Multi-column `y=` renders one line per series with deterministic palette colors + a legend.
 
 ---
 
@@ -64,8 +61,7 @@ Chore,56
 Incident,9
 ```
 
-`donut` + `show-total` renders as a donut with the aggregate in the
-center.
+`donut` + `show-total` renders as a donut with the aggregate in the center.
 
 ---
 
@@ -101,9 +97,7 @@ Japan,125
 
 ## 6. Currency + percentage + filesize formatting
 
-Per-column format specs drive axis ticks AND tooltips. Auto-inference
-picks the right formatter based on the column type; `format:<col>=…`
-overrides.
+Per-column format specs drive axis ticks AND tooltips. Auto-inference picks the right formatter based on the column type; `format:<col>=…` overrides.
 
 ```bar x=service y=spend format:spend=currency(USD) title="Cloud spend"
 service,spend
@@ -147,16 +141,13 @@ May,1790
 Jun,1920
 ```
 
-The dashed horizontal line marks the target (`reference-line=1500`);
-gets a muted color from the palette's `muted` tone.
+The dashed horizontal line marks the target (`reference-line=1500`); gets a muted color from the palette's `muted` tone.
 
 ---
 
 ## 8. By-pivot — long-form → multi-series
 
-When your CSV is long-format (`date, category, value`), use `by=` to
-pivot into multi-series automatically — no need to pre-pivot in your
-editor.
+When your CSV is long-format (`date, category, value`), use `by=` to pivot into multi-series automatically — no need to pre-pivot in your editor.
 
 ```line x=month by=region y=revenue title="Revenue by region"
 month,region,revenue
@@ -186,8 +177,7 @@ Best Practices,92
 SEO,76
 ```
 
-The full dataset renders beneath the chart as a compact datagrid —
-screen-readers + no-JS get the numbers.
+The full dataset renders beneath the chart as a compact datagrid — screen-readers + no-JS get the numbers.
 
 ---
 
@@ -196,8 +186,7 @@ screen-readers + no-JS get the numbers.
 ```chart type=bar src=https://cdn.wsform.com/wp-content/uploads/2020/06/industry.csv name=Industry value=Industry title="Industry list — absolute URL"
 ```
 
-Or relative to the current file (works via the AssetResolver when the
-doc was opened via Open Folder / folder drag-drop):
+Or relative to the current file (works via the AssetResolver when the doc was opened via Open Folder / folder drag-drop):
 
 ```chart type=pie src=./sales.csv name=product value=revenue donut show-total title="Sales pie (external relative)"
 ```
@@ -206,25 +195,13 @@ doc was opened via Open Folder / folder drag-drop):
 
 ## 11. `<Chart>` tag — component-style invocation
 
-Same options set, HTML-attribute surface. Prefer when your data is in
-a sibling file and your info-string would get long.
+Same options set, HTML-attribute surface. Prefer when your data is in a sibling file and your info-string would get long.
 
 <Chart
-  type="line"
-  src="./sales.csv"
-  x="product"
-  y="units,revenue"
-  title="Sales — line via <Chart> tag"
-  height="280"
-  smooth />
+  type="line" src="./sales.csv" x="product" y="units,revenue" title="Sales — line via <Chart> tag" height="280" smooth />
 
 <Chart
-  type="bar"
-  src="./sales.csv"
-  x="region"
-  y="revenue"
-  stacked
-  title="Sales — bar via tag" />
+  type="bar" src="./sales.csv" x="region" y="revenue" stacked title="Sales — bar via tag" />
 
 ---
 
@@ -246,8 +223,7 @@ worker,0.33,72
 worker,0.55,140
 ```
 
-`by=<col>` groups points into multi-series; legend + palette apply
-automatically.
+`by=<col>` groups points into multi-series; legend + palette apply automatically.
 
 ---
 
@@ -290,8 +266,7 @@ India,3.7
 UK,3.1
 ```
 
-`x-label=` and `y-label=` render alongside the axes; if omitted we
-infer from the column's label.
+`x-label=` and `y-label=` render alongside the axes; if omitted we infer from the column's label.
 
 ---
 
@@ -309,8 +284,7 @@ Jul,2510
 Aug,2690
 ```
 
-Multiple markers: `annotations=Mar:Launch,May:Pricing-change,Jul:Bug-fix`.
-Comma separates entries; colon separates the x-value from its label.
+Multiple markers: `annotations=Mar:Launch,May:Pricing-change,Jul:Bug-fix`. Comma separates entries; colon separates the x-value from its label.
 
 ---
 
@@ -324,9 +298,7 @@ E,95,120,105,95
 W,150,90,120,100
 ```
 
-`palette=colorblind` switches to the Okabe-Ito 2008 palette —
-distinguishable under every color-vision deficiency. Register your
-own with `registerPalette("brand", …)`.
+`palette=colorblind` switches to the Okabe-Ito 2008 palette — distinguishable under every color-vision deficiency. Register your own with `registerPalette("brand", …)`.
 
 ---
 
@@ -338,9 +310,7 @@ North,3600
 South,2850
 ```
 
-The validator sees `y=nonexistent` isn't a column and renders an
-inline card listing the problem + available columns. No silent empty
-chart. Rule 3 — skeleton honesty.
+The validator sees `y=nonexistent` isn't a column and renders an inline card listing the problem + available columns. No silent empty chart. Rule 3 — skeleton honesty.
 
 ---
 

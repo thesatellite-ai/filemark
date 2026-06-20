@@ -15,6 +15,8 @@ import richdocsTier3 from "../../../../../examples/richdocs-tier3.md?raw";
 import schemaDbml from "../../../../../examples/schema.dbml?raw";
 import schemaPrisma from "../../../../../examples/schema.prisma?raw";
 import schemaSql from "../../../../../examples/schema.sql?raw";
+import gfmFull from "../../../../../examples/gfm-full.md?raw";
+import mathFull from "../../../../../examples/math-full.md?raw";
 import gfmEmojiVerify from "../../../../../examples/gfm-emoji-verify.md?raw";
 import emojiCheatsheet from "../../../../../examples/emoji-cheatsheet.md?raw";
 
@@ -99,6 +101,24 @@ function wrapSchema(kind: "sql" | "prisma" | "dbml", source: string): string {
 }
 
 export const EXAMPLES: Example[] = [
+  {
+    id: "gfm-full",
+    title: "GitHub-Flavored Markdown — full reference",
+    description:
+      "Complete GFM tour: headings, emphasis, blockquotes, lists, task lists, tables with alignment, fenced code in many languages, links, images, footnotes, inline HTML, escaping, and emoji. Pure GFM — no Filemark components.",
+    section: "Verify",
+    content: gfmFull,
+    filename: "gfm-full.md",
+  },
+  {
+    id: "math-full",
+    title: "Mathematical expressions — LaTeX / KaTeX",
+    description:
+      "Full math tour mirroring GitHub's guide: inline + display math, fractions/roots, Greek letters, sums/integrals/limits, matrices, cases, aligned equations, accents, the dollar-sign gotcha, and GitHub-specific delimiter fall-back.",
+    section: "Verify",
+    content: mathFull,
+    filename: "math-full.md",
+  },
   {
     id: "gfm-emoji-verify",
     title: "Rendering verification — GFM, emoji, code, math",

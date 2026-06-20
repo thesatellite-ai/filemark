@@ -38,6 +38,7 @@ import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkBreaks from "remark-breaks";
+// Emoji parity with MDXViewer: standard shortcodes -> Unicode, GitHub customs -> bundled <img>.
 import remarkGemoji from "remark-gemoji";
 import { remarkGithubEmoji } from "../remarkGithubEmoji";
 import rehypeKatex from "rehype-katex";
@@ -129,6 +130,8 @@ export function TaskDetailSheet({
           {body ? (
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkGemoji, remarkGithubEmoji, remarkMath, remarkBreaks, remarkCodeMeta]}
+              // Default urlTransform strips data: URLs; allow our bundled
+              // base64 emoji images (remarkGithubEmoji) through.
               urlTransform={(url) =>
                 url.startsWith("data:image/") ? url : defaultUrlTransform(url)
               }
