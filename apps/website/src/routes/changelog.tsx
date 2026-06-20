@@ -46,6 +46,21 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.4",
+    date: "2026-06-20",
+    tag: "emoji, polish & fixes",
+    notes: [
+      "Emoji shortcodes now render — :smile: → 😄 and the full GitHub set, including custom ones (bowtie, octocat…) bundled locally",
+      "Markdown polish: links are blue + underlined, tidier blockquotes, smaller footnotes, consistent list spacing",
+      "JSON viewer: the panel background now matches the theme — no mismatched frame around the tree",
+      "Toolbar: quick links to the website and to report an issue, plus the version shown next to the Filemark logo",
+      "Refreshed welcome page with current formats and an Author-with-AI section",
+      "Fix: no more console error on sandboxed pages (raw GitHub / gist)",
+      "Fix: remote pages that merely end in .json but are actually HTML (e.g. a GitHub blob) are no longer hijacked into a blank viewer",
+      "Fix: \"Open in playground\" now points at the live site and shares large docs correctly",
+    ],
+  },
+  {
     version: "0.1.3",
     date: "2026-06-19",
     tag: "onboarding + store polish",

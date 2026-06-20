@@ -59,8 +59,11 @@ function BrandPage(): React.ReactElement {
     <main className="bg-background text-foreground">
       {/* Hero */}
       <section className="border-b border-border">
-        <div className="mx-auto max-w-4xl px-6 py-16 sm:py-20">
-          <h1 className="text-balance text-[36px] font-semibold leading-[1.05] tracking-tight sm:text-[48px]">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Press kit
+          </p>
+          <h1 className="mt-3 text-balance text-[36px] font-semibold leading-[1.05] tracking-tight sm:text-[48px]">
             Brand assets
           </h1>
           <p className="mt-5 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground">
@@ -93,9 +96,9 @@ function BrandPage(): React.ReactElement {
 
       {/* Colors */}
       <section className="border-b border-border">
-        <div className="mx-auto max-w-4xl px-6 py-16">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            <Palette size={14} aria-hidden />
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <Palette size={13} aria-hidden />
             Colors
           </div>
           <h2 className="mt-3 text-[26px] font-semibold tracking-tight sm:text-[32px]">
@@ -128,8 +131,11 @@ function BrandPage(): React.ReactElement {
 
       {/* Screenshots */}
       <section className="border-b border-border">
-        <div className="mx-auto max-w-5xl px-6 py-16">
-          <h2 className="text-[26px] font-semibold tracking-tight sm:text-[32px]">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Screenshots
+          </p>
+          <h2 className="mt-3 text-[26px] font-semibold tracking-tight sm:text-[32px]">
             Product screenshots
           </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
@@ -186,53 +192,59 @@ function AssetBlock({
 }) {
   return (
     <section className="border-b border-border">
-      <div className="mx-auto grid max-w-4xl gap-10 px-6 py-16 md:grid-cols-[260px_1fr] md:items-start">
-        <div
-          className={`flex aspect-square items-center justify-center rounded-2xl border border-border ${previewBg}`}
-        >
-          <img
-            src={asset(`/brand/${svg}`)}
-            alt={`Filemark ${title}`}
-            className="size-28"
-            // The glyph is ink-colored; invert it so it's visible on the
-            // dark preview tile.
-            style={previewInvert ? { filter: "invert(1)" } : undefined}
-          />
-        </div>
-        <div>
-          <h2 className="text-[26px] font-semibold tracking-tight sm:text-[32px]">
-            {title}
-          </h2>
-          <p className="mt-2 max-w-md text-muted-foreground">{desc}</p>
+      <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Logo
+        </p>
+        <h2 className="mt-3 text-[26px] font-semibold tracking-tight sm:text-[32px]">
+          {title}
+        </h2>
+        <p className="mt-3 max-w-2xl text-muted-foreground">{desc}</p>
 
-          <div className="mt-6">
-            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Vector
-            </div>
-            <DownloadLink
-              href={asset(`/brand/${svg}`)}
-              download={svg}
-              label="SVG"
-              sub="scales to any size"
+        <div className="mt-8 grid gap-8 sm:grid-cols-[220px_1fr] sm:items-start">
+          <div
+            className={`flex aspect-square items-center justify-center rounded-2xl border border-border ${previewBg}`}
+          >
+            <img
+              src={asset(`/brand/${svg}`)}
+              alt={`Filemark ${title}`}
+              className="size-24"
+              // The glyph is ink-colored; invert it so it's visible on the
+              // dark preview tile.
+              style={previewInvert ? { filter: "invert(1)" } : undefined}
             />
           </div>
 
-          <div className="mt-6">
-            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              PNG
+          <div className="space-y-6">
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Vector
+              </div>
+              <DownloadLink
+                href={asset(`/brand/${svg}`)}
+                download={svg}
+                label="SVG"
+                sub="scales to any size"
+              />
             </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {PNG_SIZES.map((s) => (
-                <a
-                  key={s}
-                  href={asset(`/brand/${pngBase}-${s}.png`)}
-                  download={`${pngBase}-${s}.png`}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-muted"
-                >
-                  <Download size={12} aria-hidden />
-                  {s}px
-                </a>
-              ))}
+
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                PNG
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {PNG_SIZES.map((s) => (
+                  <a
+                    key={s}
+                    href={asset(`/brand/${pngBase}-${s}.png`)}
+                    download={`${pngBase}-${s}.png`}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-muted"
+                  >
+                    <Download size={12} aria-hidden />
+                    {s}px
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
