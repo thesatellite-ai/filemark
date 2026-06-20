@@ -48,6 +48,21 @@ function openExternal(url: string) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
+// Extension version from the manifest (single source of truth). Empty in
+// non-extension contexts (localhost dev) so the chip simply doesn't render.
+function extVersion(): string {
+  try {
+    return (
+      (typeof chrome !== "undefined" &&
+        chrome.runtime?.getManifest?.().version) ||
+      ""
+    );
+  } catch {
+    return "";
+  }
+}
+const EXT_VERSION = extVersion();
+
 export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
@@ -153,6 +168,11 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         >
           <BookOpenText className="text-primary size-4" />
           <span className="hidden sm:inline">Filemark</span>
+          {EXT_VERSION && (
+            <span className="text-muted-foreground hidden text-[10px] font-normal tabular-nums sm:inline">
+              v{EXT_VERSION}
+            </span>
+          )}
         </button>
       </div>
 

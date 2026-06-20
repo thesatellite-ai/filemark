@@ -9,6 +9,7 @@ import {
   Braces,
   Table2,
   Database,
+  Sparkles,
 } from "lucide-react";
 
 const SITE = "https://khanakia.com/apps/filemark";
@@ -66,9 +67,57 @@ function Home(): React.ReactElement {
       <ShowcaseSchema />
       <ShowcaseTable />
       <ShowcaseTasks />
+      <AISkill />
       <WhyFilemark />
       <Install />
     </main>
+  );
+}
+
+/* ─────────── AI skill band ────────────────────────────────────────── */
+
+function AISkill(): React.ReactElement {
+  return (
+    <section className="border-b border-border">
+      <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+        <div className="rounded-2xl border border-border bg-muted/40 p-8 sm:p-12">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            <Sparkles size={13} aria-hidden />
+            AI skill
+          </div>
+          <h2 className="max-w-3xl text-balance text-[28px] font-semibold leading-[1.1] tracking-tight sm:text-[38px]">
+            Let your AI author Filemark docs for you
+          </h2>
+          <p className="mt-4 max-w-2xl text-balance text-muted-foreground sm:text-lg">
+            Drop in the Filemark skill and Claude Code, Cursor, or Codex learns
+            every component, the task DSL, and the gotchas — then writes
+            beautiful kanban boards, charts, and ER diagrams straight into your
+            markdown.
+          </p>
+          <pre className="mt-7 w-fit max-w-full overflow-x-auto rounded-lg border border-border bg-foreground px-4 py-3 text-[13px] text-background">
+            <code>npx skills add thesatellite-ai/filemark</code>
+          </pre>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link
+              to="/ai"
+              className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              How the AI skill works
+              <ArrowRight size={14} aria-hidden />
+            </Link>
+            <a
+              href="https://github.com/thesatellite-ai/filemark/blob/main/skills/filemark/SKILL.md"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-4 text-sm hover:bg-muted"
+            >
+              <GithubIcon size={14} aria-hidden />
+              Read SKILL.md
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

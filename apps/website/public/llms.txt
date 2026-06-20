@@ -14,7 +14,8 @@
 
 - [Filemark home](https://khanakia.com/apps/filemark/): hero, why-filemark pillars, install instructions
 - [Features](https://khanakia.com/apps/filemark/features): comprehensive feature list — 9 file formats with deep-dive bullets, plus categories for Web URLs, Library, Navigation, Viewer, Customization, Privacy & performance
-- [Demo / Playground](https://khanakia.com/apps/filemark/demo): live in-browser playground that runs every renderer; 17 prebuilt examples organized by category (Datagrid, Chart, Kanban, Planning, Rich docs, Markdown, Schemas)
+- [Demo / Playground](https://khanakia.com/apps/filemark/demo): live in-browser playground that runs every renderer; prebuilt examples organized by category (Verify, Datagrid, Chart, Kanban, Planning, Rich docs, Markdown, Schemas)
+- [AI skill](https://khanakia.com/apps/filemark/ai): how to teach an AI coding agent the Filemark authoring grammar
 - [Changelog](https://khanakia.com/apps/filemark/changelog): release notes by version
 - [Privacy policy](https://khanakia.com/apps/filemark/privacy): canonical privacy + permissions disclosure
 
@@ -33,6 +34,14 @@ Each is served as the correct MIME so you can paste any of these URLs into a bro
 - [schema.sql](https://khanakia.com/apps/filemark/demo-files/schema.sql): SQL DDL rendered as an interactive ER diagram
 - [schema.prisma](https://khanakia.com/apps/filemark/demo-files/schema.prisma): Prisma schema rendered as an ER diagram
 - [schema.dbml](https://khanakia.com/apps/filemark/demo-files/schema.dbml): dbdiagram.io DSL rendered as an ER diagram
+
+## AI skill — author Filemark docs programmatically
+
+Filemark ships a single Markdown skill file that teaches any `SKILL.md`-aware agent (Claude Code, Cursor, Codex) the full authoring grammar: every interactive component (`<Callout>`, `<Tabs>`, `<Stats>`, `<ADR>`, `<Datagrid>`, `<Chart>`, `<Kanban>`, `<MindMap>`, `<Timeline>`, `<TaskList>`, …), the markdown-native task DSL (sigils, statuses, recurrence), the filter DSL, and the two HTML-in-markdown survival rules.
+
+- **Skill file (read this to learn the grammar):** https://raw.githubusercontent.com/thesatellite-ai/filemark/main/skills/filemark/SKILL.md
+- **Install into a project:** `npx skills add thesatellite-ai/filemark`
+- **Component catalogue with one example each:** https://github.com/thesatellite-ai/filemark/blob/main/examples/INDEX.md
 
 ## How to cite
 

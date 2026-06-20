@@ -1,6 +1,5 @@
 import {
   HeadContent,
-  Outlet,
   Scripts,
   createRootRoute,
   Link,
@@ -15,6 +14,16 @@ import {
 import { env } from "../env/client";
 
 const SITE = "https://khanakia.com/apps/filemark";
+
+// Primary header nav. Kept as data so the active-link highlight stays DRY.
+const NAV = [
+  { to: "/features", label: "Features" },
+  { to: "/demo", label: "Demo" },
+  { to: "/ai", label: "AI skill" },
+  { to: "/brand", label: "Brand" },
+  { to: "/changelog", label: "Changelog" },
+  { to: "/privacy", label: "Privacy" },
+] as const;
 // GA4 flows through the GTM container in env.VITE_GTM_ID (type-safe +
 // validated in src/env/client.ts — a bad/missing id throws at build).
 // Production-only so dev traffic isn't tracked.
@@ -58,7 +67,49 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
+  // Branded 404 — renders inside the layout (Header/Footer intact) instead of
+  // TanStack's bare <p>Not Found</p>.
+  notFoundComponent: NotFound,
 });
+
+function NotFound(): React.ReactElement {
+  return (
+    <main className="flex min-h-[60vh] items-center justify-center bg-background px-6 py-24 text-foreground">
+      <div className="text-center">
+        <div className="text-muted-foreground/40 text-[80px] font-semibold leading-none tracking-tight sm:text-[120px]">
+          404
+        </div>
+        <h1 className="mt-4 text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+          This page doesn't exist
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-balance text-muted-foreground">
+          The link may be broken or the page may have moved. Here are some good
+          places to land instead.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
+            Go home
+          </Link>
+          <Link
+            to="/demo"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-4 text-sm hover:bg-muted"
+          >
+            Open the demo
+          </Link>
+          <Link
+            to="/features"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-4 text-sm hover:bg-muted"
+          >
+            Features
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -103,18 +154,18 @@ function Header(): React.ReactElement {
           <span>Filemark</span>
         </Link>
         <nav className="hidden flex-1 items-center gap-5 text-sm text-muted-foreground sm:flex">
-          <Link to="/features" className="hover:text-foreground">
-            Features
-          </Link>
-          <Link to="/demo" className="hover:text-foreground">
-            Demo
-          </Link>
-          <Link to="/changelog" className="hover:text-foreground">
-            Changelog
-          </Link>
-          <Link to="/privacy" className="hover:text-foreground">
-            Privacy
-          </Link>
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="hover:text-foreground"
+              // Highlight the current section. `activeProps` applies when the
+              // route (or a descendant, e.g. /demo/play under /demo) matches.
+              activeProps={{ className: "text-foreground font-medium" }}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
         <a
           href="https://github.com/thesatellite-ai/filemark"
@@ -150,6 +201,12 @@ function Footer(): React.ReactElement {
           <span>© Filemark</span>
         </div>
         <div className="flex items-center gap-4">
+          <Link to="/ai" className="hover:text-foreground">
+            AI skill
+          </Link>
+          <Link to="/brand" className="hover:text-foreground">
+            Brand
+          </Link>
           <Link to="/privacy" className="hover:text-foreground">
             Privacy
           </Link>
@@ -164,7 +221,13 @@ function Footer(): React.ReactElement {
           >
             GitHub
           </a>
-          <a href="mailto:khanakia@gmail.com" className="hover:text-foreground">
+          <a
+            href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/sitemap.xml`}
+            className="hover:text-foreground"
+          >
+            Sitemap
+          </a>
+          <a href="mailto:hello@khanakia.com" className="hover:text-foreground">
             Support
           </a>
         </div>

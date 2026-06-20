@@ -105,6 +105,27 @@ tasks:
       - cp brand/icon.svg apps/website/public/favicon.svg
       - 'echo "✓ icons regenerated from brand/icon.svg"'
 
+  brand:gen:
+    desc: Generate downloadable brand assets (SVG + PNG sizes) into the website's /brand dir
+    vars:
+      OUT: apps/website/public/brand
+      SIZES: 32 64 128 256 512 1024
+    cmds:
+      - mkdir -p {{.OUT}}
+      # Source SVGs — copied verbatim so the brand page can offer the vector.
+      - cp brand/filemark-icon.svg {{.OUT}}/filemark-icon.svg
+      - cp brand/filemark-glyph.svg {{.OUT}}/filemark-glyph.svg
+      # Short-name aliases for direct embedding / hotlinking:
+      #   /apps/filemark/logo.svg, /apps/filemark/brand/icon.svg, /brand/glyph.svg
+      - cp brand/filemark-icon.svg {{.OUT}}/icon.svg
+      - cp brand/filemark-glyph.svg {{.OUT}}/glyph.svg
+      - cp brand/filemark-icon.svg apps/website/public/logo.svg
+      # Rasterize each at the standard sizes. PNG keeps transparency, so the
+      # glyph (no background) stays usable on any color.
+      - for s in {{.SIZES}}; do rsvg-convert -w $s -h $s brand/filemark-icon.svg  -o {{.OUT}}/filemark-icon-$s.png; done
+      - for s in {{.SIZES}}; do rsvg-convert -w $s -h $s brand/filemark-glyph.svg -o {{.OUT}}/filemark-glyph-$s.png; done
+      - 'echo "✓ brand assets written to {{.OUT}}"'
+
   # ── packaging ───────────────────────────────────────────────────────────
 
   zip:

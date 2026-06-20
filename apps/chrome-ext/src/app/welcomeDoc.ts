@@ -1,30 +1,12 @@
 // Embedded welcome document shown on first run / when no file is open. It
 // doubles as a live feature showcase AND an implicit smoke test: if rendering
 // breaks, this page looks wrong. Keep it current with shipped features.
-//
-// The version is read from the manifest at load time so it never goes stale
-// (the old doc hardcoded "0.1.0" and drifted). `updated` is still manual.
-
-/** Extension version from the manifest, with a safe fallback for non-extension
- *  contexts (localhost dev has no `chrome.runtime`). */
-function extVersion(): string {
-  try {
-    return (
-      (typeof chrome !== "undefined" &&
-        chrome.runtime?.getManifest?.().version) ||
-      "0.1.4"
-    );
-  } catch {
-    return "0.1.4";
-  }
-}
+// (The version is surfaced in the toolbar brand, not here — see TopBar.)
 
 export const WELCOME_DOC = `---
 title: Welcome to Filemark
 description: A local-first viewer that renders markdown, JSON, CSV, and SQL/Prisma/DBML schemas in Chrome. Drop a file or open a folder to replace this page.
 tags: [markdown, mdx, json, csv, schema, chrome-extension]
-version: ${extVersion()}
-updated: 2026-06-20
 ---
 
 # Welcome to Filemark
@@ -139,9 +121,24 @@ Hidden content goes here. Markdown inside works **with blank lines**.
 | <kbd>]</kbd> | Next file |
 | <kbd>Esc</kbd> | Close palette / panel |
 
+## Author with AI
+
+Filemark ships an **AI skill** — one Markdown file that teaches Claude Code, Cursor, or Codex every component, the task DSL, and the gotchas, so your agent can write kanban boards, charts, and ER diagrams straight into your docs.
+
+~~~bash
+npx skills add thesatellite-ai/filemark
+~~~
+
+<callout type="tip" title="Learn more">
+
+See how it works at https://khanakia.com/apps/filemark/ai — or read the skill directly at https://github.com/thesatellite-ai/filemark/blob/main/skills/filemark/SKILL.md
+
+</callout>
+
 ## Links
 
 - **Website + live demo** — https://khanakia.com/apps/filemark/
+- **Author docs with AI** — https://khanakia.com/apps/filemark/ai
 - **Report an issue / support** — https://github.com/thesatellite-ai/filemark/issues
 
 Drop a file to replace this page — or keep exploring.
