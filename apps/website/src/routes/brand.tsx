@@ -46,11 +46,11 @@ const COLORS = [
 ];
 
 const SCREENSHOTS = [
-  { file: "1-hero.png", label: "Markdown" },
-  { file: "2-schema.png", label: "ER diagram" },
-  { file: "3-json.png", label: "JSON tree" },
-  { file: "4-datagrid.png", label: "Datagrid" },
-  { file: "5-tasks-kanban.png", label: "Tasks & Kanban" },
+  { file: "hero.png", label: "Markdown" },
+  { file: "schema.png", label: "ER diagram" },
+  { file: "json.png", label: "JSON tree" },
+  { file: "datagrid.png", label: "Datagrid" },
+  { file: "tasks-kanban.png", label: "Tasks & Kanban" },
   { file: "promo-tile.png", label: "Promo tile" },
 ];
 
