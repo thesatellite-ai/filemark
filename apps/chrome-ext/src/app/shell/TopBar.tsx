@@ -14,6 +14,7 @@ import {
   BookOpen,
   ListTodo,
   Rocket,
+  LifeBuoy,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLibrary } from "../store";
@@ -34,6 +35,18 @@ import {
 import { ThemePopover } from "./ThemePopover";
 import { FileActions } from "./FileActions";
 import { cn } from "@/lib/utils";
+
+// External destinations surfaced in the toolbar. Issues page doubles as the
+// support channel (no separate support inbox — GitHub issues is canonical).
+const WEBSITE_URL = "https://khanakia.com/apps/filemark/";
+const ISSUES_URL = "https://github.com/thesatellite-ai/filemark/issues";
+
+// Open in a new tab. `noopener,noreferrer` so the opened page can't reach
+// back via window.opener — works identically in the extension page and in
+// the injected content-script context (a plain https navigation).
+function openExternal(url: string) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 
 export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
@@ -130,10 +143,17 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             <PanelLeft className="size-4" />
           </IconBtn>
         )}
-        <span className="flex items-center gap-1.5 px-1.5 text-sm font-semibold tracking-tight">
+        {/* Brand doubles as the website link (logo-home convention). */}
+        <button
+          type="button"
+          onClick={() => openExternal(WEBSITE_URL)}
+          title="Filemark website"
+          aria-label="Open the Filemark website"
+          className="hover:bg-accent hover:text-accent-foreground flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-1 text-sm font-semibold tracking-tight transition-colors"
+        >
           <BookOpenText className="text-primary size-4" />
           <span className="hidden sm:inline">Filemark</span>
-        </span>
+        </button>
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
@@ -269,9 +289,9 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             title={
               setupComplete === false
                 ? "Finish setup — some local or remote files won't render yet"
-                : "Setup & help"
+                : "Setup"
             }
-            aria-label="Setup and help"
+            aria-label="Setup"
           >
             <span className="relative inline-flex">
               <Rocket className="size-4" />
@@ -281,6 +301,13 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             </span>
           </IconBtn>
         )}
+        <IconBtn
+          onClick={() => openExternal(ISSUES_URL)}
+          title="Report an issue / get support"
+          aria-label="Report an issue or get support on GitHub"
+        >
+          <LifeBuoy className="size-4" />
+        </IconBtn>
         <ThemePopover>
           <Button
             variant="ghost"
