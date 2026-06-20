@@ -68,10 +68,6 @@ const HTTPS_DOWNLOAD_FORMATS: Record<string, number> = {
   csv: 11,
   tsv: 12,
 };
-const ALL_RULE_IDS = [
-  ...Object.values(FILE_DOWNLOAD_FORMATS),
-  ...Object.values(HTTPS_DOWNLOAD_FORMATS),
-];
 
 // Formats that get the iframe-overlay treatment on http(s) tabs. file:// is
 // handled by manifest content_scripts auto-injection — kept in sync with
@@ -162,8 +158,17 @@ async function syncRedirectRules() {
   }
 
   try {
+    // Remove EVERY existing dynamic rule, not just the IDs we currently
+    // generate. DNR dynamic rules persist in Chrome across extension
+    // reloads, so a rule registered by an earlier/intermediate build under an
+    // ID we no longer track would otherwise live forever and keep redirecting
+    // by URL alone (no content-type check) — e.g. a stale `.json` rule turning
+    // a github.com/.../X.json HTML blob into a blank viewer redirect. Nuking
+    // the full set each sync guarantees only the current formats redirect.
+    const existing = await chrome.declarativeNetRequest.getDynamicRules();
+    const removeRuleIds = existing.map((r) => r.id);
     await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: ALL_RULE_IDS,
+      removeRuleIds,
       addRules,
     });
   } catch (err) {
