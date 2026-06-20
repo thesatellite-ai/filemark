@@ -37,6 +37,10 @@ export const Route = createFileRoute("/")({
       { property: "og:url", content: `${SITE}/` },
     ],
     links: [{ rel: "canonical", href: `${SITE}/` }],
+    // Home is the product's primary entity page: SoftwareApplication (the
+    // rich-result card) + SoftwareSourceCode (the MIT repo) + FAQPage (mirrors
+    // the visible FAQ below). The sitewide WebSite node comes from the root
+    // route. Rationale: docsi/SEO.md.
     scripts: [
       ldScript(softwareApplicationLd()),
       ldScript(softwareSourceCodeLd()),
