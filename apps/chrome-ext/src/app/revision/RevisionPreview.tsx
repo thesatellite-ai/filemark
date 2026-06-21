@@ -13,8 +13,16 @@ import { DiffPane } from "./DiffPane";
 import { Button } from "@/components/ui/button";
 
 export function RevisionPreview() {
-  const { revisions, preview, previewRevision, diffRevisionInline, exitPreview, renderMarkdown } =
-    useRevision();
+  const {
+    revisions,
+    preview,
+    previewRevision,
+    diffRevisionInline,
+    exitPreview,
+    renderMarkdown,
+    diffSettings,
+    setDiffSettings,
+  } = useRevision();
 
   const { rev, label, prev } = useMemo(() => {
     if (!preview) return { rev: null, label: "", prev: null };
@@ -75,7 +83,12 @@ export function RevisionPreview() {
         // Full diff surface (Reading/Source, Side-by-side/Stacked, Only-changes,
         // jump) — same component the overlay uses.
         <div className="min-h-0 flex-1">
-          <DiffPane before={prev.content} after={rev.content} />
+          <DiffPane
+            before={prev.content}
+            after={rev.content}
+            settings={diffSettings}
+            onSettingsChange={setDiffSettings}
+          />
         </div>
       ) : (
         <div className="min-h-0 flex-1 overflow-auto px-6 py-4">

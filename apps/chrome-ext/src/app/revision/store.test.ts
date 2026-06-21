@@ -155,3 +155,26 @@ describe("appendRevision", () => {
     expect(await store.listRevisions(k)).toHaveLength(0);
   });
 });
+
+describe("UI state", () => {
+  it("round-trips per-doc UI state", async () => {
+    const k = "doc-ui";
+    expect(await store.loadUiState(k)).toBeNull();
+    const state = {
+      panelOpen: true,
+      preview: { id: "3", mode: "diff" as const },
+      diff: { view: "source" as const, mode: "unified" as const, onlyChanges: false },
+    };
+    await store.saveUiState(k, state);
+    expect(await store.loadUiState(k)).toEqual(state);
+  });
+
+  it("keeps UI state separate per doc", async () => {
+    await store.saveUiState("doc-a", {
+      panelOpen: true,
+      preview: null,
+      diff: { view: "reading", mode: "split", onlyChanges: true },
+    });
+    expect(await store.loadUiState("doc-b")).toBeNull();
+  });
+});

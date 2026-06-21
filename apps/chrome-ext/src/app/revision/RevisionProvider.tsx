@@ -45,8 +45,8 @@ import {
   useState,
 } from "react";
 import { normalizeDocKey } from "./store";
-import { PREVIEW_MODE, type PreviewMode } from "./constants";
-import type { Revision, RevisionApi, RevisionProviderProps } from "./types";
+import { PREVIEW_MODE, DEFAULT_DIFF_SETTINGS, type PreviewMode } from "./constants";
+import type { DiffSettings, Revision, RevisionApi, RevisionProviderProps } from "./types";
 
 const RevisionContext = createContext<RevisionApi | null>(null);
 
@@ -74,6 +74,10 @@ export function RevisionProvider({
   const [diffOpen, setDiffOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [preview, setPreview] = useState<{ id: string; mode: PreviewMode } | null>(null);
+  const [diffSettings, setDiffSettings] = useState<DiffSettings>(DEFAULT_DIFF_SETTINGS);
+  // The docKey whose persisted UI state has been hydrated — gates the persist
+  // effect so it doesn't overwrite saved state before restore completes.
+  const hydratedKeyRef = useRef<string | null>(null);
 
   // Latest content/tracked in refs so the capture effect can read them without
   // re-subscribing (and so async appends use fresh values).
@@ -91,30 +95,52 @@ export function RevisionProvider({
   // Pending debounced-capture timer (cancellable by Clear).
   const captureTimer = useRef<number | undefined>(undefined);
 
-  // Load tracked-state + revisions whenever the active doc changes. The flag is
-  // persisted, so a reload of the injected viewer restores revision mode here.
+  // Load tracked-state + revisions + persisted UI state whenever the active doc
+  // changes. Everything is persisted, so a reload restores revision mode AND
+  // exactly where you were: panel open, the inline preview (revision + mode),
+  // and the diff display settings.
   useEffect(() => {
     let cancelled = false;
-    // Switching docs closes any open diff / inline preview (they referenced the
-    // old doc). Keep the panel open state — it's a general affordance.
+    // Mark un-hydrated for this key so the persist effect can't write until
+    // restore finishes. Close the full-screen overlay (transient by design).
+    hydratedKeyRef.current = null;
     setDiffOpen(false);
-    setPreview(null);
     if (!normalizedKey) {
       setTracked(false);
       setRevisions([]);
+      setPanelOpen(false);
+      setPreview(null);
+      setDiffSettings(DEFAULT_DIFF_SETTINGS);
       return;
     }
-    void Promise.all([storeRef.current.isTracked(normalizedKey), storeRef.current.listRevisions(normalizedKey)]).then(
-      ([t, revs]) => {
-        if (cancelled) return;
-        setTracked(t);
-        setRevisions(revs);
-      },
-    );
+    void Promise.all([
+      storeRef.current.isTracked(normalizedKey),
+      storeRef.current.listRevisions(normalizedKey),
+      storeRef.current.loadUiState(normalizedKey),
+    ]).then(([t, revs, ui]) => {
+      if (cancelled) return;
+      setTracked(t);
+      setRevisions(revs);
+      setPanelOpen(ui?.panelOpen ?? false);
+      setDiffSettings(ui?.diff ?? DEFAULT_DIFF_SETTINGS);
+      // Restore the inline preview only if its revision still exists.
+      const savedPreview = ui?.preview ?? null;
+      const previewValid =
+        savedPreview !== null && revs.some((r) => r.id === savedPreview.id);
+      setPreview(previewValid ? savedPreview : null);
+      hydratedKeyRef.current = normalizedKey;
+    });
     return () => {
       cancelled = true;
     };
   }, [normalizedKey]);
+
+  // Persist UI state whenever it changes — but only after this doc's state has
+  // been hydrated (so we never clobber saved state with the initial defaults).
+  useEffect(() => {
+    if (!normalizedKey || hydratedKeyRef.current !== normalizedKey) return;
+    void storeRef.current.saveUiState(normalizedKey, { panelOpen, preview, diff: diffSettings });
+  }, [normalizedKey, panelOpen, preview, diffSettings]);
 
   // Append a revision (deduped) and reflect the result in local state. Shared
   // by the capture-on-render effect, manual snapshot, and enable-baseline.
@@ -230,6 +256,8 @@ export function RevisionProvider({
       panelOpen,
       togglePanel,
       closePanel,
+      diffSettings,
+      setDiffSettings,
       renderMarkdown: renderMarkdown ?? null,
       preview,
       previewRevision,
@@ -251,6 +279,7 @@ export function RevisionProvider({
       panelOpen,
       togglePanel,
       closePanel,
+      diffSettings,
       renderMarkdown,
       preview,
       previewRevision,

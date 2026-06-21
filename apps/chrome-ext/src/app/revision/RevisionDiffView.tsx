@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function RevisionDiffView() {
-  const { diffOpen, closeDiff, revisions, currentContent } = useRevision();
+  const { diffOpen, closeDiff, revisions, currentContent, diffSettings, setDiffSettings } =
+    useRevision();
 
   const [oldId, setOldId] = useState<string | null>(null);
   const [newId, setNewId] = useState<string | null>(null);
@@ -85,6 +86,8 @@ export function RevisionDiffView() {
         <DiffPane
           before={oldRev.content}
           after={newRev.content}
+          settings={diffSettings}
+          onSettingsChange={setDiffSettings}
           toolbarStart={picker}
           toolbarEnd={closeButton}
         />

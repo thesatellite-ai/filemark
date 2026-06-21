@@ -15,6 +15,13 @@ export const REV_KEY_PREFIX = "fv:rev:doc:";
 /** Storage key for one doc's revision list. */
 export const revKey = (docKey: string): string => `${REV_KEY_PREFIX}${docKey}`;
 
+/** Prefix for per-doc UI state (panel open, inline preview, diff toggles) so it
+ *  survives a reload. */
+export const UI_KEY_PREFIX = "fv:rev:ui:";
+
+/** Storage key for one doc's UI state. */
+export const uiKey = (docKey: string): string => `${UI_KEY_PREFIX}${docKey}`;
+
 /** Large-doc guard: above this combined (before+after) character count for a
  *  single modified block, the reading diff skips the O(n·m) word/cell diff and
  *  falls back to a whole-block before+after render (still correct, just coarser
@@ -36,3 +43,14 @@ export type SourceDiffMode = (typeof SOURCE_DIFF_MODE)[keyof typeof SOURCE_DIFF_
 /** Diff lens. `reading` = rendered markdown, `source` = raw markdown lines. */
 export const DIFF_VIEW = { reading: "reading", source: "source" } as const;
 export type DiffView = (typeof DIFF_VIEW)[keyof typeof DIFF_VIEW];
+
+/** Default diff-pane settings (also the fallback when none is persisted). */
+export const DEFAULT_DIFF_SETTINGS: {
+  view: DiffView;
+  mode: SourceDiffMode;
+  onlyChanges: boolean;
+} = {
+  view: DIFF_VIEW.reading,
+  mode: SOURCE_DIFF_MODE.split,
+  onlyChanges: true,
+};

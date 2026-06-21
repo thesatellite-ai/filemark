@@ -10,30 +10,42 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Rows3, Columns2, BookOpenText, FileCode2, ChevronUp, ChevronDown } from "lucide-react";
 import { SourceDiff } from "./diff/SourceDiff";
 import { ReadingDiff } from "./diff/reading/ReadingDiff";
-import {
-  DIFF_CHANGE_ATTR,
-  DIFF_VIEW,
-  SOURCE_DIFF_MODE,
-  type DiffView,
-  type SourceDiffMode,
-} from "./constants";
+import { DIFF_CHANGE_ATTR, DIFF_VIEW, SOURCE_DIFF_MODE, DEFAULT_DIFF_SETTINGS } from "./constants";
+import type { DiffSettings } from "./types";
 import { Button } from "@/components/ui/button";
 
 interface DiffPaneProps {
   before: string;
   after: string;
+  /** Controlled display settings (Reading/Source + layout + only-changes). When
+   *  omitted DiffPane keeps its own internal state — so it stays reusable
+   *  standalone; the app passes the persisted settings to remember them. */
+  settings?: DiffSettings;
+  onSettingsChange?: (next: DiffSettings) => void;
   /** Controls rendered at the start of the toolbar (e.g. the overlay's picker). */
   toolbarStart?: ReactNode;
   /** Controls rendered at the end of the toolbar (e.g. the overlay's close button). */
   toolbarEnd?: ReactNode;
 }
 
-export function DiffPane({ before, after, toolbarStart, toolbarEnd }: DiffPaneProps) {
-  const [view, setView] = useState<DiffView>(DIFF_VIEW.reading);
-  const [mode, setMode] = useState<SourceDiffMode>(SOURCE_DIFF_MODE.split);
-  // Reading diff hides unchanged blocks by default — the whole point is to
-  // review only what changed.
-  const [onlyChanges, setOnlyChanges] = useState(true);
+export function DiffPane({
+  before,
+  after,
+  settings: controlled,
+  onSettingsChange,
+  toolbarStart,
+  toolbarEnd,
+}: DiffPaneProps) {
+  // Controlled by the host (persisted) when `settings` is supplied; otherwise
+  // self-managed.
+  const [internal, setInternal] = useState<DiffSettings>(DEFAULT_DIFF_SETTINGS);
+  const settings = controlled ?? internal;
+  const { view, mode, onlyChanges } = settings;
+  const update = (patch: Partial<DiffSettings>) => {
+    const next = { ...settings, ...patch };
+    if (onSettingsChange) onSettingsChange(next);
+    else setInternal(next);
+  };
 
   // Jump-to-next-change: each changed block/hunk is tagged `data-diff-change`.
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -71,7 +83,7 @@ export function DiffPane({ before, after, toolbarStart, toolbarEnd }: DiffPanePr
           variant={view === DIFF_VIEW.reading ? "secondary" : "ghost"}
           size="sm"
           className="h-7 gap-1 px-2 text-xs"
-          onClick={() => setView(DIFF_VIEW.reading)}
+          onClick={() => update({ view: DIFF_VIEW.reading })}
           title="Reading diff — rendered markdown"
         >
           <BookOpenText className="size-3.5" />
@@ -81,7 +93,7 @@ export function DiffPane({ before, after, toolbarStart, toolbarEnd }: DiffPanePr
           variant={view === DIFF_VIEW.source ? "secondary" : "ghost"}
           size="sm"
           className="h-7 gap-1 px-2 text-xs"
-          onClick={() => setView(DIFF_VIEW.source)}
+          onClick={() => update({ view: DIFF_VIEW.source })}
           title="Source diff — raw markdown lines"
         >
           <FileCode2 className="size-3.5" />
@@ -97,7 +109,7 @@ export function DiffPane({ before, after, toolbarStart, toolbarEnd }: DiffPanePr
               variant={mode === SOURCE_DIFF_MODE.split ? "secondary" : "ghost"}
               size="sm"
               className="h-7 gap-1 px-2 text-xs"
-              onClick={() => setMode(SOURCE_DIFF_MODE.split)}
+              onClick={() => update({ mode: SOURCE_DIFF_MODE.split })}
               title="Side-by-side"
             >
               <Columns2 className="size-3.5" />
@@ -107,7 +119,7 @@ export function DiffPane({ before, after, toolbarStart, toolbarEnd }: DiffPanePr
               variant={mode === SOURCE_DIFF_MODE.unified ? "secondary" : "ghost"}
               size="sm"
               className="h-7 gap-1 px-2 text-xs"
-              onClick={() => setMode(SOURCE_DIFF_MODE.unified)}
+              onClick={() => update({ mode: SOURCE_DIFF_MODE.unified })}
               title="Stacked"
             >
               <Rows3 className="size-3.5" />
@@ -119,7 +131,7 @@ export function DiffPane({ before, after, toolbarStart, toolbarEnd }: DiffPanePr
             variant={onlyChanges ? "secondary" : "ghost"}
             size="sm"
             className="h-7 gap-1 px-2 text-xs"
-            onClick={() => setOnlyChanges((v) => !v)}
+            onClick={() => update({ onlyChanges: !onlyChanges })}
             title="Collapse unchanged sections"
           >
             <span className="hidden sm:inline">Only changes</span>

@@ -16,9 +16,15 @@
 // sandboxed page (opaque origin) where indexedDB.open() throws — the chrome
 // adapter sidesteps that. See ADR REV-1 in docsi/REVISION_PLAN.md.
 
-import { MAX_REVISIONS, TRACKED_KEY, revKey } from "./constants";
+import { MAX_REVISIONS, TRACKED_KEY, revKey, uiKey } from "./constants";
 import { hashContent } from "./hash";
-import type { AppendResult, Revision, RevisionStorageAdapter, RevisionStore } from "./types";
+import type {
+  AppendResult,
+  Revision,
+  RevisionStorageAdapter,
+  RevisionStore,
+  RevisionUiState,
+} from "./types";
 
 // --- doc key (pure, host-agnostic) ------------------------------------------
 
@@ -161,6 +167,18 @@ export function createRevisionStore(storage: RevisionStorageAdapter): RevisionSt
     await enqueue(revKey(docKey), () => removeRaw(revKey(docKey)));
   };
 
+  // --- per-doc UI state ---
+  const loadUiState: RevisionStore["loadUiState"] = async (docKey) => {
+    if (!docKey) return null;
+    const v = await getRaw<RevisionUiState | null>(uiKey(docKey), null);
+    return v && typeof v === "object" ? v : null;
+  };
+
+  const saveUiState: RevisionStore["saveUiState"] = async (docKey, state) => {
+    if (!docKey) return;
+    await setRaw(uiKey(docKey), state);
+  };
+
   return {
     listTracked,
     isTracked,
@@ -170,5 +188,7 @@ export function createRevisionStore(storage: RevisionStorageAdapter): RevisionSt
     latestRevision,
     appendRevision,
     clearRevisions,
+    loadUiState,
+    saveUiState,
   };
 }

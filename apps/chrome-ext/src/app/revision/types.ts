@@ -1,6 +1,23 @@
 // REVISION MODE — shared types (feature map: revision/RevisionProvider.tsx).
 import type { ReactNode } from "react";
-import type { PreviewMode } from "./constants";
+import type { PreviewMode, DiffView, SourceDiffMode } from "./constants";
+
+/** Diff-pane display settings (the Reading/Source lens + its sub-toggles).
+ *  Persisted per doc so a reload restores how you were looking at the diff. */
+export interface DiffSettings {
+  view: DiffView;
+  mode: SourceDiffMode;
+  onlyChanges: boolean;
+}
+
+/** Per-doc UI state persisted across reloads: whether the history panel was
+ *  open, which revision was being previewed inline (and how), and the diff
+ *  display settings. */
+export interface RevisionUiState {
+  panelOpen: boolean;
+  preview: { id: string; mode: PreviewMode } | null;
+  diff: DiffSettings;
+}
 
 /**
  * One cached snapshot of a doc's content. Stored in chrome.storage.local (per
@@ -64,6 +81,10 @@ export interface RevisionStore {
   appendRevision(docKey: string, content: string, now: number): Promise<AppendResult | null>;
   /** Delete all revisions for a doc (keeps the tracked flag). */
   clearRevisions(docKey: string): Promise<void>;
+  /** Load a doc's persisted UI state, or null if none saved. */
+  loadUiState(docKey: string): Promise<RevisionUiState | null>;
+  /** Persist a doc's UI state. */
+  saveUiState(docKey: string, state: RevisionUiState): Promise<void>;
 }
 
 /**
@@ -116,6 +137,11 @@ export interface RevisionApi {
   /** Close the history side panel. */
   closePanel(): void;
 
+  /** Diff-pane display settings (Reading/Source + layout + only-changes),
+   *  persisted per doc. Shared by the overlay and inline diff. */
+  diffSettings: DiffSettings;
+  /** Update the diff display settings (persisted). */
+  setDiffSettings(next: DiffSettings): void;
   /** Host-supplied full-fidelity markdown renderer (e.g. the app's MDXViewer),
    *  used for the inline preview's "Rendered" mode so it matches the normal
    *  viewer (frontmatter card, callouts, components). Null → the built-in
