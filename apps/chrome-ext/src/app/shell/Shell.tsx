@@ -15,6 +15,7 @@ import { DropZone } from "./DropZone";
 import { SearchPalette } from "./SearchPalette";
 import { TabStrip } from "./TabStrip";
 import { TaskPanel } from "./TaskPanel";
+import { NotesProvider, NotesLayer, NotesPanel } from "../notes";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Maximize2, Minimize2 } from "lucide-react";
@@ -25,9 +26,20 @@ export function Shell() {
   const fullscreen = useLibrary((s) => s.fullscreen);
   const readingMode = useLibrary((s) => s.readingMode);
   const tasksOpen = useLibrary((s) => s.tasksOpen);
+  const notesOpen = useLibrary((s) => s.notesOpen);
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
   const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
+  const toggleNotesPanel = useLibrary((s) => s.toggleNotesPanel);
+  const openNotesPanel = useLibrary((s) => s.openNotesPanel);
+  const activeFileName = useLibrary((s) =>
+    s.activeFileId ? (s.files[s.activeFileId]?.name ?? "document.md") : "document.md",
+  );
+  // Raw markdown of the active file — passed to NotesLayer for its source-line
+  // fallback (keeps the notes module decoupled from the store).
+  const activeFileSource = useLibrary((s) =>
+    s.activeFileId ? (s.files[s.activeFileId]?.content ?? "") : "",
+  );
   const toggleFullscreen = useLibrary((s) => s.toggleFullscreen);
   const toggleReadingMode = useLibrary((s) => s.toggleReadingMode);
   const activeId = useLibrary((s) => s.activeFileId);
@@ -256,6 +268,7 @@ export function Shell() {
           <Separator />
         </>
       )}
+      <NotesProvider fileId={activeId} fileName={activeFileName}>
       <div className="relative flex min-h-0 flex-1">
         {sidebarOpen && !fullscreen && !readingMode && (
           <>
@@ -278,6 +291,7 @@ export function Shell() {
           <ViewerScroll activeId={activeId}>
             <Viewer />
           </ViewerScroll>
+          {!fullscreen && <NotesLayer source={activeFileSource} onRequestOpen={openNotesPanel} />}
           {fullscreen && (
             <Button
               variant="ghost"
@@ -317,7 +331,22 @@ export function Shell() {
             </div>
           </>
         )}
+        {notesOpen && !fullscreen && (
+          <>
+            <button
+              type="button"
+              aria-label="Close notes panel"
+              onClick={toggleNotesPanel}
+              className="fixed inset-0 z-30 bg-black/40 md:hidden"
+            />
+            <div className="fixed inset-y-0 right-0 z-40 flex shadow-xl md:static md:z-auto md:shadow-none">
+              <Separator orientation="vertical" />
+              <NotesPanel onClose={toggleNotesPanel} />
+            </div>
+          </>
+        )}
       </div>
+      </NotesProvider>
       <DropZone />
       <SearchPalette
         open={searchOpen}

@@ -81,6 +81,7 @@ import { Mermaid } from "./Mermaid";
 import { SchemaBlock } from "./SchemaBlock";
 import { DataBlock } from "./DataBlock";
 import { remarkCodeMeta } from "./remark-code-meta";
+import { remarkSourceLine } from "./remarkSourceLine";
 import {
   parseInfoString,
   type DataGridOptions,
@@ -481,7 +482,9 @@ export function MDXViewer(props: ViewerProps) {
         <MDXComponentsProvider value={components as never}>
           <TasksProvider value={tasks}>
             <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkGemoji, remarkGithubEmoji, remarkMath, remarkBreaks, remarkCodeMeta]}
+              // remarkSourceLine LAST so positions reflect the final mdast —
+              // stamps data-line via hProperties (host notes read it).
+              remarkPlugins={[remarkGfm, remarkGemoji, remarkGithubEmoji, remarkMath, remarkBreaks, remarkCodeMeta, remarkSourceLine]}
               // Default urlTransform strips data: URLs; allow our bundled
               // base64 emoji images (remarkGithubEmoji) through.
               urlTransform={(url) =>

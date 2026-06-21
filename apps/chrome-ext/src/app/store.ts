@@ -89,6 +89,9 @@ export interface LibraryState {
   sidebarTreeCollapsed: Record<string, boolean>;
   /** Task panel (right-edge cross-file task dashboard) open/closed. */
   tasksOpen: boolean;
+  /** Notes panel (ephemeral AI-review notes) open/closed. Not persisted —
+   *  notes themselves are in-memory only (see notes/NotesContext). */
+  notesOpen: boolean;
   /** Ephemeral scroll target — { fileId, taskLine } bumped whenever a
    *  panel row is clicked. Viewer watches this + scrolls into view when
    *  the active file matches. Bumped to null after the scroll fires so
@@ -140,6 +143,8 @@ export interface LibraryState {
   setAutoRefreshMs(ms: number): void;
   toggleTasksPanel(): void;
   setTasksOpen(v: boolean): void;
+  toggleNotesPanel(): void;
+  openNotesPanel(): void;
   /** Trigger a scroll-to-line inside the Viewer. Sets `scrollTarget`
    *  with a fresh `rev` so repeated clicks on the same row re-trigger. */
   openTaskLocation(fileId: string, line: number): Promise<void>;
@@ -290,6 +295,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   sidebarSections: {},
   sidebarTreeCollapsed: {},
   tasksOpen: false,
+  notesOpen: false,
   scrollTarget: null,
   revealRequest: 0,
   scopedSearchRequest: null,
@@ -734,6 +740,14 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   toggleTasksPanel() {
     set((s) => ({ tasksOpen: !s.tasksOpen }));
     persistUI(get());
+  },
+
+  // Notes panel is ephemeral UI — not persisted (notes are in-memory only).
+  toggleNotesPanel() {
+    set((s) => ({ notesOpen: !s.notesOpen }));
+  },
+  openNotesPanel() {
+    set({ notesOpen: true });
   },
 
   setTasksOpen(v) {

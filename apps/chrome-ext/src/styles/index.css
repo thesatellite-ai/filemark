@@ -199,3 +199,16 @@ html[data-theme="sepia"] {
 .fv-row-flash {
   animation: fv-row-flash-anim 1.2s ease-out;
 }
+
+/* AI review notes — highlighted spans via the CSS Custom Highlight API
+   (registered as "fv-note" in notes/NotesContext). No DOM mutation, so
+   react-markdown's tree is untouched. Amber wash like a marker pen. */
+::highlight(fv-note) {
+  background-color: color-mix(in oklab, #f59e0b 32%, transparent);
+  color: inherit;
+}
+/* Transient flash when you click a note to jump to where it was added. */
+::highlight(fv-note-active) {
+  background-color: color-mix(in oklab, #f59e0b 65%, transparent);
+  color: inherit;
+}

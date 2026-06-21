@@ -13,6 +13,7 @@ import {
   BookOpenText,
   BookOpen,
   ListTodo,
+  StickyNote,
   Rocket,
   LifeBuoy,
 } from "lucide-react";
@@ -67,6 +68,8 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const toggleSidebar = useLibrary((s) => s.toggleSidebar);
   const toggleToc = useLibrary((s) => s.toggleToc);
   const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
+  const toggleNotesPanel = useLibrary((s) => s.toggleNotesPanel);
+  const notesOpen = useLibrary((s) => s.notesOpen);
   const toggleReadingMode = useLibrary((s) => s.toggleReadingMode);
   const readingMode = useLibrary((s) => s.readingMode);
   const revealActiveInSidebar = useLibrary((s) => s.revealActiveInSidebar);
@@ -277,6 +280,14 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
           )}
         >
           <ListTodo className="size-4" />
+        </IconBtn>
+        <IconBtn
+          onClick={toggleNotesPanel}
+          title="AI notes — highlight text to add review notes"
+          aria-label="Notes panel"
+          className={cn(notesOpen && "bg-accent text-accent-foreground")}
+        >
+          <StickyNote className="size-4" />
         </IconBtn>
         {/* Reading mode only hides the sidebar + tasks panel — both already
             off in the injected single-file viewer, so the toggle is a no-op
