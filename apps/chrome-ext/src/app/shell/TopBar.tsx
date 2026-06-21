@@ -14,11 +14,13 @@ import {
   BookOpen,
   ListTodo,
   StickyNote,
+  History,
   Rocket,
   LifeBuoy,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLibrary } from "../store";
+import { useRevision } from "../revision";
 import { isInjectMode } from "../urlSync";
 import {
   isFileAccessAllowed,
@@ -70,6 +72,10 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const toggleTasksPanel = useLibrary((s) => s.toggleTasksPanel);
   const toggleNotesPanel = useLibrary((s) => s.toggleNotesPanel);
   const notesOpen = useLibrary((s) => s.notesOpen);
+  // Revision mode is per-doc + persisted (chrome.storage), so it comes from the
+  // RevisionProvider context, not the zustand store. The toolbar icon toggles
+  // revision mode on/off; the history list/panel opens from the revision bar.
+  const { tracked: revisionTracked, toggleTracked: toggleRevision } = useRevision();
   const toggleReadingMode = useLibrary((s) => s.toggleReadingMode);
   const readingMode = useLibrary((s) => s.readingMode);
   const revealActiveInSidebar = useLibrary((s) => s.revealActiveInSidebar);
@@ -288,6 +294,21 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
           className={cn(notesOpen && "bg-accent text-accent-foreground")}
         >
           <StickyNote className="size-4" />
+        </IconBtn>
+        <IconBtn
+          onClick={toggleRevision}
+          title={
+            revisionTracked
+              ? "Revision mode on — snapshotting changes. Click to stop."
+              : "Revision mode — cache + diff this doc as it changes"
+          }
+          aria-label="Revision mode"
+          aria-pressed={revisionTracked}
+          className={cn(revisionTracked && "bg-accent text-accent-foreground")}
+        >
+          <History
+            className={cn("size-4", revisionTracked && "text-emerald-500")}
+          />
         </IconBtn>
         {/* Reading mode only hides the sidebar + tasks panel — both already
             off in the injected single-file viewer, so the toggle is a no-op

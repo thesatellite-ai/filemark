@@ -49,6 +49,15 @@ export function Viewer() {
     contentRef.current = content;
   }, [content]);
 
+  // Publish the live rendered content to the store so revision mode captures
+  // the CURRENT text (the store's files[id].content is only the initially-
+  // loaded text; refreshes update this local `content`, not that). Gated on
+  // contentFileId so we never publish the previous file's bytes mid-swap.
+  const setLiveSource = useLibrary((s) => s.setLiveSource);
+  useEffect(() => {
+    if (contentFileId && content != null) setLiveSource(contentFileId, content);
+  }, [content, contentFileId, setLiveSource]);
+
   // Initial / reactive load — runs whenever the active file or the live
   // session rev changes.
   useEffect(() => {

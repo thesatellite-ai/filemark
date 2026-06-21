@@ -92,6 +92,13 @@ export interface LibraryState {
   /** Notes panel (ephemeral AI-review notes) open/closed. Not persisted —
    *  notes themselves are in-memory only (see notes/NotesContext). */
   notesOpen: boolean;
+  /** The Viewer's CURRENT rendered markdown for the active file + which file it
+   *  belongs to. The Viewer holds content in local state and re-reads it on
+   *  refresh WITHOUT writing back to `files[id].content` (that stays the
+   *  initially-loaded text). Revision mode needs the live text, so the Viewer
+   *  publishes it here on every (re)load. Ephemeral. */
+  liveSource: string;
+  liveSourceId: string | null;
   /** Ephemeral scroll target — { fileId, taskLine } bumped whenever a
    *  panel row is clicked. Viewer watches this + scrolls into view when
    *  the active file matches. Bumped to null after the scroll fires so
@@ -145,6 +152,9 @@ export interface LibraryState {
   setTasksOpen(v: boolean): void;
   toggleNotesPanel(): void;
   openNotesPanel(): void;
+  /** Publish the Viewer's live rendered content for the active file (for
+   *  revision capture). */
+  setLiveSource(fileId: string, text: string): void;
   /** Trigger a scroll-to-line inside the Viewer. Sets `scrollTarget`
    *  with a fresh `rev` so repeated clicks on the same row re-trigger. */
   openTaskLocation(fileId: string, line: number): Promise<void>;
@@ -296,6 +306,8 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   sidebarTreeCollapsed: {},
   tasksOpen: false,
   notesOpen: false,
+  liveSource: "",
+  liveSourceId: null,
   scrollTarget: null,
   revealRequest: 0,
   scopedSearchRequest: null,
@@ -748,6 +760,14 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   },
   openNotesPanel() {
     set({ notesOpen: true });
+  },
+
+  setLiveSource(fileId, text) {
+    // Skip redundant writes — the Viewer's content effect can fire with
+    // identical text on unrelated re-renders.
+    const s = get();
+    if (s.liveSourceId === fileId && s.liveSource === text) return;
+    set({ liveSource: text, liveSourceId: fileId });
   },
 
   setTasksOpen(v) {

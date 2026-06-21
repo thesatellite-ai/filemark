@@ -1,5 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { MDXViewer } from "@filemark/mdx";
 import { useLibrary } from "../store";
+import { idbStorage } from "../adapters/idbStorage";
+import { createFSAAssetResolver } from "../adapters/fsaAssets";
+import { sessionHandles } from "../sessionHandles";
 import {
   useSettings,
   isShortcutEnabled,
@@ -16,6 +21,15 @@ import { SearchPalette } from "./SearchPalette";
 import { TabStrip } from "./TabStrip";
 import { TaskPanel } from "./TaskPanel";
 import { NotesProvider, NotesLayer, NotesPanel } from "../notes";
+import {
+  RevisionProvider,
+  RevisionBar,
+  RevisionDiffView,
+  RevisionPanel,
+  RevisionPreview,
+  useRevision,
+} from "../revision";
+import { revisionStore } from "../revisionStore";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Maximize2, Minimize2 } from "lucide-react";
@@ -39,6 +53,30 @@ export function Shell() {
   // fallback (keeps the notes module decoupled from the store).
   const activeFileSource = useLibrary((s) =>
     s.activeFileId ? (s.files[s.activeFileId]?.content ?? "") : "",
+  );
+  // Stable doc identity for revision mode — prefer the source URL / file://
+  // path (survives reloads of the injected viewer, where the in-memory file id
+  // is regenerated each load); fall back to the library path, then the id.
+  const revDocKey = useLibrary((s) => {
+    const f = s.activeFileId ? s.files[s.activeFileId] : null;
+    return f ? (f.sourceUrl ?? f.path ?? f.id) : "";
+  });
+  // Live rendered content for revision capture — ONLY the Viewer-published
+  // `liveSource` (the single source of truth for what's on screen). We do NOT
+  // fall back to the store's `files[id].content`: that's the initially-loaded
+  // text and can differ from the live text, which would make capture fire twice
+  // per edit (once per source) → spurious duplicate revisions. Empty until the
+  // Viewer has published, which simply defers the first capture a beat.
+  const revContent = useLibrary((s) =>
+    s.liveSourceId && s.liveSourceId === s.activeFileId ? s.liveSource : "",
+  );
+  // Full-fidelity renderer for the revision inline preview — uses the SAME
+  // MDXViewer as the live doc so frontmatter cards, callouts, and components
+  // render identically (the lightweight react-markdown fallback would strip
+  // them). Stable identity so it doesn't churn the provider value.
+  const renderRevisionPreview = useCallback(
+    (content: string): ReactNode => <PreviewMarkdown content={content} />,
+    [],
   );
   const toggleFullscreen = useLibrary((s) => s.toggleFullscreen);
   const toggleReadingMode = useLibrary((s) => s.toggleReadingMode);
@@ -261,6 +299,12 @@ export function Shell() {
   }
 
   return (
+    <RevisionProvider
+      store={revisionStore}
+      docKey={revDocKey}
+      content={revContent}
+      renderMarkdown={renderRevisionPreview}
+    >
     <div className="bg-background text-foreground flex h-full w-full flex-col">
       {!fullscreen && (
         <>
@@ -288,10 +332,15 @@ export function Shell() {
         )}
         <main className="relative flex min-w-0 flex-1 flex-col">
           {!fullscreen && <TabStrip />}
-          <ViewerScroll activeId={activeId}>
-            <Viewer />
-          </ViewerScroll>
-          {!fullscreen && <NotesLayer source={activeFileSource} onRequestOpen={openNotesPanel} />}
+          {!fullscreen && <RevisionBar />}
+          <RevisionMainArea>
+            <ViewerScroll activeId={activeId}>
+              <Viewer />
+            </ViewerScroll>
+            {!fullscreen && (
+              <NotesLayer source={activeFileSource} onRequestOpen={openNotesPanel} />
+            )}
+          </RevisionMainArea>
           {fullscreen && (
             <Button
               variant="ghost"
@@ -345,6 +394,7 @@ export function Shell() {
             </div>
           </>
         )}
+        {!fullscreen && <RevisionSidePanel />}
       </div>
       </NotesProvider>
       <DropZone />
@@ -354,7 +404,80 @@ export function Shell() {
         scope={searchScope}
         onScopeChange={setSearchScope}
       />
+      <RevisionDiffView />
     </div>
+    </RevisionProvider>
+  );
+}
+
+/**
+ * Renders a revision's markdown with the app's real MDXViewer so a preview
+ * looks exactly like the live doc. Mirrors Viewer.tsx's wiring (storage +
+ * FSA asset resolver + `data-toc` gate) but with a NAMESPACED file id
+ * (`::rev-preview`) so the preview's task/link/checkbox storage can never
+ * collide with the real file's state. Read-only by usage.
+ */
+function PreviewMarkdown({ content }: { content: string }) {
+  const file = useLibrary((s) => (s.activeFileId ? s.files[s.activeFileId] : null));
+  const folder = useLibrary((s) => (file?.folderId ? s.folders[file.folderId] : null));
+  const sessionRev = useLibrary((s) => s.sessionRev);
+
+  const mdxFile = useMemo(
+    () =>
+      file
+        ? {
+            id: `${file.id}::rev-preview`,
+            name: file.name,
+            ext: file.ext,
+            path: file.path,
+            sourceUrl: file.sourceUrl,
+          }
+        : null,
+    [file?.id, file?.name, file?.ext, file?.path, file?.sourceUrl],
+  );
+  const assets = useMemo(() => {
+    const dirHandle = folder?.id ? sessionHandles.getDir(folder.id) : null;
+    return createFSAAssetResolver(dirHandle, file?.path ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folder?.id, file?.path, sessionRev]);
+
+  if (!mdxFile) return null;
+  // TOC closed for the preview — it's a read-only snapshot, not a navigation surface.
+  return (
+    <div data-toc="closed">
+      <MDXViewer content={content} file={mdxFile} storage={idbStorage} assets={assets} />
+    </div>
+  );
+}
+
+/**
+ * Main content area: shows the inline revision preview when one is active,
+ * otherwise the normal viewer (its children). Lives inside RevisionProvider so
+ * it can read the preview state.
+ */
+function RevisionMainArea({ children }: { children: React.ReactNode }) {
+  const { preview } = useRevision();
+  if (preview) return <RevisionPreview />;
+  return <>{children}</>;
+}
+
+/** Right-rail revision history panel, shown when toggled open. */
+function RevisionSidePanel() {
+  const { panelOpen, closePanel } = useRevision();
+  if (!panelOpen) return null;
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Close revision panel"
+        onClick={closePanel}
+        className="fixed inset-0 z-30 bg-black/40 md:hidden"
+      />
+      <div className="fixed inset-y-0 right-0 z-40 flex shadow-xl md:static md:z-auto md:shadow-none">
+        <Separator orientation="vertical" />
+        <RevisionPanel />
+      </div>
+    </>
   );
 }
 
