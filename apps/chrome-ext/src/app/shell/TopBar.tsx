@@ -212,19 +212,34 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
       </div>
 
       <div className="flex items-center gap-1">
-        {!isInjectMode() && hasDirectoryPicker() && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden h-7 px-2 text-xs font-normal sm:inline-flex"
-            onClick={onPickFolder}
-            aria-label="Open Folder"
-            title="Open Folder"
-          >
-            <FolderOpen className="size-3.5" />
-            <span className="hidden sm:inline"> Open Folder</span>
-          </Button>
-        )}
+        {/* ── PER-FILE actions: everything here operates on the ACTIVE document
+            (refresh/reload its content, jump to it, toggle per-doc panels). Kept
+            together + adjacent to the file identity so "stuff about this file" is
+            one visual group, distinct from the app-level controls after the
+            divider. ── */}
+        <IconBtn
+          onClick={toggleRevision}
+          title={
+            revisionTracked
+              ? "Revision mode on — snapshotting changes. Click to stop."
+              : "Revision mode — cache + diff this doc as it changes"
+          }
+          aria-label="Revision mode"
+          aria-pressed={revisionTracked}
+          className={cn(revisionTracked && "bg-accent text-accent-foreground")}
+        >
+          <History
+            className={cn("size-4", revisionTracked && "text-emerald-500")}
+          />
+        </IconBtn>
+        <IconBtn
+          onClick={toggleNotesPanel}
+          title="AI notes — highlight text to add review notes"
+          aria-label="Notes panel"
+          className={cn(notesOpen && "bg-accent text-accent-foreground")}
+        >
+          <StickyNote className="size-4" />
+        </IconBtn>
         {isInjectMode() ? (
           <IconBtn
             // file:// pages have an opaque (null) origin, so the content
@@ -256,9 +271,6 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             />
           </IconBtn>
         )}
-        <IconBtn onClick={onOpenSearch} title="Search (⌘K)" aria-label="Search">
-          <Search className="size-4" />
-        </IconBtn>
         <IconBtn
           onClick={toggleToc}
           title="Table of contents"
@@ -277,39 +289,6 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             <Crosshair className="size-4" />
           </IconBtn>
         )}
-        <IconBtn
-          onClick={toggleTasksPanel}
-          title="Tasks panel (⌘T)"
-          aria-label="Tasks panel"
-          className={cn(
-            tasksOpen && "bg-accent text-accent-foreground"
-          )}
-        >
-          <ListTodo className="size-4" />
-        </IconBtn>
-        <IconBtn
-          onClick={toggleNotesPanel}
-          title="AI notes — highlight text to add review notes"
-          aria-label="Notes panel"
-          className={cn(notesOpen && "bg-accent text-accent-foreground")}
-        >
-          <StickyNote className="size-4" />
-        </IconBtn>
-        <IconBtn
-          onClick={toggleRevision}
-          title={
-            revisionTracked
-              ? "Revision mode on — snapshotting changes. Click to stop."
-              : "Revision mode — cache + diff this doc as it changes"
-          }
-          aria-label="Revision mode"
-          aria-pressed={revisionTracked}
-          className={cn(revisionTracked && "bg-accent text-accent-foreground")}
-        >
-          <History
-            className={cn("size-4", revisionTracked && "text-emerald-500")}
-          />
-        </IconBtn>
         {/* Reading mode only hides the sidebar + tasks panel — both already
             off in the injected single-file viewer, so the toggle is a no-op
             there. Hide it in inject (like the other library-only controls). */}
@@ -335,6 +314,36 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             <ExternalLink className="size-4" />
           </IconBtn>
         )}
+
+        {/* Divider between per-file actions and app-level controls. */}
+        <span className="bg-border mx-1 h-5 w-px" aria-hidden />
+
+        {/* ── GLOBAL / app controls: act on the library or the whole app, not the
+            active document. ── */}
+        {!isInjectMode() && hasDirectoryPicker() && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden h-7 px-2 text-xs font-normal sm:inline-flex"
+            onClick={onPickFolder}
+            aria-label="Open Folder"
+            title="Open Folder"
+          >
+            <FolderOpen className="size-3.5" />
+            <span className="hidden sm:inline"> Open Folder</span>
+          </Button>
+        )}
+        <IconBtn onClick={onOpenSearch} title="Search (⌘K)" aria-label="Search">
+          <Search className="size-4" />
+        </IconBtn>
+        <IconBtn
+          onClick={toggleTasksPanel}
+          title="Tasks panel (⌘T)"
+          aria-label="Tasks panel"
+          className={cn(tasksOpen && "bg-accent text-accent-foreground")}
+        >
+          <ListTodo className="size-4" />
+        </IconBtn>
         {!isInjectMode() && (
           <IconBtn
             onClick={openWelcome}
