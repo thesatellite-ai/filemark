@@ -298,6 +298,13 @@ export function MDXViewer(props: ViewerProps) {
           if (lang === "mermaid") {
             return <Mermaid source={raw.replace(/\n$/, "")} />;
           }
+          // FileTree — fenced ```filetree with an indented file/folder outline.
+          // Preferred over the <FileTree> tag: a fence is one atomic block, so
+          // blank lines in the outline can't end it early and swallow the rest
+          // of the doc (the tag form is vulnerable to that — see FileTree.tsx).
+          if (lang === "filetree") {
+            return <FileTree source={raw.replace(/\n$/, "")} />;
+          }
           // MindMap — fenced ```mindmap with bullet-list outline. Meta
           // string can carry `height=560` (or `height=70vh`) plus a
           // free-form title — anything that isn't a `key=value` pair is
@@ -484,7 +491,11 @@ export function MDXViewer(props: ViewerProps) {
             <ReactMarkdown
               // remarkSourceLine LAST so positions reflect the final mdast —
               // stamps data-line via hProperties (host notes read it).
-              remarkPlugins={[remarkGfm, remarkGemoji, remarkGithubEmoji, remarkMath, remarkBreaks, remarkCodeMeta, remarkSourceLine]}
+              // `singleDollarTextMath: false` → a lone `$` is plain text, not
+              // inline math. Currency ("$150k … $500k") is far more common in
+              // docs than inline math and was being parsed as one big formula.
+              // Real math still works with `$$…$$` (and ```math fences).
+              remarkPlugins={[remarkGfm, remarkGemoji, remarkGithubEmoji, [remarkMath, { singleDollarTextMath: false }], remarkBreaks, remarkCodeMeta, remarkSourceLine]}
               // Default urlTransform strips data: URLs; allow our bundled
               // base64 emoji images (remarkGithubEmoji) through.
               urlTransform={(url) =>
