@@ -6,6 +6,10 @@
 
 import { shouldRun, type SiteRule } from "@/lib/siteRules";
 
+// Public changelog — opened in a tab after the extension auto-updates so users
+// see what's new in the version Chrome just installed.
+const CHANGELOG_URL = "https://khanakia.com/apps/filemark/changelog";
+
 function connectDevReload() {
   try {
     const ws = new WebSocket("ws://localhost:8791");
@@ -365,6 +369,18 @@ chrome.runtime.onInstalled.addListener((details) => {
       url: chrome.runtime.getURL("src/welcome/index.html"),
     });
   }
+  // Auto-update applied (version changed) → show what's new. Fires only on a
+  // real version change, not on a plain dev `runtime.reload()`.
+  else if (details.reason === "update") {
+    void chrome.tabs.create({ url: CHANGELOG_URL });
+  }
+});
+
+// Apply updates without waiting for the service worker to go idle: the moment
+// Chrome has a newer version downloaded, reload to swap to it immediately
+// (then onInstalled fires with reason "update" → opens the changelog).
+chrome.runtime.onUpdateAvailable.addListener(() => {
+  chrome.runtime.reload();
 });
 chrome.runtime.onStartup.addListener(() => {
   syncRedirectRules();
