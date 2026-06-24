@@ -65,6 +65,18 @@ describe("appendRevision", () => {
     expect(await store.listRevisions(k)).toHaveLength(1);
   });
 
+  it("force bypasses dedup — a manual snapshot pins a checkpoint even if unchanged", async () => {
+    const k = "doc-2b";
+    const r1 = await store.appendRevision(k, "same", 1);
+    const r2 = await store.appendRevision(k, "same", 2); // auto-capture → dedups
+    const r3 = await store.appendRevision(k, "same", 3, true); // manual snapshot → forces
+    expect(r1?.added).toBe(true);
+    expect(r2?.added).toBe(false);
+    expect(r3?.added).toBe(true);
+    // Two stored revisions of identical content (the deliberate pin is kept).
+    expect(await store.listRevisions(k)).toHaveLength(2);
+  });
+
   it("appends a new revision when content changes, newest last", async () => {
     const k = "doc-3";
     await store.appendRevision(k, "v1", 1);

@@ -139,7 +139,7 @@ export function createRevisionStore(storage: RevisionStorageAdapter): RevisionSt
     return list.length ? list[list.length - 1]! : null;
   };
 
-  const appendRevision: RevisionStore["appendRevision"] = async (docKey, content, now) => {
+  const appendRevision: RevisionStore["appendRevision"] = async (docKey, content, now, force) => {
     if (!docKey) return null;
     // Empty content is never a revision (guards stray "" captures during loads).
     if (!content) return null;
@@ -149,8 +149,9 @@ export function createRevisionStore(storage: RevisionStorageAdapter): RevisionSt
       const hash = hashContent(content);
       const latest = list.length ? list[list.length - 1]! : null;
       // Dedup: identical to the latest revision → no-op (this is what makes a
-      // reload of an unchanged doc add nothing).
-      if (latest && latest.hash === hash) {
+      // reload of an unchanged doc add nothing). A manual snapshot (`force`)
+      // skips dedup so it always pins a deliberate checkpoint.
+      if (!force && latest && latest.hash === hash) {
         return { added: false, revision: latest };
       }
       // Next id = max existing numeric id + 1 (monotonic, survives trims).

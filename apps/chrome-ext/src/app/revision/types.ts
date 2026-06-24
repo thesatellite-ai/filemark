@@ -77,8 +77,18 @@ export interface RevisionStore {
   listRevisions(docKey: string): Promise<Revision[]>;
   /** The latest revision for a doc, or null. */
   latestRevision(docKey: string): Promise<Revision | null>;
-  /** Capture content as a new revision (deduped vs latest; trims to the cap). */
-  appendRevision(docKey: string, content: string, now: number): Promise<AppendResult | null>;
+  /**
+   * Capture content as a new revision (trims to the cap).
+   * Deduped vs the latest revision by default (so reloads of an unchanged doc
+   * add nothing). Pass `force` for a deliberate manual snapshot — it bypasses
+   * dedup and always pins a checkpoint, even if content is unchanged.
+   */
+  appendRevision(
+    docKey: string,
+    content: string,
+    now: number,
+    force?: boolean,
+  ): Promise<AppendResult | null>;
   /** Delete all revisions for a doc (keeps the tracked flag). */
   clearRevisions(docKey: string): Promise<void>;
   /** Load a doc's persisted UI state, or null if none saved. */

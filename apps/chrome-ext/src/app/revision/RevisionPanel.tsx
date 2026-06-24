@@ -5,6 +5,7 @@
 // through by clicking different rows. Per-row "Diff vs previous" shows the
 // reading-diff inline. Also hosts the revision-mode toggle + Snapshot / Clear /
 // Full-compare. Mirrors the NotesPanel layout.
+import { useCallback, useRef, useState } from "react";
 import {
   History,
   X,
@@ -20,6 +21,20 @@ import { revisionLabel, CURRENT_NODE_LABEL } from "./compare";
 import { formatRelativeTime } from "./time";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+// Resizable width — the panel is right-anchored, so drag distance from the
+// right edge of the window gives the new width. Persisted so the choice sticks
+// across reopens/reloads.
+const WIDTH_KEY = "fv-rev-panel-width";
+const MIN_WIDTH = 260;
+const MAX_WIDTH = 760;
+const DEFAULT_WIDTH = 300;
+
+function readStoredWidth(): number {
+  if (typeof localStorage === "undefined") return DEFAULT_WIDTH;
+  const v = Number(localStorage.getItem(WIDTH_KEY));
+  return v >= MIN_WIDTH && v <= MAX_WIDTH ? v : DEFAULT_WIDTH;
+}
 
 export function RevisionPanel() {
   const {
@@ -37,6 +52,37 @@ export function RevisionPanel() {
     closePanel,
   } = useRevision();
 
+  // Drag-to-resize. widthRef mirrors the latest width so the pointerup handler
+  // can persist it without re-binding listeners every render.
+  const [width, setWidth] = useState<number>(readStoredWidth);
+  const [resizing, setResizing] = useState(false);
+  const widthRef = useRef(width);
+  widthRef.current = width;
+
+  const startResize = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    setResizing(true);
+    const onMove = (ev: PointerEvent) => {
+      const next = Math.min(
+        MAX_WIDTH,
+        Math.max(MIN_WIDTH, window.innerWidth - ev.clientX),
+      );
+      setWidth(next);
+    };
+    const onUp = () => {
+      setResizing(false);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      try {
+        localStorage.setItem(WIDTH_KEY, String(Math.round(widthRef.current)));
+      } catch {
+        /* private mode / storage disabled — width just won't persist */
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }, []);
+
   // Snapshot the clock once per render for the relative-time labels (the panel
   // is short-lived; no need for a refresh tick like the always-on bar has).
   const now = Date.now();
@@ -46,7 +92,33 @@ export function RevisionPanel() {
   const liveDiffers = !!currentContent && (!latest || latest.content !== currentContent);
 
   return (
-    <aside className="bg-background flex h-full w-[300px] flex-col">
+    <aside
+      className={cn(
+        "bg-background relative flex h-full flex-col",
+        resizing && "select-none",
+      )}
+      style={{ width }}
+    >
+      {/* Drag handle — sits on the left edge; drag to resize the panel. */}
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize revision panel"
+        title="Drag to resize"
+        onPointerDown={startResize}
+        onDoubleClick={() => {
+          setWidth(DEFAULT_WIDTH);
+          try {
+            localStorage.setItem(WIDTH_KEY, String(DEFAULT_WIDTH));
+          } catch {
+            /* ignore */
+          }
+        }}
+        className={cn(
+          "absolute left-0 top-0 z-20 h-full w-1.5 -translate-x-1/2 cursor-col-resize touch-none transition-colors",
+          resizing ? "bg-primary/40" : "bg-transparent hover:bg-primary/30",
+        )}
+      />
       {/* Header */}
       <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
         <History className="size-4" />

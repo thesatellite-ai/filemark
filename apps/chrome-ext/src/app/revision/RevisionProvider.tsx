@@ -146,11 +146,12 @@ export function RevisionProvider({
 
   // Append a revision (deduped) and reflect the result in local state. Shared
   // by the capture-on-render effect, manual snapshot, and enable-baseline.
-  const capture = useCallback(async (key: string, text: string) => {
+  const capture = useCallback(async (key: string, text: string, force?: boolean) => {
     if (!key || !text) return;
     // The store honors a persisted Clear (won't recreate a baseline for the
     // exact cleared content, across reloads) — no in-memory guard needed here.
-    const result = await storeRef.current.appendRevision(key, text, Date.now());
+    // `force` is for a manual snapshot: pin a checkpoint even if unchanged.
+    const result = await storeRef.current.appendRevision(key, text, Date.now(), force);
     if (!result) return;
     if (result.added) {
       const revs = await storeRef.current.listRevisions(key);
@@ -195,7 +196,9 @@ export function RevisionProvider({
 
   const snapshotNow = useCallback(() => {
     if (!normalizedKey) return;
-    void capture(normalizedKey, contentRef.current);
+    // Manual snapshot: force a checkpoint even if content is unchanged, so the
+    // button always does something visible (auto-capture still dedups).
+    void capture(normalizedKey, contentRef.current, true);
   }, [normalizedKey, capture]);
 
   const clearHistory = useCallback(() => {
