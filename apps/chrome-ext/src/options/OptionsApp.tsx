@@ -113,9 +113,10 @@ export function OptionsApp() {
   return (
     <ThemeProvider value={theme} onChange={setTheme}>
       <div className="bg-background text-foreground min-h-screen">
-        <div className="mx-auto flex max-w-4xl gap-8 px-6 py-10">
-          {/* Left nav */}
-          <nav className="w-52 shrink-0">
+        <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6 sm:px-6 md:flex-row md:gap-8 md:py-10">
+          {/* Left nav — full-width horizontal scroll strip on mobile, vertical
+              rail on md+. */}
+          <nav className="w-full shrink-0 md:w-52">
             <div className="mb-5 flex items-center gap-2 px-2">
               <SettingsIcon className="text-muted-foreground size-5 shrink-0" />
               <div className="min-w-0">
@@ -127,7 +128,7 @@ export function OptionsApp() {
                 </div>
               </div>
             </div>
-            <div className="space-y-0.5">
+            <div className="-mx-1 flex gap-1 overflow-x-auto px-1 [scrollbar-width:none] md:mx-0 md:block md:space-y-0.5 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
               {NAV.map((s) => {
                 const Icon = s.icon;
                 const isActive = active === s.id;
@@ -137,7 +138,7 @@ export function OptionsApp() {
                     type="button"
                     onClick={() => setActive(s.id)}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors",
+                      "flex w-auto shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] transition-colors md:w-full md:shrink",
                       isActive
                         ? "bg-primary/10 text-primary font-medium"
                         : "text-foreground/80 hover:bg-muted/60",

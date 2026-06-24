@@ -153,8 +153,8 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   };
 
   return (
-    <header className="bg-background flex h-11 shrink-0 items-center gap-1 px-2">
-      <div className="flex items-center gap-1">
+    <header className="bg-background flex h-11 shrink-0 items-center gap-1 overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex shrink-0 items-center gap-1">
         {/* Library/multi-file controls (sidebar toggle, Open Folder, reveal-in-
             sidebar) are hidden in the injected file:// viewer: it shows a single
             file with the sidebar collapsed, so they have nothing to act on. */}
@@ -213,7 +213,7 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         )}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         {/* ── PER-FILE actions: everything here operates on the ACTIVE document
             (refresh/reload its content, jump to it, toggle per-doc panels). Kept
             together + adjacent to the file identity so "stuff about this file" is
