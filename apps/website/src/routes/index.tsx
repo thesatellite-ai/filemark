@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -33,6 +34,12 @@ import {
 const SITE = "https://khanakia.com/apps/filemark";
 const STORE_URL =
   "https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm";
+
+// Real product screenshots live in public/screenshots and ship under the
+// site's base path (/apps/filemark/). Resolve through BASE_URL so they work
+// both on the deployed sub-path and the local dev server.
+const shot = (name: string): string =>
+  `${import.meta.env.BASE_URL}screenshots/${name}`;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -98,9 +105,12 @@ function Home(): React.ReactElement {
       <TrustStrip />
       <Problem />
       <BeforeAfter />
+      <FeatureSpotlight />
       <HowItWorks />
       <WhoFor />
       <Marquee />
+      <ShowcaseRevisions />
+      <ShowcaseNotes />
       <ShowcaseMarkdown />
       <ShowcaseJSON />
       <ShowcaseSchema />
@@ -188,6 +198,8 @@ function VsAlternatives(): React.ReactElement {
     { label: "Files never leave your machine", cells: ["y", "n", "y"] },
     { label: "Works offline", cells: ["y", "n", "y"] },
     { label: "Markdown, JSON, CSV and schemas — all of them", cells: ["y", "p", "p"] },
+    { label: "Diff what your AI changed — rendered or source", cells: ["y", "n", "p"] },
+    { label: "Mark docs up with notes for your AI", cells: ["y", "n", "n"] },
     { label: "One click, zero setup", cells: ["y", "p", "n"] },
     { label: "Free & open source", cells: ["y", "p", "p"] },
   ];
@@ -206,7 +218,7 @@ function VsAlternatives(): React.ReactElement {
           </p>
         </div>
         <div className="mt-14 overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="grid grid-cols-[1fr_repeat(3,72px)] items-center gap-2 border-b border-border bg-muted/50 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider sm:grid-cols-[1fr_repeat(3,120px)] sm:px-6">
+          <div className="grid grid-cols-[1fr_repeat(3,56px)] items-center gap-2 border-b border-border bg-muted/50 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider sm:grid-cols-[1fr_repeat(3,120px)] sm:px-6">
             <span className="text-muted-foreground">Capability</span>
             {cols.map((c, i) => (
               <span
@@ -220,7 +232,7 @@ function VsAlternatives(): React.ReactElement {
           {rows.map((r) => (
             <div
               key={r.label}
-              className="grid grid-cols-[1fr_repeat(3,72px)] items-center gap-2 border-b border-border/60 px-4 py-3.5 text-[13px] last:border-0 sm:grid-cols-[1fr_repeat(3,120px)] sm:px-6 sm:text-[14px]"
+              className="grid grid-cols-[1fr_repeat(3,56px)] items-center gap-2 border-b border-border/60 px-4 py-3.5 text-[13px] last:border-0 sm:grid-cols-[1fr_repeat(3,120px)] sm:px-6 sm:text-[14px]"
             >
               <span>{r.label}</span>
               {r.cells.map((cell, i) => (
@@ -569,8 +581,8 @@ function Hero(): React.ReactElement {
         </h1>
         <p className="mx-auto mt-7 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
           Filemark renders Markdown, JSON, CSV, and SQL schemas as real
-          interactive views — right in the Chrome tab you're already in.
-          100% local. Nothing ever uploaded.
+          interactive views — right in the Chrome tab you're already in. Diff
+          what your AI changed, mark docs up for your AI. 100% local.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a
@@ -658,7 +670,194 @@ function Marquee(): React.ReactElement {
   );
 }
 
+/* ─────────── Feature spotlight: tabbed "see it in action" ────────── */
+
+// The three things that set Filemark apart from every other file viewer —
+// surfaced high on the page with REAL screenshots so the "aha" lands before
+// the marketing copy. Revisions + AI Notes are the differentiators; Viewers
+// shows the rich rendering everyone expects. Each tab maps to a screenshot in
+// public/screenshots.
+const SPOTLIGHT_TABS: {
+  id: string;
+  label: string;
+  Icon: typeof FileText;
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  points: string[];
+  url: string;
+  shot: string;
+  alt: string;
+}[] = [
+  {
+    id: "revisions",
+    label: "Revisions",
+    Icon: Layers,
+    eyebrow: "Review what your AI changed",
+    title: "See the diff, not just the file.",
+    blurb:
+      "Open any doc in revision mode and Filemark diffs it against the last version you saw — additions, deletions, edits, line by line. No git, no separate diff tool.",
+    points: [
+      "Diff the rendered view or the raw source — toggle either way.",
+      "Keeps your last 5 revisions per file, automatically.",
+      "Works on local files and remote URLs alike.",
+    ],
+    url: "launch-plan.md — revision mode",
+    shot: "revision-diff-preview-mode.png",
+    alt: "Filemark revision mode showing a line-by-line diff with the revision-history panel open",
+  },
+  {
+    id: "notes",
+    label: "AI Notes",
+    Icon: Sparkles,
+    eyebrow: "Mark docs up for your AI",
+    title: "Highlight a line. Leave a note.",
+    blurb:
+      "Select any passage and attach a note — feedback, a fix request, a question. Highlights persist across re-renders and are perfect for handing structured review back to a coding agent.",
+    points: [
+      "Click a highlight to jump straight back to the passage.",
+      "Notes survive re-renders, edits, and reloads.",
+      "Export the marked-up review for your AI to act on.",
+    ],
+    url: "spec.md — review notes",
+    shot: "notes_view.png",
+    alt: "Filemark AI review notes — a highlighted passage in a markdown document with an attached note",
+  },
+  {
+    id: "viewers",
+    label: "Viewers",
+    Icon: FileText,
+    eyebrow: "Nine formats, real rendering",
+    title: "Interactive, not text in a box.",
+    blurb:
+      "JSON as a collapsible tree, CSV as a sortable grid, SQL/Prisma/DBML as an ER diagram, Markdown with charts, kanban, and math — all interactive, all in the tab you're already in.",
+    points: [
+      "Collapsible JSON tree with 9 themes and parse-issue pinpoints.",
+      "Sort, filter, and export CSV right in the browser.",
+      "Everything renders 100% locally — nothing uploaded.",
+    ],
+    url: "package.json",
+    shot: "json.png",
+    alt: "Filemark JSON viewer showing an interactive collapsible tree",
+  },
+];
+
+function FeatureSpotlight(): React.ReactElement {
+  const [active, setActive] = useState(SPOTLIGHT_TABS[0]!.id);
+  const tab = SPOTLIGHT_TABS.find((t) => t.id === active) ?? SPOTLIGHT_TABS[0]!;
+  return (
+    <section className="border-b border-border bg-muted/20">
+      <div className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            See it in action
+          </p>
+          <h2 className="mt-2 text-balance text-[28px] font-semibold tracking-tight sm:text-[36px]">
+            More than a viewer. A place to review.
+          </h2>
+          <p className="mt-4 text-balance text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+            Filemark doesn't just render your files — it lets you diff what
+            changed and mark them up for your AI. Three things no other viewer
+            does.
+          </p>
+        </div>
+
+        {/* Enclosed segmented control — the bordered track + "lifted" active
+            pill reads unmistakably as a tab strip (the old free-floating pills
+            didn't signal they were selectable). */}
+        <div className="mb-8 flex justify-start overflow-x-auto sm:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div
+            role="tablist"
+            aria-label="Feature spotlight"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-muted/60 p-1 shadow-sm"
+          >
+            {SPOTLIGHT_TABS.map((t) => {
+              const on = t.id === active;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setActive(t.id)}
+                  className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-[12px] font-medium transition-all sm:gap-2 sm:px-4 sm:text-[13px] ${
+                    on
+                      ? "bg-background text-foreground shadow-sm ring-1 ring-border"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <t.Icon size={14} aria-hidden />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mx-auto grid max-w-5xl items-center gap-8 lg:grid-cols-[minmax(0,0.85fr)_1.3fr] lg:gap-12">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              {tab.eyebrow}
+            </p>
+            <h3 className="mt-2 text-balance text-[22px] font-semibold leading-[1.15] tracking-tight sm:text-[26px]">
+              {tab.title}
+            </h3>
+            <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground sm:text-[15px]">
+              {tab.blurb}
+            </p>
+            <ul className="mt-5 space-y-2.5 text-[13px]">
+              {tab.points.map((p) => (
+                <li key={p} className="flex items-start gap-2.5">
+                  <Check
+                    size={15}
+                    className="mt-0.5 shrink-0 text-foreground/50"
+                    aria-hidden
+                  />
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <BrowserFrame url={tab.url} fit>
+            {/* Screenshots are authored at 4:3 to match this frame, so
+                object-cover fills it edge-to-edge with no crop or letterbox.
+                aspect-[4/3] + fit keeps the ratio exact and the frame hugging
+                the image at any viewport width (no mobile gaps/over-crop). */}
+            <div className="aspect-[4/3] w-full overflow-hidden bg-muted/20">
+              <img
+                src={shot(tab.shot)}
+                alt={tab.alt}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </BrowserFrame>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─────────── Showcase sections (alternating left/right) ──────────── */
+
+// A real product screenshot sized to fill a Showcase's compact frame.
+function Shot({
+  src,
+  alt,
+}: {
+  src: string;
+  alt: string;
+}): React.ReactElement {
+  // 4:3 screenshots fill the (≈4:3) compact showcase frame edge-to-edge with
+  // object-cover — negligible crop, no letterbox.
+  return (
+    <img
+      src={shot(src)}
+      alt={alt}
+      loading="lazy"
+      className="h-full w-full bg-muted/20 object-cover"
+    />
+  );
+}
 
 interface ShowcaseProps {
   eyebrow: string;
@@ -668,6 +867,10 @@ interface ShowcaseProps {
   visual: React.ReactNode;
   reverse?: boolean;
   bg?: string;
+  /** Render the visual in a fixed-aspect (4:3) media frame that hugs the image
+   *  at every width — for real screenshots. Default (mock visuals) uses the
+   *  compact fixed-height frame. */
+  media?: boolean;
 }
 
 function Showcase({
@@ -678,6 +881,7 @@ function Showcase({
   visual,
   reverse,
   bg,
+  media,
 }: ShowcaseProps): React.ReactElement {
   return (
     <section className={`border-b border-border ${bg ?? ""}`}>
@@ -702,10 +906,64 @@ function Showcase({
           </ul>
         </div>
         <div className={reverse ? "lg:order-1" : ""}>
-          <BrowserFrame compact>{visual}</BrowserFrame>
+          {media ? (
+            <BrowserFrame fit>
+              <div className="aspect-[4/3] w-full overflow-hidden bg-muted/20">
+                {visual}
+              </div>
+            </BrowserFrame>
+          ) : (
+            <BrowserFrame compact>{visual}</BrowserFrame>
+          )}
         </div>
       </div>
     </section>
+  );
+}
+
+function ShowcaseRevisions(): React.ReactElement {
+  return (
+    <Showcase
+      media
+      eyebrow="Revisions"
+      title={<>Review what<br />your AI changed.</>}
+      body="Filemark remembers the last version of every doc you opened and diffs the new one against it — in the rendered view or the raw source. Stop re-reading a whole file to find the three lines that moved."
+      bullets={[
+        "Rendered diff or source diff — toggle whichever reads faster.",
+        "Last 5 revisions kept per file, automatically, 100% local.",
+        "Works on local files and remote URLs — no git required.",
+      ]}
+      visual={
+        <Shot
+          src="revision-diff-preview-mode.png"
+          alt="Filemark revision mode — source diff with added/removed lines and the revision-history panel"
+        />
+      }
+    />
+  );
+}
+
+function ShowcaseNotes(): React.ReactElement {
+  return (
+    <Showcase
+      media
+      reverse
+      bg="bg-muted/20"
+      eyebrow="AI Review Notes"
+      title={<>Mark docs up<br />for your AI.</>}
+      body="Highlight any passage and leave a note — a fix, a question, a piece of feedback. Highlights persist across re-renders, and the marked-up review is exactly what a coding agent needs to act on your changes."
+      bullets={[
+        "Select text, attach a note — the highlight stays put.",
+        "Click a highlight to jump back to the exact passage.",
+        "Hand structured, in-context review back to your AI.",
+      ]}
+      visual={
+        <Shot
+          src="notes_view.png"
+          alt="Filemark AI review notes — the Notes panel listing notes attached to highlighted passages"
+        />
+      }
+    />
   );
 }
 
@@ -922,6 +1180,7 @@ function BrowserFrame({
   url,
   children,
   compact,
+  fit,
 }: {
   title?: string;
   /** When set, renders a Chrome-style address bar showing this URL —
@@ -930,6 +1189,10 @@ function BrowserFrame({
   url?: string;
   children: React.ReactNode;
   compact?: boolean;
+  /** Let the content define the frame height (no fixed min/compact height) —
+   *  used for fixed-aspect media (screenshots) so the frame hugs the image at
+   *  every viewport width instead of leaving gaps or over-cropping on mobile. */
+  fit?: boolean;
 }): React.ReactElement {
   return (
     // Flat: clean border only, no drop shadow (the previous elevation read as
@@ -950,7 +1213,15 @@ function BrowserFrame({
           </span>
         ) : null}
       </div>
-      <div className={compact ? "h-[380px] overflow-hidden" : "min-h-[420px]"}>
+      <div
+        className={
+          compact
+            ? "h-[380px] overflow-hidden"
+            : fit
+              ? ""
+              : "min-h-[420px]"
+        }
+      >
         {children}
       </div>
     </div>
