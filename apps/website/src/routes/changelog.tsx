@@ -46,6 +46,20 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.5",
+    date: "2026-06-24",
+    tag: "revisions, notes & responsive",
+    notes: [
+      "Revision history panel is now drag-resizable — pull its left edge to widen or narrow it (the width is remembered)",
+      "Snapshot now reliably pins a checkpoint every time you click it, even when the content hasn't changed",
+      "AI review notes: highlights now survive multi-line / cross-block selections, and clicking a note jumps back to the exact passage",
+      "Auto-update: on a new version Filemark opens the changelog and applies the update immediately",
+      "Responsive: the app toolbar and the options page now adapt cleanly to narrow windows",
+      "Fix: the file tree renders correctly when a Markdown file is opened directly via file://",
+      "Fix: large currency amounts like $150k…$500k are no longer mistaken for math",
+    ],
+  },
+  {
     version: "0.1.4",
     date: "2026-06-20",
     tag: "emoji, polish & fixes",
