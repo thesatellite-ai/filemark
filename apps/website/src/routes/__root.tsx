@@ -5,7 +5,21 @@ import {
   Link,
   useRouterState,
 } from "@tanstack/react-router";
-import { Github, ExternalLink } from "lucide-react";
+import {
+  Github,
+  ExternalLink,
+  Menu,
+  X,
+  Sparkles,
+  BookOpen,
+  Play,
+  Bot,
+  Palette,
+  ScrollText,
+  ShieldCheck,
+  ChevronRight,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import appCss from "../styles.css?url";
 import {
   GoogleTagManagerNoScript,
@@ -17,14 +31,80 @@ import { ldScript, webSiteLd } from "../lib/schema";
 const SITE = "https://khanakia.com/apps/filemark";
 
 // Primary header nav. Kept as data so the active-link highlight stays DRY.
+// Each item carries its own accent so the nav has color (the brand itself is
+// neutral). `hover`/`active` are full literal Tailwind class strings (so the
+// JIT scanner picks them up); `text`/`tile` colorize the mobile drawer icons.
 const NAV = [
-  { to: "/features", label: "Features" },
-  { to: "/docs", label: "Docs" },
-  { to: "/demo", label: "Demo" },
-  { to: "/ai", label: "AI skill" },
-  { to: "/brand", label: "Brand" },
-  { to: "/changelog", label: "Changelog" },
-  { to: "/privacy", label: "Privacy" },
+  {
+    to: "/features",
+    label: "Features",
+    icon: Sparkles,
+    desc: "What it does",
+    text: "text-violet-600 dark:text-violet-400",
+    hover: "hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400",
+    active: "bg-violet-500/15 text-violet-600 ring-1 ring-violet-500/25 dark:text-violet-300",
+    tile: "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  },
+  {
+    to: "/docs",
+    label: "Docs",
+    icon: BookOpen,
+    desc: "Guides & reference",
+    text: "text-sky-600 dark:text-sky-400",
+    hover: "hover:bg-sky-500/10 hover:text-sky-600 dark:hover:text-sky-400",
+    active: "bg-sky-500/15 text-sky-600 ring-1 ring-sky-500/25 dark:text-sky-300",
+    tile: "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400",
+  },
+  {
+    to: "/demo",
+    label: "Demo",
+    icon: Play,
+    desc: "Try it live",
+    text: "text-emerald-600 dark:text-emerald-400",
+    hover: "hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400",
+    active: "bg-emerald-500/15 text-emerald-600 ring-1 ring-emerald-500/25 dark:text-emerald-300",
+    tile: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    to: "/ai",
+    label: "AI Skill",
+    icon: Bot,
+    desc: "Author docs with AI",
+    text: "text-amber-600 dark:text-amber-400",
+    hover: "hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400",
+    active: "bg-amber-500/15 text-amber-700 ring-1 ring-amber-500/25 dark:text-amber-300",
+    tile: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  },
+  {
+    to: "/brand",
+    label: "Brand",
+    icon: Palette,
+    desc: "Logos & assets",
+    text: "text-rose-600 dark:text-rose-400",
+    hover: "hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400",
+    active: "bg-rose-500/15 text-rose-600 ring-1 ring-rose-500/25 dark:text-rose-300",
+    tile: "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  },
+  {
+    to: "/changelog",
+    label: "Changelog",
+    icon: ScrollText,
+    desc: "What's new",
+    text: "text-indigo-600 dark:text-indigo-400",
+    hover: "hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400",
+    active: "bg-indigo-500/15 text-indigo-600 ring-1 ring-indigo-500/25 dark:text-indigo-300",
+    tile: "border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+  },
+  {
+    to: "/privacy",
+    label: "Privacy",
+    icon: ShieldCheck,
+    desc: "Data handling",
+    text: "text-teal-600 dark:text-teal-400",
+    hover: "hover:bg-teal-500/10 hover:text-teal-600 dark:hover:text-teal-400",
+    active: "bg-teal-500/15 text-teal-600 ring-1 ring-teal-500/25 dark:text-teal-300",
+    tile: "border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400",
+  },
 ] as const;
 // GA4 flows through the GTM container in env.VITE_GTM_ID (type-safe +
 // validated in src/env/client.ts — a bad/missing id throws at build).
@@ -124,12 +204,19 @@ function NotFound(): React.ReactElement {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="light"
+      suppressHydrationWarning
+      className="overflow-x-hidden"
+    >
       <head>
         <HeadContent />
         {GTM_ENABLED && <GoogleTagManagerScript gtmId={env.VITE_GTM_ID} />}
       </head>
-      <body>
+      {/* overflow-x-hidden so the off-canvas mobile nav drawer (translated past
+          the right edge while closed) can't add a horizontal scrollbar. */}
+      <body className="overflow-x-hidden">
         {GTM_ENABLED && <GoogleTagManagerNoScript gtmId={env.VITE_GTM_ID} />}
         <RootLayout>{children}</RootLayout>
         <Scripts />
@@ -157,49 +244,187 @@ function RootLayout({ children }: { children: React.ReactNode }) {
 }
 
 function Header(): React.ReactElement {
+  // The inline desktop nav (7 links + 2 CTAs) only fits at lg; below that a
+  // hamburger opens a slide-in drawer with the same links. Lock body scroll
+  // while the drawer is open so the page behind it doesn't move.
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
           <Logo />
           <span>Filemark</span>
         </Link>
-        <nav className="hidden flex-1 items-center gap-5 text-sm text-muted-foreground sm:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-0.5 lg:flex">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="hover:text-foreground"
-              // Highlight the current section. `activeProps` applies when the
-              // route (or a descendant, e.g. /demo/play under /demo) matches.
-              activeProps={{ className: "text-foreground font-medium" }}
+              className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] font-medium text-muted-foreground transition-colors ${item.hover}`}
+              // Highlight the current section in its accent. `activeProps`
+              // applies when the route (or a descendant, e.g. /demo/play under
+              // /demo) matches.
+              activeProps={{ className: item.active }}
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <a
-          href="https://github.com/thesatellite-ai/filemark"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Filemark on GitHub"
-          className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-muted sm:ml-0"
-        >
-          <Github size={14} aria-hidden />
-          <span className="hidden sm:inline">GitHub</span>
-        </a>
-        <a
-          href="https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Add Filemark to Chrome (Chrome Web Store)"
-          className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
-        >
-          Add to Chrome
-          <ExternalLink size={12} aria-hidden />
-        </a>
+        <div className="ml-auto flex items-center gap-2 lg:ml-0">
+          <a
+            href="https://github.com/thesatellite-ai/filemark"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Filemark on GitHub"
+            className="hidden h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-muted sm:inline-flex"
+          >
+            <Github size={14} aria-hidden />
+            <span className="hidden sm:inline">GitHub</span>
+          </a>
+          <a
+            href="https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Add Filemark to Chrome (Chrome Web Store)"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
+          >
+            Add to Chrome
+            <ExternalLink size={12} aria-hidden />
+          </a>
+          {/* Hamburger — below lg only. */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Open navigation menu"
+            aria-expanded={menuOpen}
+            className="inline-flex size-8 items-center justify-center rounded-md border border-border hover:bg-muted lg:hidden"
+          >
+            <Menu size={16} aria-hidden />
+          </button>
+        </div>
       </div>
+
     </header>
+    {/* Rendered OUTSIDE the header: the header's backdrop-blur creates a
+        containing block that would trap this position:fixed drawer inside the
+        56px header. As a sibling, it resolves against the viewport (full
+        height). */}
+    <MobileNav open={menuOpen} onClose={() => setMenuOpen(false)} />
+    </>
+  );
+}
+
+/** Slide-in navigation drawer (below lg). Backdrop + right panel are always
+ *  mounted and toggled via transforms so they animate both ways. */
+function MobileNav({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}): React.ReactElement {
+  return (
+    <div className="lg:hidden" aria-hidden={!open}>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-foreground/30 backdrop-blur-sm transition-opacity duration-200 ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+
+      {/* Drawer */}
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site navigation"
+        className={`fixed inset-y-0 right-0 z-50 flex w-[80vw] max-w-[300px] flex-col border-l border-border bg-background shadow-2xl transition-transform duration-300 ease-out ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Drawer header */}
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-3">
+          <span className="flex items-center gap-2 text-[13px] font-semibold">
+            <Logo />
+            Filemark
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <X size={15} aria-hidden />
+          </button>
+        </div>
+
+        {/* Links */}
+        <nav className="flex-1 overflow-y-auto p-1.5">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={onClose}
+              className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted data-[status=active]:bg-muted"
+            >
+              <span
+                className={`flex size-7 shrink-0 items-center justify-center rounded-md border transition-colors ${item.tile}`}
+              >
+                <item.icon size={14} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block text-[13px] font-medium text-foreground/85 group-data-[status=active]:text-foreground">
+                  {item.label}
+                </span>
+                <span className="block truncate text-[10.5px] text-muted-foreground">
+                  {item.desc}
+                </span>
+              </span>
+              <ChevronRight
+                size={14}
+                className="shrink-0 text-muted-foreground/40"
+                aria-hidden
+              />
+            </Link>
+          ))}
+        </nav>
+
+        {/* CTAs */}
+        <div className="shrink-0 space-y-1.5 border-t border-border p-2.5">
+          <a
+            href="https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-primary text-[12px] font-medium text-primary-foreground hover:opacity-90"
+          >
+            Add to Chrome
+            <ExternalLink size={12} aria-hidden />
+          </a>
+          <a
+            href="https://github.com/thesatellite-ai/filemark"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-border text-[12px] font-medium hover:bg-muted"
+          >
+            <Github size={13} aria-hidden />
+            View on GitHub
+          </a>
+        </div>
+      </aside>
+    </div>
   );
 }
 
@@ -217,7 +442,7 @@ function Footer(): React.ReactElement {
             Docs
           </Link>
           <Link to="/ai" className="hover:text-foreground">
-            AI skill
+            AI Skill
           </Link>
           <Link to="/brand" className="hover:text-foreground">
             Brand
