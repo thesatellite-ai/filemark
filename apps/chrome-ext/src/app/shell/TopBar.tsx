@@ -171,9 +171,9 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
         <button
           type="button"
           onClick={() => openExternal(WEBSITE_URL)}
-          title="Filemark website"
-          aria-label="Open the Filemark website"
-          className="hover:bg-accent hover:text-accent-foreground flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-1 text-sm font-semibold tracking-tight transition-colors"
+          title="Open the Filemark website & docs"
+          aria-label="Open the Filemark website and docs"
+          className="hover:bg-accent hover:text-accent-foreground group flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-1 text-sm font-semibold tracking-tight transition-colors"
         >
           <BookOpenText className="text-primary size-4" />
           <span className="hidden sm:inline">Filemark</span>
@@ -182,6 +182,8 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
               v{EXT_VERSION}
             </span>
           )}
+          {/* External-link hint so it's clear the brand opens the website/docs. */}
+          <ExternalLink className="text-muted-foreground size-3 opacity-50 transition-opacity group-hover:opacity-100" />
         </button>
       </div>
 

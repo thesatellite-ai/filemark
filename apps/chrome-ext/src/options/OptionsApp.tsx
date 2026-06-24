@@ -1,8 +1,11 @@
 import { useEffect, useState, type SelectHTMLAttributes } from "react";
 import {
   Ban,
+  BookOpen,
+  Bug,
   ChevronDown,
   Database,
+  ExternalLink,
   FileCode2,
   FileJson,
   FileSpreadsheet,
@@ -62,6 +65,7 @@ type SectionId =
   | "siterules"
   | "json"
   | "shortcuts"
+  | "help"
   | "reset";
 
 const NAV: { id: SectionId; label: string; icon: typeof FileText }[] = [
@@ -70,8 +74,18 @@ const NAV: { id: SectionId; label: string; icon: typeof FileText }[] = [
   { id: "siterules", label: "Site rules", icon: Ban },
   { id: "json", label: "JSON viewer", icon: FileJson },
   { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
+  { id: "help", label: "Help & support", icon: HelpCircle },
   { id: "reset", label: "Reset", icon: RotateCcw },
 ];
+
+// External destinations for the Help section. Single source so the section +
+// any future surface stay in sync.
+const HELP_LINKS = {
+  docs: "https://khanakia.com/apps/filemark/docs",
+  website: "https://khanakia.com/apps/filemark/",
+  github: "https://github.com/thesatellite-ai/filemark",
+  issues: "https://github.com/thesatellite-ai/filemark/issues",
+} as const;
 
 export function OptionsApp() {
   const hydrateLib = useLibrary((s) => s.hydrate);
@@ -144,6 +158,7 @@ export function OptionsApp() {
             {active === "siterules" && <SiteRulesSection />}
             {active === "json" && <JsonSection />}
             {active === "shortcuts" && <ShortcutsSection />}
+            {active === "help" && <HelpSection />}
             {active === "reset" && <DangerZone />}
           </main>
         </div>
@@ -825,6 +840,75 @@ function ShortcutsSection() {
         that key produces a different character on a non-US layout. The label
         shown above reflects what's actually printed on your keyboard.
       </p>
+    </section>
+  );
+}
+
+/* ─── Help & support ───────────────────────────────────────────────────── */
+
+const HELP_ROWS: {
+  href: string;
+  icon: typeof FileText;
+  title: string;
+  description: string;
+}[] = [
+  {
+    href: HELP_LINKS.docs,
+    icon: BookOpen,
+    title: "Documentation",
+    description: "How every feature works — viewers, revision mode, AI notes, and more.",
+  },
+  {
+    href: HELP_LINKS.website,
+    icon: Globe,
+    title: "Website",
+    description: "Filemark home — features, demo, and downloads.",
+  },
+  {
+    href: HELP_LINKS.github,
+    icon: FileCode2,
+    title: "GitHub",
+    description: "Source code, releases, and the changelog.",
+  },
+  {
+    href: HELP_LINKS.issues,
+    icon: Bug,
+    title: "Report an issue",
+    description: "Hit a bug or have a feature request? Open an issue.",
+  },
+];
+
+function HelpSection() {
+  return (
+    <section>
+      <SectionHeading
+        icon={HelpCircle}
+        title="Help & support"
+        subtitle="Docs, source, and where to reach us if something's not working."
+      />
+      <div className="space-y-0.5">
+        {HELP_ROWS.map((row) => {
+          const Icon = row.icon;
+          return (
+            <a
+              key={row.href}
+              href={row.href}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:bg-muted/50 flex items-center gap-3 rounded-md px-3 py-2 text-sm"
+            >
+              <Icon className="text-muted-foreground size-4 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <div className="text-foreground font-medium">{row.title}</div>
+                <div className="text-muted-foreground text-xs">
+                  {row.description}
+                </div>
+              </div>
+              <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
+            </a>
+          );
+        })}
+      </div>
     </section>
   );
 }
