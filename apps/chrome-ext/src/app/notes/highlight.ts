@@ -82,8 +82,11 @@ export function resolveRange(
 ): Range | null {
   if (!quote) return null;
   const { text, segs } = buildFlat(body);
+
+  // 1) Exact match — fast path, with anchor disambiguation for repeated text.
   let best = -1;
   let bestDist = Infinity;
+  let bestLen = quote.length;
   let from = 0;
   for (;;) {
     const i = text.indexOf(quote, from);
@@ -95,9 +98,40 @@ export function resolveRange(
     }
     from = i + 1;
   }
+
+  // 2) Whitespace-insensitive fallback. `selection.toString()` joins across
+  //    block boundaries with newlines, but the flattened DOM text concatenates
+  //    text nodes with NO separator (e.g. two paragraphs → "fooBar", selection
+  //    → "foo\nBar"). It can also differ in whitespace amount. So the exact
+  //    indexOf above fails for any multi-line / cross-block selection. We match
+  //    on the whitespace-STRIPPED skeleton of both and map the hit back to real
+  //    flat indices. (Stripping all whitespace — not collapsing to a space —
+  //    is what makes the zero-separator block boundary match.)
+  if (best < 0) {
+    const proj = stripWhitespace(text);
+    const needle = quote.replace(/\s+/g, "");
+    if (needle) {
+      let nFrom = 0;
+      for (;;) {
+        const ni = proj.norm.indexOf(needle, nFrom);
+        if (ni < 0) break;
+        const origStart = proj.map[ni]!;
+        const d = Math.abs(origStart - anchorIndex);
+        if (d < bestDist) {
+          bestDist = d;
+          best = origStart;
+          // End maps from the last matched skeleton char back to the original.
+          const lastOrig = proj.map[ni + needle.length - 1]!;
+          bestLen = lastOrig - origStart + 1;
+        }
+        nFrom = ni + 1;
+      }
+    }
+  }
+
   if (best < 0) return null;
   const a = pointAt(segs, best);
-  const b = pointAt(segs, best + quote.length);
+  const b = pointAt(segs, best + bestLen);
   if (!a || !b) return null;
   try {
     const range = document.createRange();
@@ -107,6 +141,23 @@ export function resolveRange(
   } catch {
     return null;
   }
+}
+
+/** Strip ALL whitespace from `text`, returning the skeleton string plus a map
+ *  from each skeleton index → original index (so a match in the skeleton maps
+ *  back to real positions). Used to anchor a selection whose toString() carries
+ *  newlines/whitespace the flattened DOM text doesn't. */
+function stripWhitespace(text: string): { norm: string; map: number[] } {
+  let norm = "";
+  const map: number[] = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    if (!/\s/.test(ch)) {
+      norm += ch;
+      map.push(i);
+    }
+  }
+  return { norm, map };
 }
 
 /** The active rendered-markdown body element, or null. */

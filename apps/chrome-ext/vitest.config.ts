@@ -1,8 +1,10 @@
 import { defineConfig } from "vitest/config";
 
-// Unit tests cover the PURE logic of the revision feature (hash, source diff,
-// reading-diff block algorithms) — no DOM, so a node environment is enough and
-// fast. React component rendering is verified by `tsc --noEmit` + the build.
+// Default environment is `node` (fast) for the pure logic — revision hash,
+// source/reading diff, compare, store, time. DOM-dependent suites opt into
+// jsdom per-file with a `// @vitest-environment jsdom` docblock (e.g. the note
+// highlight engine in notes/highlight.test.ts). React component rendering is
+// verified by `tsc --noEmit` + the build.
 export default defineConfig({
   test: {
     environment: "node",

@@ -96,20 +96,22 @@ export function RevisionProvider({
   const captureTimer = useRef<number | undefined>(undefined);
 
   // Load tracked-state + revisions + persisted UI state whenever the active doc
-  // changes. Everything is persisted, so a reload restores revision mode AND
-  // exactly where you were: panel open, the inline preview (revision + mode),
-  // and the diff display settings.
+  // changes. A reload restores revision mode, whether the history panel was
+  // open, and the diff display settings. It deliberately does NOT restore the
+  // inline `preview`: a reload must always land on the LIVE document (the
+  // editable Viewer + notes layer), never a read-only revision preview — that
+  // would silently break notes and every other live interaction.
   useEffect(() => {
     let cancelled = false;
-    // Mark un-hydrated for this key so the persist effect can't write until
-    // restore finishes. Close the full-screen overlay (transient by design).
+    // Mark un-hydrated so the persist effect can't write until restore finishes.
+    // The overlay + inline preview are transient — always start cleared.
     hydratedKeyRef.current = null;
     setDiffOpen(false);
+    setPreview(null);
     if (!normalizedKey) {
       setTracked(false);
       setRevisions([]);
       setPanelOpen(false);
-      setPreview(null);
       setDiffSettings(DEFAULT_DIFF_SETTINGS);
       return;
     }
@@ -123,11 +125,6 @@ export function RevisionProvider({
       setRevisions(revs);
       setPanelOpen(ui?.panelOpen ?? false);
       setDiffSettings(ui?.diff ?? DEFAULT_DIFF_SETTINGS);
-      // Restore the inline preview only if its revision still exists.
-      const savedPreview = ui?.preview ?? null;
-      const previewValid =
-        savedPreview !== null && revs.some((r) => r.id === savedPreview.id);
-      setPreview(previewValid ? savedPreview : null);
       hydratedKeyRef.current = normalizedKey;
     });
     return () => {
@@ -137,10 +134,15 @@ export function RevisionProvider({
 
   // Persist UI state whenever it changes — but only after this doc's state has
   // been hydrated (so we never clobber saved state with the initial defaults).
+  // `preview` is intentionally never persisted (always reload to the live doc).
   useEffect(() => {
     if (!normalizedKey || hydratedKeyRef.current !== normalizedKey) return;
-    void storeRef.current.saveUiState(normalizedKey, { panelOpen, preview, diff: diffSettings });
-  }, [normalizedKey, panelOpen, preview, diffSettings]);
+    void storeRef.current.saveUiState(normalizedKey, {
+      panelOpen,
+      preview: null,
+      diff: diffSettings,
+    });
+  }, [normalizedKey, panelOpen, diffSettings]);
 
   // Append a revision (deduped) and reflect the result in local state. Shared
   // by the capture-on-render effect, manual snapshot, and enable-baseline.
