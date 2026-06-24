@@ -203,7 +203,7 @@ function Changelog(): React.ReactElement {
             <ul className="space-y-2 border-l border-border pl-4 text-[14px] leading-relaxed text-foreground/90">
               {r.notes.map((n, i) => (
                 <li key={i} className="relative">
-                  <span className="absolute -left-[18px] top-2 size-1.5 rounded-full bg-muted-foreground/60" />
+                  <span className="absolute -left-[20px] top-2 size-1.5 rounded-full bg-muted-foreground/60" />
                   {n}
                 </li>
               ))}
