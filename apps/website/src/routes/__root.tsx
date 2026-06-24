@@ -19,6 +19,7 @@ const SITE = "https://khanakia.com/apps/filemark";
 // Primary header nav. Kept as data so the active-link highlight stays DRY.
 const NAV = [
   { to: "/features", label: "Features" },
+  { to: "/docs", label: "Docs" },
   { to: "/demo", label: "Demo" },
   { to: "/ai", label: "AI skill" },
   { to: "/brand", label: "Brand" },
@@ -212,6 +213,9 @@ function Footer(): React.ReactElement {
           <span>© {new Date().getFullYear()} Filemark</span>
         </div>
         <div className="flex items-center gap-4">
+          <Link to="/docs" className="hover:text-foreground">
+            Docs
+          </Link>
           <Link to="/ai" className="hover:text-foreground">
             AI skill
           </Link>
