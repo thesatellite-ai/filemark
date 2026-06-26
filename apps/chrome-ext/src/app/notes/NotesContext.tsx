@@ -123,8 +123,11 @@ export function NotesProvider({ fileId, fileName, children }: NotesProviderProps
   // Repaint whenever the doc DOM changes (shiki lazy-render, theme swaps,
   // React reconciliation) so highlights survive. Only while notes exist.
   useEffect(() => {
-    if (notes.length === 0) return;
+    // Always rebuild — when notes is empty this clears the highlight (deleting
+    // the last note or Clear must un-paint, not leave stale highlights). Only
+    // the live MutationObserver is skipped when there's nothing to track.
     rebuild();
+    if (notes.length === 0) return;
     let raf = 0;
     const obs = new MutationObserver(() => {
       cancelAnimationFrame(raf);
