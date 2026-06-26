@@ -46,6 +46,14 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.6",
+    date: "2026-06-26",
+    tag: "notes fix",
+    notes: [
+      "Fix: deleting a note (or Clear) now removes its highlight from the text immediately — highlights no longer linger after the note is gone",
+    ],
+  },
+  {
     version: "0.1.5",
     date: "2026-06-24",
     tag: "revisions, notes & responsive",
