@@ -3,10 +3,21 @@
  * the languages + themes we care about (the top-level `shiki` entry ships
  * dynamic imports that Rollup statically resolves → ~200 langs in the bundle).
  *
- * We use the JavaScript regex engine instead of the WASM Oniguruma engine
- * to keep the bundle below ~100 KB. Tradeoff: slightly slower and a tiny
- * handful of complex grammars aren't fully supported — none of them are in
- * our supported-language set.
+ * We use the JavaScript regex engine instead of the WASM Oniguruma engine to
+ * keep the bundle small AND to avoid needing `wasm-unsafe-eval` in the MV3
+ * extension CSP. The JS engine translates Oniguruma patterns to native
+ * `RegExp` — and some translations could catastrophically BACKTRACK.
+ *
+ * ⚠️ shiki MUST stay >= 4.3.0 — DO NOT DOWNGRADE. shiki <= 2.5's JS engine
+ * backtracked *infinitely* on ordinary Go code (struct-tag raw strings +
+ * aligned trailing comments, e.g. `type AnyNode struct { Base }   // …`).
+ * Because `codeToHtml` runs SYNCHRONOUSLY (see `highlight()` below — only the
+ * lang/engine *loading* is async; the tokenize itself is blocking), one such
+ * block locked the whole renderer: the doc painted up to that block, then the
+ * tab froze hard and became unclickable. 4.x fixed the backtracking. The
+ * `try/catch` around `codeToHtml` only saves us from grammars that THROW — it
+ * cannot rescue a backtracking hang, so the engine/version is the real guard.
+ * Full write-up: docsi/INCIDENTS.md (sev2, 2026-06-29).
  */
 
 import type { HighlighterCore } from "shiki/core";
@@ -139,6 +150,10 @@ export async function highlight(
   const resolved = await ensureLang(lang || "text");
   let html: string;
   try {
+    // SYNCHRONOUS + main-thread: tokenizing happens here, not in the awaits
+    // above. A grammar that backtracks badly would hang the whole tab (see the
+    // module header — that's why shiki is version-floored at >= 4.3.0). The
+    // catch only handles grammars that *throw*.
     html = hl.codeToHtml(code, {
       lang: resolved,
       theme: isDark ? "github-dark" : "github-light",
