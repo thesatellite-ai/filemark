@@ -6,7 +6,6 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import {
-  Github,
   ExternalLink,
   Menu,
   X,
@@ -19,6 +18,7 @@ import {
   ShieldCheck,
   ChevronRight,
 } from "lucide-react";
+import { GithubIcon } from "../components/BrandIcons";
 import { useEffect, useState } from "react";
 import appCss from "../styles.css?url";
 import {
@@ -291,7 +291,7 @@ function Header(): React.ReactElement {
             aria-label="Filemark on GitHub"
             className="hidden h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-muted sm:inline-flex"
           >
-            <Github size={14} aria-hidden />
+            <GithubIcon size={14} aria-hidden />
             <span className="hidden sm:inline">GitHub</span>
           </a>
           <a
@@ -419,7 +419,7 @@ function MobileNav({
             rel="noreferrer"
             className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-border text-[12px] font-medium hover:bg-muted"
           >
-            <Github size={13} aria-hidden />
+            <GithubIcon size={13} aria-hidden />
             View on GitHub
           </a>
         </div>

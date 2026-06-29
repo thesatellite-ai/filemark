@@ -7,7 +7,6 @@ import {
   Lock,
   Zap,
   Layers,
-  Github as GithubIcon,
   FileText,
   Braces,
   Table2,
@@ -18,12 +17,12 @@ import {
   Code2,
   Bot,
   PenLine,
-  Chrome,
   X,
   Minus,
   MousePointerClick,
   FolderOpen,
 } from "lucide-react";
+import { GithubIcon, ChromeIcon } from "../components/BrandIcons";
 import {
   ldScript,
   softwareApplicationLd,
@@ -130,7 +129,7 @@ function Home(): React.ReactElement {
 function HowItWorks(): React.ReactElement {
   const steps = [
     {
-      icon: Chrome,
+      icon: ChromeIcon,
       title: "Add to Chrome",
       body: "One click from the Chrome Web Store. No account, no sign-up, nothing to configure.",
     },
@@ -567,7 +566,7 @@ function Hero(): React.ReactElement {
       />
       <div className="relative mx-auto max-w-6xl px-6 pb-28 pt-24 text-center sm:pt-32">
         <div className="mx-auto mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3.5 py-1.5 text-[12px] font-medium text-foreground/80 shadow-sm backdrop-blur">
-          <Chrome size={14} className="text-foreground" aria-hidden />
+          <ChromeIcon size={14} className="text-foreground" aria-hidden />
           Free Chrome extension
           <span className="mx-0.5 h-3 w-px bg-border" />
           <span className="text-muted-foreground">100% local</span>

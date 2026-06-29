@@ -74,7 +74,6 @@ export async function walkDirectory(
   prefix = ""
 ): Promise<{ path: string; handle: FileSystemFileHandle }[]> {
   const out: { path: string; handle: FileSystemFileHandle }[] = [];
-  // @ts-expect-error async iterator typing
   for await (const entry of dir.values()) {
     const path = prefix ? `${prefix}/${entry.name}` : entry.name;
     if (entry.kind === "file") {

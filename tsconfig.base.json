@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    // TS 6 deprecates `baseUrl` (removed in TS 7). We don't set it ourselves,
+    // but tsup/rollup-plugin-dts injects it during the DTS build, which errors
+    // under TS 6. Silence it until the toolchain stops emitting baseUrl.
+    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
