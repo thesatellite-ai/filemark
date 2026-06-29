@@ -27,7 +27,7 @@
   "dependencies": {
     "@filemark/core": "workspace:*",
     "@filemark/datagrid": "workspace:*",
-    "recharts": "^2.15.0"
+    "recharts": "^3.9.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

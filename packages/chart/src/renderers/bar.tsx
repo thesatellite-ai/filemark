@@ -22,23 +22,29 @@ export const barRenderer: ChartRenderer<CategoricalRows> = {
     const rows = data.data;
     const layout = options.horizontal ? "vertical" : "horizontal";
 
+    // recharts 3 narrowed the axis `label` prop to ImplicitLabelType, so a
+    // bare object literal (with a widened `position: string` + presentation
+    // attrs) no longer type-checks. The shape is valid at runtime — recharts
+    // forwards it to <Label> — so cast to the prop's type.
+    type XLabel = React.ComponentProps<typeof R.XAxis>["label"];
+    type YLabel = React.ComponentProps<typeof R.YAxis>["label"];
     const xAxisLabel = data.xLabel
-      ? {
+      ? ({
           value: data.xLabel,
           position: "insideBottom",
           offset: -4,
           fill: "currentColor",
           fontSize: 11,
-        }
+        } as XLabel)
       : undefined;
     const yAxisLabel = data.yLabel
-      ? {
+      ? ({
           value: data.yLabel,
           angle: -90,
           position: "insideLeft",
           fill: "currentColor",
           fontSize: 11,
-        }
+        } as YLabel)
       : undefined;
     const categoryAxis = (
       <R.XAxis
