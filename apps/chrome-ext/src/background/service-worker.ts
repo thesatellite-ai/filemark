@@ -369,10 +369,18 @@ chrome.runtime.onInstalled.addListener((details) => {
       url: chrome.runtime.getURL("src/welcome/index.html"),
     });
   }
-  // Auto-update applied (version changed) → show what's new. Fires only on a
-  // real version change, not on a plain dev `runtime.reload()`.
+  // Auto-update applied → show what's new. CAVEAT: Chrome fires onInstalled
+  // with reason "update" on EVERY reload of an unpacked extension and on every
+  // `runtime.reload()` — even when the version is unchanged (e.g. the reload
+  // button in chrome://extensions, or our dev WS auto-reload). So `reason ===
+  // "update"` alone is NOT a real version bump. Gate on the version actually
+  // changing: only open the changelog when previousVersion differs from the
+  // now-installed version. previousVersion is absent/equal on a plain reload.
   else if (details.reason === "update") {
-    void chrome.tabs.create({ url: CHANGELOG_URL });
+    const current = chrome.runtime.getManifest().version;
+    if (details.previousVersion && details.previousVersion !== current) {
+      void chrome.tabs.create({ url: CHANGELOG_URL });
+    }
   }
 });
 
