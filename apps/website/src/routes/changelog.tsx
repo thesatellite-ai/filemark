@@ -46,6 +46,17 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.7",
+    date: "2026-06-29",
+    tag: "stability & rendering",
+    notes: [
+      "Fix: code-heavy Markdown (large source files with syntax-highlighted blocks) no longer freezes the viewer while it renders",
+      "Fix: docs that embed charts, datagrids, or status chips now render reliably without hydration glitches",
+      "Fix: the changelog tab no longer reopens every time the extension is reloaded — it shows only on a real version update",
+      "Under the hood: refreshed the rendering and build stack to the latest versions for speed and stability",
+    ],
+  },
+  {
     version: "0.1.6",
     date: "2026-06-26",
     tag: "notes fix",
