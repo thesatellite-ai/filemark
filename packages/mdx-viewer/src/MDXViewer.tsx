@@ -104,6 +104,28 @@ interface TocItem {
   depth: number;
 }
 
+// Phrasing (inline) HTML elements that are legal children of a <p>. Our
+// block-level components (<chart>, <datagrid>, <kanban>, <callout>, …) arrive
+// as raw HTML and render <div>s; when one sits alone on a line, remark wraps it
+// in a paragraph, so react-markdown emits <div> inside <p> — invalid HTML that
+// trips React's hydration ("<div> cannot be a descendant of <p>"). The custom
+// `p` renderer below detects a non-phrasing child and drops the <p> wrapper.
+const PHRASING_TAGS = new Set([
+  "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn", "em",
+  "i", "kbd", "mark", "q", "rp", "rt", "ruby", "s", "samp", "small", "span",
+  "strong", "sub", "sup", "time", "u", "var", "wbr", "img", "picture", "del",
+  "ins", "label", "button", "output", "svg", "footnote", "badge", "sparkline",
+  "define",
+  // NOTE: docstatus is intentionally NOT here — <DocStatus> renders an
+  // inline-flex *div*, so a standalone <DocStatus> wrapped in a remark <p>
+  // would stay a <div>-in-<p> (hydration error). Treat it as block so the
+  // custom `p` below unwraps it. Only span/svg-rooted components belong here.
+]);
+
+interface ParaNode {
+  children?: Array<{ type: string; tagName?: string }>;
+}
+
 export function MDXViewer(props: ViewerProps) {
   const { content, file, storage, assets, onNavigate } = props;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -136,6 +158,18 @@ export function MDXViewer(props: ViewerProps) {
   const components = useMemo(
     () =>
       ({
+        // Drop the <p> wrapper when a paragraph actually holds a block-level
+        // component (raw-HTML <chart>/<datagrid>/etc. → <div>), so we don't emit
+        // invalid <div>-in-<p> and trigger hydration errors. See PHRASING_TAGS.
+        p: ({ node, children }: { node?: ParaNode; children?: React.ReactNode }) => {
+          const hasBlockChild = node?.children?.some(
+            (c) =>
+              c.type === "element" &&
+              c.tagName !== undefined &&
+              !PHRASING_TAGS.has(c.tagName),
+          );
+          return hasBlockChild ? <>{children}</> : <p>{children}</p>;
+        },
         // Built-in MDX-style components (via HTML tags thanks to rehype-raw)
         callout: Callout,
         tabs: Tabs,
