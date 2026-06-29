@@ -31,15 +31,15 @@
     "@filemark/datagrid": "workspace:*",
     "@filemark/kanban": "workspace:*",
     "@filemark/tasks": "workspace:*",
-    "@pierre/trees": "1.0.0-beta.3",
+    "@pierre/trees": "1.0.0-beta.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "db-schema-toolkit": "^1.0.0",
-    "katex": "^0.16.11",
+    "katex": "^0.17.0",
     "markmap-common": "^0.18.9",
     "markmap-lib": "^0.18.12",
     "markmap-view": "^0.18.12",
-    "mermaid": "^11.14.0",
+    "mermaid": "^11.16.0",
     "react-markdown": "^9.0.1",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",
@@ -49,14 +49,14 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "shiki": "^4.3.0",
-    "tailwind-merge": "^3.5.0",
-    "yaml": "^2.8.3"
+    "tailwind-merge": "^3.6.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0"
   }
