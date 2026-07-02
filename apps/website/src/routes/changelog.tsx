@@ -46,6 +46,17 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.8",
+    date: "2026-07-02",
+    tag: "GitHub preview",
+    notes: [
+      "New: GitHub preview mode — see any Markdown file exactly as it renders on GitHub (matching font, spacing, code blocks, lists, and column width). Toggle it from the toolbar (also available as a tab in the web playground)",
+      "GitHub preview remembers its state — turn it on once and every file opens that way until you turn it off",
+      "Fix: opening a local Markdown file no longer flashes the raw text first — you get a brief loader, then the rendered doc",
+      "Under the hood: the GitHub-preview styles load only when you actually use the mode, so they add no weight otherwise",
+    ],
+  },
+  {
     version: "0.1.7",
     date: "2026-06-29",
     tag: "stability & rendering",
