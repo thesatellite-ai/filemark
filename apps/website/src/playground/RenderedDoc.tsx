@@ -44,8 +44,9 @@ export function GithubDoc({
 }) {
   return (
     // No horizontal padding — GithubMarkdown's `.markdown-body` owns the exact
-    // GitHub column width (902px box, 32px inline padding).
-    <div className="py-6">
+    // GitHub column width. github.css uses var(--fv-content-width, 902px); the
+    // playground has no width control, so pin it to GitHub's 902px column.
+    <div className="py-6" style={{ ["--fv-content-width" as string]: "902px" }}>
       <GithubMarkdown
         content={content}
         file={{ id: fileId, name, ext: "md" }}

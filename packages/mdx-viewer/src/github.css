@@ -1404,7 +1404,10 @@
  * the Viewer/GithubDoc wrappers. Keep this block on regen. */
 .markdown-body {
   box-sizing: border-box;
-  max-width: 902px;
+  /* Honor filemark's content-width control (the one reading pref that makes
+   * sense here — it's layout, not typography). Falls back to GitHub's 902px
+   * column when the host sets no --fv-content-width. */
+  max-width: var(--fv-content-width, 902px);
   margin-inline: auto;
   padding-inline: 32px;
 }

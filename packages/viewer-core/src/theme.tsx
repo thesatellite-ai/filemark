@@ -24,6 +24,12 @@ export interface ThemeSettings {
   fontSize: number;
   lineHeight: number;
   contentWidth: number;
+  /**
+   * Content-column width for GitHub preview mode. Kept SEPARATE from
+   * `contentWidth` so GitHub mode defaults to (and resets to) GitHub's own
+   * column while the normal reading width stays independent.
+   */
+  githubWidth: number;
   fontFamily: "sans" | "serif" | "mono";
 }
 
@@ -32,6 +38,7 @@ export const DEFAULT_THEME: ThemeSettings = {
   fontSize: 16,
   lineHeight: 1.65,
   contentWidth: 760,
+  githubWidth: 902,
   fontFamily: "sans",
 };
 

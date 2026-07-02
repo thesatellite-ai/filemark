@@ -93,13 +93,19 @@ export function ThemePopover({ children }: { children: ReactNode }) {
   const theme = useLibrary((s) => s.theme);
   const setTheme = useLibrary((s) => s.setTheme);
   const resetTheme = useLibrary((s) => s.resetTheme);
+  // GitHub preview locks typography to GitHub's own (font/size/line-height are
+  // fixed to match github.com). Hide those controls in that mode; only the
+  // content-width control still applies (it drives --fv-content-width, which
+  // github.css honors).
+  const isGithub = useLibrary((s) => s.viewMode) === "github";
 
   const isDefault =
     theme.mode === DEFAULT_THEME.mode &&
     theme.fontFamily === DEFAULT_THEME.fontFamily &&
     theme.fontSize === DEFAULT_THEME.fontSize &&
     theme.lineHeight === DEFAULT_THEME.lineHeight &&
-    theme.contentWidth === DEFAULT_THEME.contentWidth;
+    theme.contentWidth === DEFAULT_THEME.contentWidth &&
+    theme.githubWidth === DEFAULT_THEME.githubWidth;
 
   return (
     <Popover>
@@ -120,55 +126,75 @@ export function ThemePopover({ children }: { children: ReactNode }) {
 
           <Separator />
 
-          <div className="space-y-1.5">
-            <Label>Font</Label>
-            <Segmented
-              options={FONTS}
-              value={theme.fontFamily}
-              onChange={(f) => setTheme({ fontFamily: f })}
-            />
-          </div>
+          {/* Font family / size / line-height are locked to GitHub's own in
+              GitHub preview mode, so hide them there — only Width still applies. */}
+          {!isGithub && (
+            <>
+              <div className="space-y-1.5">
+                <Label>Font</Label>
+                <Segmented
+                  options={FONTS}
+                  value={theme.fontFamily}
+                  onChange={(f) => setTheme({ fontFamily: f })}
+                />
+              </div>
 
-          <SliderRow
-            label="Size"
-            value={theme.fontSize}
-            unit="px"
-            min={12}
-            max={22}
-            step={1}
-            onChange={(v) => setTheme({ fontSize: v })}
-            onReset={
-              theme.fontSize !== DEFAULT_THEME.fontSize
-                ? () => setTheme({ fontSize: DEFAULT_THEME.fontSize })
-                : undefined
-            }
-          />
-          <SliderRow
-            label="Line height"
-            value={theme.lineHeight}
-            min={1.3}
-            max={2}
-            step={0.05}
-            formatter={(v) => v.toFixed(2)}
-            onChange={(v) => setTheme({ lineHeight: v })}
-            onReset={
-              theme.lineHeight !== DEFAULT_THEME.lineHeight
-                ? () => setTheme({ lineHeight: DEFAULT_THEME.lineHeight })
-                : undefined
-            }
-          />
+              <SliderRow
+                label="Size"
+                value={theme.fontSize}
+                unit="px"
+                min={12}
+                max={22}
+                step={1}
+                onChange={(v) => setTheme({ fontSize: v })}
+                onReset={
+                  theme.fontSize !== DEFAULT_THEME.fontSize
+                    ? () => setTheme({ fontSize: DEFAULT_THEME.fontSize })
+                    : undefined
+                }
+              />
+              <SliderRow
+                label="Line height"
+                value={theme.lineHeight}
+                min={1.3}
+                max={2}
+                step={0.05}
+                formatter={(v) => v.toFixed(2)}
+                onChange={(v) => setTheme({ lineHeight: v })}
+                onReset={
+                  theme.lineHeight !== DEFAULT_THEME.lineHeight
+                    ? () => setTheme({ lineHeight: DEFAULT_THEME.lineHeight })
+                    : undefined
+                }
+              />
+            </>
+          )}
+          {isGithub && (
+            <p className="text-muted-foreground text-[11px] leading-snug">
+              Font &amp; spacing match GitHub in preview mode.
+            </p>
+          )}
+          {/* Width applies in both modes, but GitHub mode has its own value
+              (githubWidth, default = GitHub's 902px column) so it defaults/resets
+              to GitHub's width, independent of the normal reading width. */}
           <SliderRow
             label="Width"
-            value={theme.contentWidth}
+            value={isGithub ? theme.githubWidth : theme.contentWidth}
             unit="px"
             min={560}
             max={2400}
             step={40}
-            onChange={(v) => setTheme({ contentWidth: v })}
+            onChange={(v) =>
+              setTheme(isGithub ? { githubWidth: v } : { contentWidth: v })
+            }
             onReset={
-              theme.contentWidth !== DEFAULT_THEME.contentWidth
-                ? () => setTheme({ contentWidth: DEFAULT_THEME.contentWidth })
-                : undefined
+              isGithub
+                ? theme.githubWidth !== DEFAULT_THEME.githubWidth
+                  ? () => setTheme({ githubWidth: DEFAULT_THEME.githubWidth })
+                  : undefined
+                : theme.contentWidth !== DEFAULT_THEME.contentWidth
+                  ? () => setTheme({ contentWidth: DEFAULT_THEME.contentWidth })
+                  : undefined
             }
           />
 

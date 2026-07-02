@@ -21,6 +21,7 @@ import { useSettings } from "../settings";
 
 export function Viewer() {
   const activeId = useLibrary((s) => s.activeFileId);
+  const githubWidth = useLibrary((s) => s.theme.githubWidth);
   const file = useLibrary((s) => (activeId ? s.files[activeId] : null));
   const folder = useLibrary((s) =>
     file?.folderId ? s.folders[file.folderId] : null
@@ -434,10 +435,15 @@ export function Viewer() {
   // fall through to their normal renderer below.
   if (viewMode === "github" && isMarkdown) {
     // No horizontal padding here — GithubMarkdown's `.markdown-body` owns the
-    // exact GitHub column width (902px box, 32px inline padding). Adding px-*
-    // here would push the box past GitHub's real width.
+    // exact GitHub column width (github.css: max-width var(--fv-content-width),
+    // 32px inline padding). We override --fv-content-width with the SEPARATE
+    // githubWidth setting (default 902) so GitHub mode defaults to GitHub's
+    // column, independent of the normal reading width.
     return (
-      <div className="pb-16 pt-8">
+      <div
+        className="pb-16 pt-8"
+        style={{ ["--fv-content-width" as string]: `${githubWidth}px` }}
+      >
         <GithubMarkdown {...rendererProps} />
       </div>
     );
