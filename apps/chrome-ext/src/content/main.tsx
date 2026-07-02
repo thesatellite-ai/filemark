@@ -34,6 +34,10 @@ setInjectMode(true);
 // stylesheet links from chrome-extension:// would inherit the parent
 // document's CSP and may not load reliably.
 import filemarkBaseCss from "@filemark/mdx/styles.css?inline";
+// GitHub-flavored preview styling — REQUIRED here too. The inject viewer mounts
+// the full Shell (incl. the GitHub view-mode toggle), so without this the
+// GitHub mode renders an unstyled `.markdown-body` (no font/width/spacing).
+import githubCss from "@filemark/mdx/github.css?inline";
 import shellCss from "../styles/index.css?inline";
 import katexCss from "katex/dist/katex.min.css?inline";
 
@@ -183,10 +187,16 @@ try {
   // IDB — is extension-global and survives across origins and sandboxed pages.
   void useLibrary.getState().hydrateTheme();
 
+  // Restore the persisted view mode too, so if the user turned on GitHub (or
+  // raw) preview it applies to every injected file:// doc they open next.
+  void useLibrary.getState().hydrateViewMode();
+
   // Inject CSS into <head> (safer than replacing — keep host meta tags).
   const style = document.createElement("style");
   style.setAttribute("data-filemark", "css");
-  style.textContent = [filemarkBaseCss, katexCss, shellCss].join("\n\n");
+  style.textContent = [filemarkBaseCss, githubCss, katexCss, shellCss].join(
+    "\n\n",
+  );
   document.head.appendChild(style);
 
   // Replace page chrome with a full-viewport root. Shell's flex layout

@@ -4,7 +4,8 @@ import { defineConfig } from "tsup";
 // would be "injected" into a JS file, which isn't what we want for a
 // themable stylesheet shipped alongside the package). So we copy
 // src/styles.css → dist/styles.css via onSuccess. Consumers import it
-// explicitly: `import "@filemark/mdx/styles.css"`.
+// explicitly: `import "@filemark/mdx/styles.css"`. Same for the GitHub-preview
+// sheet (github.css → @filemark/mdx/github.css), loaded only in GitHub mode.
 export default defineConfig({
   entry: ["src/index.ts"],
   format: ["esm"],
@@ -34,5 +35,6 @@ export default defineConfig({
   ],
   target: "es2022",
   splitting: false,
-  onSuccess: "cp src/styles.css dist/styles.css",
+  onSuccess:
+    "cp src/styles.css dist/styles.css && cp src/github.css dist/github.css",
 });

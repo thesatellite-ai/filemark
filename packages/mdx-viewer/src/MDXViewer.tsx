@@ -161,14 +161,27 @@ export function MDXViewer(props: ViewerProps) {
         // Drop the <p> wrapper when a paragraph actually holds a block-level
         // component (raw-HTML <chart>/<datagrid>/etc. → <div>), so we don't emit
         // invalid <div>-in-<p> and trigger hydration errors. See PHRASING_TAGS.
-        p: ({ node, children }: { node?: ParaNode; children?: React.ReactNode }) => {
+        //
+        // IMPORTANT: forward `...rest` onto the rebuilt <p>. react-markdown
+        // passes through raw-HTML attributes (align, style, className, …); if we
+        // only render `<p>{children}</p>` we silently drop them — e.g.
+        // `<p align="center"><img/></p>` (a centered README logo) would render
+        // left-aligned. Spreading rest preserves the authored HTML.
+        p: ({
+          node,
+          children,
+          ...rest
+        }: {
+          node?: ParaNode;
+          children?: React.ReactNode;
+        } & React.HTMLAttributes<HTMLParagraphElement>) => {
           const hasBlockChild = node?.children?.some(
             (c) =>
               c.type === "element" &&
               c.tagName !== undefined &&
               !PHRASING_TAGS.has(c.tagName),
           );
-          return hasBlockChild ? <>{children}</> : <p>{children}</p>;
+          return hasBlockChild ? <>{children}</> : <p {...rest}>{children}</p>;
         },
         // Built-in MDX-style components (via HTML tags thanks to rehype-raw)
         callout: Callout,

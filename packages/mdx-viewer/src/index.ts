@@ -1,4 +1,5 @@
 export { MDXViewer } from "./MDXViewer";
+export { GithubMarkdown } from "./GithubMarkdown";
 export { Callout } from "./components/Callout";
 export { Tabs, Tab } from "./components/Tabs";
 export { Details } from "./components/Details";

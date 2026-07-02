@@ -8,7 +8,12 @@ import { createFSAAssetResolver } from "../adapters/fsaAssets";
 import { sessionHandles } from "../sessionHandles";
 import { isInjectMode } from "../urlSync";
 import { readFileAsText } from "../fs";
-import { MDXViewer, BacklinksProvider, type Backlink } from "@filemark/mdx";
+import {
+  MDXViewer,
+  GithubMarkdown,
+  BacklinksProvider,
+  type Backlink,
+} from "@filemark/mdx";
 import { WELCOME_DOC } from "../welcomeDoc";
 import { AlertCircle } from "lucide-react";
 import { RawView } from "./RawView";
@@ -414,6 +419,8 @@ export function Viewer() {
   }
 
   const isJson = file.ext === "json" || file.ext === "jsonc";
+  const isMarkdown =
+    file.ext === "md" || file.ext === "mdx" || file.ext === "markdown";
   const rendererProps = {
     content,
     file: mdxFile!,
@@ -421,6 +428,20 @@ export function Viewer() {
     assets,
     ...(isJson ? { options: jsonSettings } : {}),
   };
+
+  // GitHub-flavored preview: plain GFM the way GitHub renders a .md in a repo.
+  // Markdown files only — the mode is meaningless for json/csv/schema, which
+  // fall through to their normal renderer below.
+  if (viewMode === "github" && isMarkdown) {
+    // No horizontal padding here — GithubMarkdown's `.markdown-body` owns the
+    // exact GitHub column width (902px box, 32px inline padding). Adding px-*
+    // here would push the box past GitHub's real width.
+    return (
+      <div className="pb-16 pt-8">
+        <GithubMarkdown {...rendererProps} />
+      </div>
+    );
+  }
 
   // `data-toc` gates the TOC rendered inside `@filemark/mdx`. The package
   // renders the TOC unconditionally; toggling this attribute on the wrapper

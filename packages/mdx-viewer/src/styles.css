@@ -157,6 +157,16 @@
 }
 .fv-mdx-body img {
   max-width: 100%;
+  /* Inline so a row of images (e.g. shield badges in a single centered
+   * paragraph) flows horizontally like GitHub, instead of stacking — Tailwind
+   * Preflight's `img { display: block }` would otherwise break badge rows. A
+   * lone image still renders on its own line (it's the only inline content). */
+  display: inline-block;
+}
+/* Bordered "figure" treatment only for a lone image on its own line. Badge
+ * rows (multiple <img> in one paragraph) are not :only-child, so they stay
+ * borderless + inline — matching how they render on GitHub. */
+.fv-mdx-body img:only-child {
   border-radius: var(--fm-image-radius, var(--radius-md));
   border: var(--fm-image-border, 1px solid var(--border));
 }

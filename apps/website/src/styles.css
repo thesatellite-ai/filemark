@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@filemark/mdx/styles.css";
+/* GitHub-flavored preview (github-markdown-css, scoped to .markdown-body and
+   bound to [data-theme]). Used by the playground's "GitHub" tab. */
+@import "@filemark/mdx/github.css";
 /* KaTeX stylesheet — REQUIRED. rehype-katex emits two layers per formula:
    the visual `.katex-html` and a `.katex-mathml` accessibility layer that
    this CSS visually hides (clip). Without it the MathML leaks as broken

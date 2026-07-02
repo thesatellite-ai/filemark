@@ -5,6 +5,7 @@ import {
   Eye,
   FileCode2,
   FolderOpen,
+  GitBranch,
   MoreHorizontal,
   Share2,
   Sparkles,
@@ -144,6 +145,28 @@ export function FileActions({ file }: { file: LibraryFile }) {
         >
           {viewMode === "raw" ? "View rendered" : "View raw source"}
         </ActionRow>
+
+        {/* GitHub-flavored preview — markdown files only. Shows how the doc
+            renders on GitHub (plain GFM, no filemark components). */}
+        {isMarkdown && (
+          <ActionRow
+            icon={
+              viewMode === "github" ? (
+                <Sparkles className="size-4" />
+              ) : (
+                <GitBranch className="size-4" />
+              )
+            }
+            onClick={() => {
+              setViewMode(viewMode === "github" ? "rendered" : "github");
+              close();
+            }}
+          >
+            {viewMode === "github"
+              ? "Exit GitHub preview"
+              : "GitHub preview"}
+          </ActionRow>
+        )}
 
         <Separator className="my-1" />
 

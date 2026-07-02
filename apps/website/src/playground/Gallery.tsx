@@ -18,10 +18,10 @@ import {
   Link2,
 } from "lucide-react";
 import { getExample, groupedExamples } from "./examples";
-import { RenderedDoc } from "./RenderedDoc";
+import { RenderedDoc, GithubDoc } from "./RenderedDoc";
 import { MonacoPane } from "./MonacoPane";
 
-type ViewMode = "rendered" | "raw";
+type ViewMode = "rendered" | "raw" | "github";
 
 // Section → icon mapping. Fallback to FileText keeps the layout stable
 // for any section name we haven't styled yet.
@@ -224,6 +224,14 @@ export function Gallery({
                 >
                   Raw
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("github")}
+                  className={tabButton(mode === "github")}
+                  title="Preview how this renders on GitHub (plain GFM, no filemark components)"
+                >
+                  GitHub
+                </button>
               </div>
               <button
                 type="button"
@@ -248,19 +256,35 @@ export function Gallery({
             />
           ) : showingUser && userDoc ? (
             <div className="h-full overflow-auto">
-              <RenderedDoc
-                content={userDoc.content}
-                fileId="user-doc"
-                name={userDoc.name}
-              />
+              {mode === "github" ? (
+                <GithubDoc
+                  content={userDoc.content}
+                  fileId="user-doc"
+                  name={userDoc.name}
+                />
+              ) : (
+                <RenderedDoc
+                  content={userDoc.content}
+                  fileId="user-doc"
+                  name={userDoc.name}
+                />
+              )}
             </div>
           ) : activeExample ? (
             <div className="h-full overflow-auto">
-              <RenderedDoc
-                content={activeExample.content}
-                fileId={activeExample.id}
-                name={`${activeExample.id}.md`}
-              />
+              {mode === "github" ? (
+                <GithubDoc
+                  content={activeExample.content}
+                  fileId={activeExample.id}
+                  name={`${activeExample.id}.md`}
+                />
+              ) : (
+                <RenderedDoc
+                  content={activeExample.content}
+                  fileId={activeExample.id}
+                  name={`${activeExample.id}.md`}
+                />
+              )}
             </div>
           ) : (
             <div className="p-6 text-muted-foreground">Select an example.</div>

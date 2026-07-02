@@ -70,8 +70,14 @@ export interface LibraryState {
   /** Incremented whenever live FSA handles come online or go away.
    *  Subscribers (Viewer, Sidebar) include this in their deps to retry. */
   sessionRev: number;
-  /** Rendered (MDX) vs raw (syntax-highlighted source) view of the active file. */
-  viewMode: "rendered" | "raw";
+  /**
+   * How the active file is rendered:
+   *  - "rendered": filemark's rich MDX viewer (default)
+   *  - "raw": syntax-highlighted source
+   *  - "github": GitHub-flavored preview (plain GFM, github-markdown-css) —
+   *    markdown files only; falls back to "rendered" for other types.
+   */
+  viewMode: "rendered" | "raw" | "github";
   /** Hides sidebar + topbar + TOC so the viewer fills the window. */
   fullscreen: boolean;
   /** Reading mode — hides Sidebar + TaskPanel; keeps TopBar + TabStrip.
@@ -141,6 +147,9 @@ export interface LibraryState {
   setTheme(patch: Partial<ThemeSettings>): Promise<void>;
   resetTheme(): Promise<void>;
   hydrateTheme(): Promise<void>;
+  /** Restore the persisted view mode (rendered/raw/github) — used by the
+   *  injected file:// viewer, which seeds state directly and skips full hydrate. */
+  hydrateViewMode(): Promise<void>;
   toggleSidebar(): void;
   setSidebarWidth(px: number): void;
   toggleToc(): void;
@@ -169,7 +178,7 @@ export interface LibraryState {
    *  expands every parent folder along the path, and bumps revealRequest
    *  so Sidebar can scroll the row into view + flash. */
   revealActiveInSidebar(): void;
-  setViewMode(mode: "rendered" | "raw"): void;
+  setViewMode(mode: "rendered" | "raw" | "github"): void;
   removeFolder(folderId: string): Promise<void>;
   removeFile(fileId: string): Promise<void>;
   clearAll(): Promise<void>;
@@ -244,6 +253,7 @@ interface UIPrefs {
   sidebarSections?: Record<string, boolean>;
   sidebarTreeCollapsed?: Record<string, boolean>;
   tasksOpen?: boolean;
+  viewMode?: "rendered" | "raw" | "github";
 }
 
 function persistUI(s: {
@@ -257,6 +267,7 @@ function persistUI(s: {
   sidebarSections: Record<string, boolean>;
   sidebarTreeCollapsed: Record<string, boolean>;
   tasksOpen: boolean;
+  viewMode: "rendered" | "raw" | "github";
 }) {
   idbStorage
     .set(KEYS.ui, {
@@ -270,6 +281,7 @@ function persistUI(s: {
       sidebarSections: s.sidebarSections,
       sidebarTreeCollapsed: s.sidebarTreeCollapsed,
       tasksOpen: s.tasksOpen,
+      viewMode: s.viewMode,
     })
     .catch(() => {});
 }
@@ -361,6 +373,9 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       sidebarSections: ui?.sidebarSections ?? {},
       sidebarTreeCollapsed: ui?.sidebarTreeCollapsed ?? {},
       tasksOpen: ui?.tasksOpen ?? false,
+      // Persisted view mode — so turning on GitHub (or raw) preview sticks
+      // across reloads and applies to every file opened next.
+      viewMode: ui?.viewMode ?? "rendered",
       hydrated: true,
     });
   },
@@ -712,6 +727,11 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     if (stored) set({ theme: { ...DEFAULT_THEME, ...stored } });
   },
 
+  async hydrateViewMode() {
+    const ui = await idbStorage.get<UIPrefs>(KEYS.ui).catch(() => null);
+    if (ui?.viewMode) set({ viewMode: ui.viewMode });
+  },
+
   toggleSidebar() {
     set((s) => ({ sidebarOpen: !s.sidebarOpen }));
     persistUI(get());
@@ -833,6 +853,9 @@ export const useLibrary = create<LibraryState>((set, get) => ({
 
   setViewMode(mode) {
     set({ viewMode: mode });
+    // Persist so the chosen mode (esp. GitHub preview) sticks across reloads
+    // and applies to every file opened afterwards.
+    persistUI(get());
   },
 
   async removeFolder(folderId) {

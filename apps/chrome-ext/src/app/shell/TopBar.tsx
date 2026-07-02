@@ -15,6 +15,7 @@ import {
   ListTodo,
   StickyNote,
   History,
+  GitBranch,
   Rocket,
   LifeBuoy,
 } from "lucide-react";
@@ -78,6 +79,8 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
   const { tracked: revisionTracked, toggleTracked: toggleRevision } = useRevision();
   const toggleReadingMode = useLibrary((s) => s.toggleReadingMode);
   const readingMode = useLibrary((s) => s.readingMode);
+  const viewMode = useLibrary((s) => s.viewMode);
+  const setViewMode = useLibrary((s) => s.setViewMode);
   const revealActiveInSidebar = useLibrary((s) => s.revealActiveInSidebar);
   const tasksOpen = useLibrary((s) => s.tasksOpen);
   const toggleAutoRefresh = useLibrary((s) => s.toggleAutoRefresh);
@@ -291,6 +294,36 @@ export function TopBar({ onOpenSearch }: { onOpenSearch: () => void }) {
             <Crosshair className="size-4" />
           </IconBtn>
         )}
+        {/* GitHub-flavored preview toggle — markdown files only. One click to
+            see the doc as GitHub would render it (plain GFM, no filemark
+            components); click again to return to the rich view. */}
+        {activeFile &&
+          (activeFile.ext === "md" ||
+            activeFile.ext === "mdx" ||
+            activeFile.ext === "markdown") && (
+            <IconBtn
+              onClick={() =>
+                setViewMode(viewMode === "github" ? "rendered" : "github")
+              }
+              title={
+                viewMode === "github"
+                  ? "Exit GitHub preview — back to the rich Filemark view"
+                  : "GitHub preview — how this renders on GitHub"
+              }
+              aria-label="GitHub preview"
+              aria-pressed={viewMode === "github"}
+              className={cn(
+                viewMode === "github" && "bg-accent text-accent-foreground",
+              )}
+            >
+              <GitBranch
+                className={cn(
+                  "size-4",
+                  viewMode === "github" && "text-emerald-500",
+                )}
+              />
+            </IconBtn>
+          )}
         {/* Reading mode only hides the sidebar + tasks panel — both already
             off in the injected single-file viewer, so the toggle is a no-op
             there. Hide it in inject (like the other library-only controls). */}
