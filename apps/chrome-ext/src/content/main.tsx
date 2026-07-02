@@ -34,10 +34,11 @@ setInjectMode(true);
 // stylesheet links from chrome-extension:// would inherit the parent
 // document's CSP and may not load reliably.
 import filemarkBaseCss from "@filemark/mdx/styles.css?inline";
-// GitHub-flavored preview styling — REQUIRED here too. The inject viewer mounts
-// the full Shell (incl. the GitHub view-mode toggle), so without this the
-// GitHub mode renders an unstyled `.markdown-body` (no font/width/spacing).
-import githubCss from "@filemark/mdx/github.css?inline";
+// NOTE: GitHub-preview styling (@filemark/mdx/github.css, ~220KB incl. the
+// bundled font) is NOT injected here up front. The inject viewer mounts the full
+// Shell (incl. the GitHub toggle), but the CSS loads on demand the first time
+// GitHub mode is shown — see app/githubCss.ts (ensureGithubCss), which the
+// shared Viewer calls. Keeps the per-file injection lean for the common case.
 import shellCss from "../styles/index.css?inline";
 import katexCss from "katex/dist/katex.min.css?inline";
 
@@ -120,6 +121,16 @@ try {
   /* sandboxed-page denial: defaults will apply */
 }
 
+// Reveal the raw-content-flash curtain (public/curtain.js) — remove its hide-style +
+// spinner overlay by id. Idempotent; safe to call when no curtain is present
+// (http pages, unsupported types). MUST run on every path where we bail out of
+// the takeover, else the page stays hidden until curtain.js's safety timeout.
+// IDs must match public/curtain.js.
+function revealCurtain() {
+  document.getElementById("fv-curtain-style")?.remove();
+  document.getElementById("fv-curtain-overlay")?.remove();
+}
+
 (async () => {
   const url = location.href;
   const ext = extOf(url);
@@ -131,19 +142,33 @@ try {
   if (
     document.contentType === "text/html" ||
     document.contentType === "application/xhtml+xml"
-  )
+  ) {
+    revealCurtain();
     return;
+  }
   const normalizedExt = ext === "markdown" ? "md" : ext;
-  if (!(await isEnabledFormat(ext))) return;
+  if (!(await isEnabledFormat(ext))) {
+    revealCurtain();
+    return;
+  }
 
   // Per-site rules — backup gate (the service worker is the primary one).
-  if (!shouldRun(url, await readSiteRules())) return;
+  if (!shouldRun(url, await readSiteRules())) {
+    revealCurtain();
+    return;
+  }
 
-  if (document.documentElement.getAttribute(SENTINEL) === url) return;
+  if (document.documentElement.getAttribute(SENTINEL) === url) {
+    revealCurtain();
+    return;
+  }
   document.documentElement.setAttribute(SENTINEL, url);
 
   const content = await readContent(url);
-  if (!content.trim()) return;
+  if (!content.trim()) {
+    revealCurtain();
+    return;
+  }
 
   const name = decodeURIComponent(url.split("/").pop()?.split("?")[0] ?? `file.${normalizedExt}`);
   const fileId = `inject:${url}`;
@@ -194,9 +219,7 @@ try {
   // Inject CSS into <head> (safer than replacing — keep host meta tags).
   const style = document.createElement("style");
   style.setAttribute("data-filemark", "css");
-  style.textContent = [filemarkBaseCss, githubCss, katexCss, shellCss].join(
-    "\n\n",
-  );
+  style.textContent = [filemarkBaseCss, katexCss, shellCss].join("\n\n");
   document.head.appendChild(style);
 
   // Replace page chrome with a full-viewport root. Shell's flex layout
@@ -220,4 +243,9 @@ try {
       <App />
     </StrictMode>,
   );
+
+  // Reveal the curtain only AFTER the viewer has painted — two rAFs lets React
+  // commit + the browser paint the first frame, so we swap the spinner straight
+  // to the rendered doc with no raw flash in between.
+  requestAnimationFrame(() => requestAnimationFrame(revealCurtain));
 })();

@@ -285,9 +285,21 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   if (isFile && !(await isFileAccessAllowed())) return;
   if (isHttp && !(await hasRemotePermission())) return;
 
+  // From here the page is curtain-eligible: file:// + supported ext + file
+  // access, so public/curtain.js has already hidden it at document_start. Any
+  // path that does NOT end in a successful inject must tell the curtain to
+  // reveal immediately — otherwise a skipped page stays blank until the
+  // curtain's safety timeout. (http:// has no curtain — file:// only match — so
+  // the signal is a harmless no-op there.)
+  const revealCurtain = () =>
+    void chrome.tabs.sendMessage(tabId, "fv-reveal").catch(() => {});
+
   // Per-site rules — skip/allow overlay (include wins, then exclude, then
   // default-run). Primary enforcement point: don't even inject when skipped.
-  if (!shouldRun(url, await readSiteRules())) return;
+  if (!shouldRun(url, await readSiteRules())) {
+    revealCurtain();
+    return;
+  }
 
   console.log("[Filemark] inject candidate:", { tabId, url });
   try {
@@ -298,6 +310,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
     console.log("[Filemark] inject OK:", url);
   } catch (e) {
     console.error("[Filemark] inject FAILED:", url, e);
+    // Inject failed → content/main.js will never run to reveal. Do it here.
+    revealCurtain();
   }
 });
 

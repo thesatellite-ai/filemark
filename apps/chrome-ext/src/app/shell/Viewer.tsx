@@ -18,6 +18,8 @@ import { WELCOME_DOC } from "../welcomeDoc";
 import { AlertCircle } from "lucide-react";
 import { RawView } from "./RawView";
 import { useSettings } from "../settings";
+import { ensureGithubCss, isGithubCssReady } from "../githubCss";
+import type { ViewerProps } from "@filemark/core";
 
 export function Viewer() {
   const activeId = useLibrary((s) => s.activeFileId);
@@ -434,19 +436,12 @@ export function Viewer() {
   // Markdown files only — the mode is meaningless for json/csv/schema, which
   // fall through to their normal renderer below.
   if (viewMode === "github" && isMarkdown) {
-    // No horizontal padding here — GithubMarkdown's `.markdown-body` owns the
-    // exact GitHub column width (github.css: max-width var(--fv-content-width),
-    // 32px inline padding). We override --fv-content-width with the SEPARATE
-    // githubWidth setting (default 902) so GitHub mode defaults to GitHub's
-    // column, independent of the normal reading width.
-    return (
-      <div
-        className="pb-16 pt-8"
-        style={{ ["--fv-content-width" as string]: `${githubWidth}px` }}
-      >
-        <GithubMarkdown {...rendererProps} />
-      </div>
-    );
+    // github.css (~220KB incl. the bundled font) loads ON DEMAND here — never on
+    // the default path — so sessions that never use GitHub preview don't pay for
+    // it. GithubView gates first paint on the stylesheet so there's no unstyled
+    // flash. `--fv-content-width` = the SEPARATE githubWidth setting (default
+    // 902) so GitHub mode uses GitHub's column, independent of reading width.
+    return <GithubView rendererProps={rendererProps} githubWidth={githubWidth} />;
   }
 
   // `data-toc` gates the TOC rendered inside `@filemark/mdx`. The package
@@ -458,6 +453,40 @@ export function Viewer() {
       <BacklinksProvider value={backlinksValue}>
         <Renderer {...rendererProps} />
       </BacklinksProvider>
+    </div>
+  );
+}
+
+/**
+ * GitHub-preview render, gated on the on-demand github.css load. Kept as its own
+ * component so the CSS-ready hook can run (hooks can't be called from Viewer's
+ * conditional return). Renders nothing until the stylesheet is injected —
+ * GithubMarkdown paints correctly on its first frame, no unstyled flash.
+ */
+function GithubView({
+  rendererProps,
+  githubWidth,
+}: {
+  rendererProps: ViewerProps;
+  githubWidth: number;
+}) {
+  const [ready, setReady] = useState(isGithubCssReady);
+  useEffect(() => {
+    let alive = true;
+    void ensureGithubCss().then(() => {
+      if (alive) setReady(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return (
+    <div
+      className="pb-16 pt-8"
+      style={{ ["--fv-content-width" as string]: `${githubWidth}px` }}
+    >
+      {ready ? <GithubMarkdown {...rendererProps} /> : null}
     </div>
   );
 }

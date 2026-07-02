@@ -5,9 +5,9 @@ import App from "./App";
 // + callout + TOC + frontmatter + mermaid/schema chrome). See
 // docsi/THEMING.md for the architecture + token catalog.
 import "@filemark/mdx/styles.css";
-// GitHub-flavored preview styling (github-markdown-css, bound to [data-theme]).
-// Loaded once; only applies inside `.markdown-body` when GitHub view mode is on.
-import "@filemark/mdx/github.css";
+// NOTE: GitHub-preview styling (@filemark/mdx/github.css, ~220KB incl. the
+// bundled font) is intentionally NOT imported here. It loads on demand the first
+// time GitHub mode is shown — see app/githubCss.ts (ensureGithubCss).
 import "../styles/index.css";
 // Sample themes — demonstrate the theming contract (docsi/THEMING.md).
 // Each file is a small html[data-theme="..."] override block. Remove
