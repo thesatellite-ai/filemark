@@ -46,6 +46,21 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.9",
+    date: "2026-07-27",
+    tag: "Table tools & offline folders",
+    notes: [
+      "New: copy any Markdown table to your clipboard — paste straight into Google Sheets or Excel (columns land in the right cells), or grab it as CSV or Markdown",
+      "New: expand any Markdown table to fullscreen for wide or long tables, then close with Esc",
+      "Tables now highlight the row under your cursor so it's easy to track across many columns",
+      "Fix: opening a folder no longer asks you to reconnect on every page reload — folder files are cached so they stay readable offline; reconnect is only needed to pick up on-disk changes",
+      "Sidebar: nested files and folders are now clearly indented with guide lines, so you can see what belongs to what at a glance",
+      "Sidebar: the whole file tree uses one consistent text size, and the per-folder root-path and filter inputs are tucked behind a toggle so they no longer eat space",
+      "Data tables sized from a ```csv block now shrink to fit their rows instead of leaving a tall empty gap",
+      "Default reading text size is now a touch smaller (14px) for a denser, more comfortable read — adjust it anytime from the theme menu",
+    ],
+  },
+  {
     version: "0.1.8",
     date: "2026-07-02",
     tag: "GitHub preview",
