@@ -7,21 +7,29 @@ import {
 } from "react";
 
 /**
- * Wraps a rendered markdown table with a horizontal-scroll container and
- * two hover-revealed chips:
+ * Wraps a rendered markdown table with a horizontal-scroll container and a
+ * hover-revealed toolbar of uniform square ICON buttons (labels live in each
+ * button's `data-tip` attribute, shown as a CSS hover tooltip):
  *
- *  ⚙ Options ▾  — per-table styling: density, sticky header, zebra,
- *                 column resize on/off.
- *  ⬇ Download ▾ — export the rendered table data as CSV / JSON / compact.
+ *  Copy     — copy the table to the clipboard as TSV (spreadsheet paste),
+ *             CSV, or Markdown. Flashes a check on success.
+ *  Options  — per-table styling: density, sticky header, zebra, column
+ *             resize, no-wrap.
+ *  Download — export the rendered table data as CSV / JSON / compact.
+ *  Expand   — blow the table up to a fixed fullscreen panel (Esc / ✕ closes).
  *
- * Table data is read from the DOM on download so the export mirrors
- * what the user sees — inline markdown like links, code, and formatting
- * flatten to their textContent. Header cells become JSON keys.
+ * Table data is read from the DOM on copy/download so the export mirrors what
+ * the user sees — inline markdown like links, code, and formatting flatten to
+ * their textContent. Header cells become JSON keys.
  *
- * Resize mode enables `table-layout: fixed`, snapshots each column's
- * current width, and draws drag handles on each th. Widths live in
- * component state for now (per-session, per-table). Wiring these into
- * StorageAdapter for persistence is a follow-on.
+ * Fullscreen keeps the SAME table DOM node — only the outer container's
+ * positioning class flips — so refs, resize handles, and the menus keep
+ * working while expanded.
+ *
+ * Resize mode enables `table-layout: fixed`, snapshots each column's current
+ * width, and draws drag handles on each th. Widths live in component state for
+ * now (per-session, per-table). Wiring these into StorageAdapter for
+ * persistence is a follow-on.
  */
 
 type Density = "compact" | "cozy" | "relaxed";
@@ -48,7 +56,31 @@ export function MDXTable(props: TableHTMLAttributes<HTMLTableElement>) {
   const [opts, setOpts] = useState<TableOpts>(DEFAULT_OPTS);
   const [dlOpen, setDlOpen] = useState(false);
   const [optsOpen, setOptsOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
   const [widths, setWidths] = useState<number[] | null>(null);
+  // Fullscreen expands the table to a fixed overlay covering the viewport so
+  // wide/long tables get room to breathe. Same DOM node — we only toggle a
+  // class on the outer container (no remount, so refs + resize handles keep
+  // working). `copied` briefly labels the Copy chip after a successful write.
+  const [fullscreen, setFullscreen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Esc exits fullscreen. Registered only while open so it never swallows Esc
+  // elsewhere. Body scroll is locked so the page behind doesn't scroll under
+  // the overlay.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [fullscreen]);
 
   // When resize mode flips on, snapshot the current column widths so the
   // user's starting point is exactly what they see. When it flips off,
@@ -137,6 +169,28 @@ export function MDXTable(props: TableHTMLAttributes<HTMLTableElement>) {
     const { headers, rows } = readTable();
     const data = rowsToObjects(headers, rows);
     doDownload(JSON.stringify(data), "table.min.json", "application/json");
+  };
+
+  // Copy the current table to the clipboard in a paste-target-appropriate
+  // format, then flash "Copied" on the chip for a beat. TSV is the default
+  // because spreadsheets (Google Sheets, Excel, Numbers) parse tab-separated
+  // rows into cells natively on paste — CSV pastes into a single cell.
+  const copyAs = async (format: "tsv" | "csv" | "md") => {
+    const { headers, rows } = readTable();
+    const text =
+      format === "tsv"
+        ? toTSV(headers, rows)
+        : format === "csv"
+          ? toCSV(headers, rows)
+          : toMarkdown(headers, rows);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard blocked (e.g. insecure context) — silently no-op */
+    }
+    setCopyOpen(false);
   };
 
   const setDensity = (d: Density) => setOpts((o) => ({ ...o, density: d }));
@@ -228,12 +282,35 @@ export function MDXTable(props: TableHTMLAttributes<HTMLTableElement>) {
   );
 
   return (
-    <div
-      ref={outerRef}
-      className="fv-mdx-table-outer"
-      data-density={opts.density}
-    >
-      <div className="fv-mdx-table-wrap">
+    <>
+      {/* Dim + click-catch behind the fullscreen panel. */}
+      {fullscreen && (
+        <div
+          className="fv-mdx-table-fs-backdrop"
+          onClick={() => setFullscreen(false)}
+          aria-hidden
+        />
+      )}
+      <div
+        ref={outerRef}
+        className={
+          "fv-mdx-table-outer" +
+          (fullscreen ? " fv-mdx-table-outer--fullscreen" : "")
+        }
+        data-density={opts.density}
+      >
+        {fullscreen && (
+          <button
+            type="button"
+            className="fv-mdx-table-fs-close"
+            onClick={() => setFullscreen(false)}
+            data-tip="Exit fullscreen (Esc)"
+            aria-label="Exit fullscreen"
+          >
+            <IconX />
+          </button>
+        )}
+        <div className="fv-mdx-table-wrap">
         <table ref={tableRef} className={tableClass} {...props} />
       </div>
 
@@ -252,6 +329,55 @@ export function MDXTable(props: TableHTMLAttributes<HTMLTableElement>) {
 
       <div className="fv-mdx-table-actions">
         <div className="fv-mdx-table-actions-row">
+          {/* Copy ------------------------------------------------- */}
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              className="fv-mdx-table-chip"
+              onClick={() => {
+                setCopyOpen((v) => !v);
+                setDlOpen(false);
+                setOptsOpen(false);
+              }}
+              data-tip={copied ? "Copied!" : "Copy for Sheets / CSV / Markdown"}
+              aria-label="Copy table to clipboard"
+            >
+              {copied ? <IconCheck /> : <IconCopy />}
+            </button>
+            {copyOpen && (
+              <>
+                <div
+                  className="fv-mdx-table-backdrop"
+                  onClick={() => setCopyOpen(false)}
+                  aria-hidden
+                />
+                <div className="fv-mdx-table-menu">
+                  <button
+                    type="button"
+                    className="fv-mdx-table-menu-item"
+                    onClick={() => copyAs("tsv")}
+                  >
+                    For Sheets (TSV)
+                  </button>
+                  <button
+                    type="button"
+                    className="fv-mdx-table-menu-item"
+                    onClick={() => copyAs("csv")}
+                  >
+                    CSV
+                  </button>
+                  <button
+                    type="button"
+                    className="fv-mdx-table-menu-item"
+                    onClick={() => copyAs("md")}
+                  >
+                    Markdown
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
           {/* Options ---------------------------------------------- */}
           <div style={{ position: "relative" }}>
             <button
@@ -261,10 +387,10 @@ export function MDXTable(props: TableHTMLAttributes<HTMLTableElement>) {
                 setOptsOpen((v) => !v);
                 setDlOpen(false);
               }}
-              title="Table options"
+              data-tip="Table options"
               aria-label="Table options"
             >
-              ⚙ Options
+              <IconGear />
             </button>
             {optsOpen && (
               <>
@@ -334,10 +460,10 @@ export function MDXTable(props: TableHTMLAttributes<HTMLTableElement>) {
                 setDlOpen((v) => !v);
                 setOptsOpen(false);
               }}
-              title="Download table"
+              data-tip="Download CSV / JSON"
               aria-label="Download table"
             >
-              ⬇ Download
+              <IconDownload />
             </button>
             {dlOpen && (
               <>
@@ -372,9 +498,26 @@ export function MDXTable(props: TableHTMLAttributes<HTMLTableElement>) {
               </>
             )}
           </div>
+
+          {/* Expand / fullscreen --------------------------------- */}
+          <button
+            type="button"
+            className="fv-mdx-table-chip"
+            onClick={() => {
+              setFullscreen((v) => !v);
+              setDlOpen(false);
+              setOptsOpen(false);
+              setCopyOpen(false);
+            }}
+            data-tip={fullscreen ? "Exit fullscreen (Esc)" : "Expand to fullscreen"}
+            aria-label={fullscreen ? "Exit fullscreen" : "Expand to fullscreen"}
+          >
+            {fullscreen ? <IconMinimize /> : <IconExpand />}
+          </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -415,6 +558,89 @@ function ToggleRow({
   );
 }
 
+// Inline SVG icons (this package ships no icon-library dependency — see the
+// note in FileTree.tsx). All are 14×14, stroke = currentColor, so they inherit
+// the chip's text colour and hover states. Kept minimal/uniform so every
+// toolbar button is the same visual weight.
+const ICON_SIZE = 14;
+function Svg({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
+function IconCopy() {
+  return (
+    <Svg>
+      <rect x="9" y="9" width="13" height="13" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </Svg>
+  );
+}
+function IconCheck() {
+  return (
+    <Svg>
+      <path d="M20 6 9 17l-5-5" />
+    </Svg>
+  );
+}
+function IconGear() {
+  return (
+    <Svg>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </Svg>
+  );
+}
+function IconDownload() {
+  return (
+    <Svg>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M12 15V3" />
+    </Svg>
+  );
+}
+function IconExpand() {
+  return (
+    <Svg>
+      <path d="M15 3h6v6" />
+      <path d="M9 21H3v-6" />
+      <path d="M21 3l-7 7" />
+      <path d="M3 21l7-7" />
+    </Svg>
+  );
+}
+function IconMinimize() {
+  return (
+    <Svg>
+      <path d="M4 14h6v6" />
+      <path d="M20 10h-6V4" />
+      <path d="M14 10l7-7" />
+      <path d="M3 21l7-7" />
+    </Svg>
+  );
+}
+function IconX() {
+  return (
+    <Svg>
+      <path d="M18 6 6 18" />
+      <path d="M6 6l12 12" />
+    </Svg>
+  );
+}
+
 function rowsToObjects(headers: string[], rows: string[][]) {
   return rows.map((r) =>
     Object.fromEntries(headers.map((h, i) => [h || `col${i + 1}`, r[i] ?? ""]))
@@ -428,4 +654,28 @@ function toCSV(headers: string[], rows: string[][]): string {
   const lines = [headers.map(esc).join(",")];
   for (const r of rows) lines.push(r.map(esc).join(","));
   return lines.join("\n");
+}
+
+/**
+ * Tab-separated values — the format spreadsheets expect on paste. A literal
+ * tab or newline inside a cell would break the row/column split, so we flatten
+ * both to a single space (spreadsheets have no in-cell escape for bare TSV).
+ */
+function toTSV(headers: string[], rows: string[][]): string {
+  const cell = (v: string): string => v.replace(/[\t\n\r]+/g, " ");
+  const lines = [headers.map(cell).join("\t")];
+  for (const r of rows) lines.push(r.map(cell).join("\t"));
+  return lines.join("\n");
+}
+
+/**
+ * GitHub-flavored markdown table — for pasting back into a `.md` doc. Escapes
+ * `|` (column delimiter) and collapses newlines so each row stays one line.
+ */
+function toMarkdown(headers: string[], rows: string[][]): string {
+  const cell = (v: string): string =>
+    v.replace(/\|/g, "\\|").replace(/[\n\r]+/g, " ");
+  const line = (cells: string[]): string => `| ${cells.map(cell).join(" | ")} |`;
+  const sep = `| ${headers.map(() => "---").join(" | ")} |`;
+  return [line(headers), sep, ...rows.map(line)].join("\n");
 }

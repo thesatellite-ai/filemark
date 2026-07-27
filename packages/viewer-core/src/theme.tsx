@@ -35,7 +35,7 @@ export interface ThemeSettings {
 
 export const DEFAULT_THEME: ThemeSettings = {
   mode: "light",
-  fontSize: 16,
+  fontSize: 14,
   lineHeight: 1.65,
   contentWidth: 760,
   githubWidth: 902,

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { idbStorage } from "./adapters/idbStorage";
+import { FSA_CACHE_MAX_BYTES } from "./fsaCache";
 import type { ThemeSettings } from "@filemark/core";
 import { DEFAULT_THEME } from "@filemark/core";
 
@@ -138,6 +139,20 @@ export interface LibraryState {
    * Returns the number of files added and removed.
    */
   rescanFolder(folderId: string): Promise<{ added: number; removed: number }>;
+  /**
+   * Persist a single file's freshest text into `files[id].content` (and IDB)
+   * so it renders after a reload WITHOUT a live FSA handle. Chrome resets FSA
+   * permission to "prompt" every page load, so a cached copy is the only way
+   * folder files stay viewable offline. No-op when the content is unchanged.
+   */
+  cacheFileContent(fileId: string, content: string): void;
+  /**
+   * Backfill cached content for every file in an FSA folder that has a live
+   * session handle but no cached text yet. Runs after a successful (re)connect
+   * so that ONE reconnect breaks the reload→reconnect cycle: subsequent
+   * reloads read the cached copy instead of demanding permission again.
+   */
+  cacheFolderContent(folderId: string): Promise<void>;
   setFolderRootPath(folderId: string, rootPath: string): Promise<void>;
   setFolderLabel(folderId: string, label: string | null): Promise<void>;
   toggleStar(id: string): Promise<void>;
@@ -569,6 +584,9 @@ export const useLibrary = create<LibraryState>((set, get) => ({
         ...(prev?.starred !== undefined && { starred: prev.starred }),
         ...(prev?.tags && { tags: prev.tags }),
         ...(prev?.lastOpenedAt !== undefined && { lastOpenedAt: prev.lastOpenedAt }),
+        // Keep the cached offline copy across rescans. New files (no prev)
+        // have none yet — cacheFolderContent backfills them after the rescan.
+        ...(prev?.content !== undefined && { content: prev.content }),
       });
       newFileHandles.set(fid, e.handle);
     }
@@ -628,7 +646,55 @@ export const useLibrary = create<LibraryState>((set, get) => ({
 
     await idbStorage.set(KEYS.files, nextFiles);
 
+    // Backfill offline cache for the newly-discovered files so they survive
+    // the next reload without a re-grant. Fire-and-forget — the added/removed
+    // count is already accurate.
+    if (addedCount > 0) void get().cacheFolderContent(folderId);
+
     return { added: addedCount, removed: removedCount };
+  },
+
+  cacheFileContent(fileId, content) {
+    const state = get();
+    const f = state.files[fileId];
+    // Skip when the file is gone or the cache already matches — avoids a
+    // needless re-render + IDB write on every view of an unchanged file.
+    if (!f || f.content === content) return;
+    if (content.length > FSA_CACHE_MAX_BYTES) return;
+    const nextFiles = { ...state.files, [fileId]: { ...f, content } };
+    set({ files: nextFiles });
+    void idbStorage.set(KEYS.files, nextFiles);
+  },
+
+  async cacheFolderContent(folderId) {
+    const { sessionHandles } = await import("./sessionHandles");
+    const { readFileAsText } = await import("./fs");
+    const state = get();
+    // Only files still missing a cached copy — already-cached files are left
+    // as-is (a per-view read refreshes those). One live handle required.
+    const pending = Object.values(state.files).filter(
+      (f) => f.folderId === folderId && f.content === undefined,
+    );
+    if (pending.length === 0) return;
+    let changed = false;
+    const nextFiles = { ...state.files };
+    for (const f of pending) {
+      if (!f.folderId) continue;
+      const handle = sessionHandles.getFile(f.folderId, f.id);
+      if (!handle) continue;
+      try {
+        const file = await handle.getFile();
+        if (file.size > FSA_CACHE_MAX_BYTES) continue;
+        const text = await readFileAsText(handle);
+        nextFiles[f.id] = { ...nextFiles[f.id], content: text, size: file.size };
+        changed = true;
+      } catch {
+        /* unreadable file — skip; it can still open live via the handle */
+      }
+    }
+    if (!changed) return;
+    set({ files: nextFiles });
+    await idbStorage.set(KEYS.files, nextFiles);
   },
 
   async setFolderLabel(folderId, label) {

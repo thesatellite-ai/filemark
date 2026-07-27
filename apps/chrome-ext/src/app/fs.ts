@@ -1,6 +1,7 @@
 import { SUPPORTED_EXTS } from "./registry";
 import { idbStorage } from "./adapters/idbStorage";
 import { sessionHandles } from "./sessionHandles";
+import { FSA_CACHE_MAX_BYTES } from "./fsaCache";
 import type { LibraryFile, LibraryFolder } from "./store";
 
 const HANDLE_KEY = (id: string) => `fsa:handle:${id}`;
@@ -184,13 +185,28 @@ export async function folderFromHandle(
   for (const e of entries) {
     const fid = `${id}:${e.path}`;
     const name = e.path.split("/").pop() ?? e.path;
+    // Prefetch + cache each file's text at scan time so the folder renders
+    // OFFLINE after a reload. Chrome resets FSA permission to "prompt" on
+    // every page load; without a cached copy the Viewer can't show folder
+    // files until the user re-grants access (the "reconnect on every reload"
+    // bug). Oversized/unreadable files are skipped and just open live.
+    let content: string | undefined;
+    let size = 0;
+    try {
+      const file = await e.handle.getFile();
+      size = file.size;
+      if (file.size <= FSA_CACHE_MAX_BYTES) content = await file.text();
+    } catch {
+      /* unreadable at scan — leave uncached; handle is still registered */
+    }
     files.push({
       id: fid,
       name,
       ext: fileExt(name),
       path: e.path,
       folderId: id,
-      size: 0,
+      size,
+      ...(content !== undefined && { content }),
     });
     fileHandles.set(fid, e.handle);
   }

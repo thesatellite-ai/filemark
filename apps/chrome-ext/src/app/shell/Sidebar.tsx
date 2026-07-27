@@ -11,6 +11,7 @@ import {
   Pencil,
   RotateCw,
   Search,
+  SlidersHorizontal,
   Star,
   Trash2,
   X,
@@ -41,6 +42,37 @@ type TreeNode =
   | { kind: "folder"; name: string; path: string; children: TreeNode[] }
   | { kind: "file"; file: LibraryFile };
 
+// --- Sidebar tree geometry (all values in px) -----------------------------
+// Rail positions are DERIVED from these primitives rather than hand-tuned, so
+// nudging the chevron size or header padding keeps every guide rail aligned.
+
+// Width of a disclosure chevron in a row. Matches Tailwind `size-3` (12px) on
+// the ChevronRight icons; `SECTION_CHEVRON` is `size-3` on the section header.
+const CHEVRON_SIZE = 12;
+// Left padding of a section HEADER row (Tailwind `px-2` = 8px). A section's
+// direct children indent past this so they read as owned by the header.
+const SECTION_PAD_LEFT = 8;
+
+// Tree-row indentation. Each nesting level shifts a row right by INDENT_STEP
+// from INDENT_BASE. INDENT_BASE is intentionally larger than the section
+// header's content offset so depth-0 rows sit clearly RIGHT of the header
+// chevron + title (i.e. visibly inside the section).
+const INDENT_BASE = 22;
+const INDENT_STEP = 16;
+const rowPadLeft = (depth: number) => INDENT_BASE + depth * INDENT_STEP;
+
+// A guide rail is drawn at the CENTRE of the chevron it hangs from, so the
+// vertical line visually descends from the disclosure triangle to its
+// children. Two origins: the section header (fixed) and a nested folder row
+// (depth-dependent).
+const SECTION_RAIL_LEFT = SECTION_PAD_LEFT + CHEVRON_SIZE / 2;
+const treeRailLeft = (depth: number) => rowPadLeft(depth) + CHEVRON_SIZE / 2;
+
+// Single source of truth for tree-row typography. Every clickable row in the
+// tree (file rows, web-doc rows, folder rows) shares this so the tree renders
+// at ONE consistent size, VS Code-style — change it here, not per row.
+const TREE_ROW_TEXT = "text-[13px] leading-tight";
+
 export function Sidebar() {
   const files = useLibrary((s) => s.files);
   const folders = useLibrary((s) => s.folders);
@@ -65,6 +97,10 @@ export function Sidebar() {
   const revealRequest = useLibrary((s) => s.revealRequest);
   const [needsPermission, setNeedsPermission] = useState<Record<string, boolean>>({});
   const [folderQuery, setFolderQuery] = useState<Record<string, string>>({});
+  // Per-folder toggle for the "tools" strip (root-path setter + quick filter).
+  // Hidden by default — they otherwise eat vertical space in every section.
+  // Revealed via the sliders icon in the folder header.
+  const [folderTools, setFolderTools] = useState<Record<string, boolean>>({});
 
   const starred = useMemo(
     () => Object.values(files).filter((f) => f.starred),
@@ -192,6 +228,10 @@ export function Sidebar() {
       sessionHandles.register(folder.id, res.handle, res.fileHandles);
       setNeedsPermission((p) => ({ ...p, [folderId]: false }));
       useLibrary.setState((s) => ({ sessionRev: s.sessionRev + 1 }));
+      // Backfill the offline cache now that we hold live handles, so this is
+      // the LAST reconnect: after this, reloads read cached text instead of
+      // demanding permission again.
+      void useLibrary.getState().cacheFolderContent(folder.id);
     }
   };
 
@@ -371,6 +411,14 @@ export function Sidebar() {
               renameInitial={folder.label ?? folder.name}
               onSearch={() => requestScopedSearch(folder.id)}
               searchLabel={`Search inside ${displayName}`}
+              extrasOpen={folderTools[folder.id] ?? false}
+              onToggleExtras={() =>
+                setFolderTools((t) => ({
+                  ...t,
+                  [folder.id]: !(t[folder.id] ?? false),
+                }))
+              }
+              extrasLabel="Show / hide root path + filter"
               onRemove={() => {
                 if (
                   confirm(
@@ -393,14 +441,22 @@ export function Sidebar() {
                   </Button>
                 </div>
               )}
-              <FolderRootPath folder={folder} />
-              <FolderQuickFilter
-                value={folderQuery[folder.id] ?? ""}
-                onChange={(v) =>
-                  setFolderQuery((q) => ({ ...q, [folder.id]: v }))
-                }
-                total={count}
-              />
+              {/* Tools strip: revealed via the sliders icon, or kept open
+                  automatically while a filter query is active so the input
+                  the user is typing into never vanishes under them. */}
+              {(folderTools[folder.id] ||
+                (folderQuery[folder.id] ?? "").length > 0) && (
+                <>
+                  <FolderRootPath folder={folder} />
+                  <FolderQuickFilter
+                    value={folderQuery[folder.id] ?? ""}
+                    onChange={(v) =>
+                      setFolderQuery((q) => ({ ...q, [folder.id]: v }))
+                    }
+                    total={count}
+                  />
+                </>
+              )}
               {(() => {
                 const q = (folderQuery[folder.id] ?? "").trim().toLowerCase();
                 if (!q) {
@@ -575,6 +631,9 @@ function Section({
   renameInitial,
   onSearch,
   searchLabel,
+  onToggleExtras,
+  extrasOpen,
+  extrasLabel,
   children,
 }: {
   title: string;
@@ -599,6 +658,12 @@ function Section({
    *  pre-scoped to the section's contents. */
   onSearch?: () => void;
   searchLabel?: string;
+  /** Optional toggle for a section's collapsible "tools" strip (root-path
+   *  setter + quick filter). Renders a sliders icon; `extrasOpen` drives
+   *  its active styling so the user sees whether the strip is showing. */
+  onToggleExtras?: () => void;
+  extrasOpen?: boolean;
+  extrasLabel?: string;
   children: React.ReactNode;
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
@@ -629,7 +694,7 @@ function Section({
   };
   return (
     <div className="group/section mb-1 w-full min-w-0">
-      <div className="hover:text-sidebar-foreground text-muted-foreground flex w-full min-w-0 items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider">
+      <div className="hover:text-sidebar-foreground text-muted-foreground flex w-full min-w-0 items-center gap-1 px-2 py-1 text-[12px] font-semibold uppercase tracking-wider">
         {editing ? (
           <>
             <ChevronRight
@@ -654,7 +719,7 @@ function Section({
               }}
               onBlur={() => void commitEdit()}
               placeholder={renameInitial ?? title}
-              className="bg-background text-foreground border-input focus:ring-ring flex-1 min-w-0 rounded-sm border px-1.5 py-0.5 text-[11px] font-medium normal-case tracking-normal outline-none focus:ring-1"
+              className="bg-background text-foreground border-input focus:ring-ring flex-1 min-w-0 rounded-sm border px-1.5 py-0.5 text-[12px] font-medium normal-case tracking-normal outline-none focus:ring-1"
             />
           </>
         ) : (
@@ -673,7 +738,7 @@ function Section({
             {badge && (
               <Badge
                 variant="secondary"
-                className="h-4 px-1.5 text-[9px] font-medium"
+                className="h-4 px-1.5 text-[10px] font-medium"
               >
                 {badge}
               </Badge>
@@ -691,6 +756,27 @@ function Section({
             title={searchLabel ?? `Search inside ${title}`}
           >
             <Search className="size-3" />
+          </button>
+        )}
+        {onToggleExtras && !editing && (
+          <button
+            className={cn(
+              "hover:text-sidebar-foreground transition-opacity",
+              // Stay visible while active so it can be toggled back off;
+              // otherwise fade in with the rest of the header controls.
+              extrasOpen
+                ? "text-sidebar-foreground opacity-100"
+                : "text-muted-foreground opacity-0 group-hover/section:opacity-100"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExtras();
+            }}
+            aria-label={extrasLabel ?? "Toggle root path and filter"}
+            aria-pressed={extrasOpen}
+            title={extrasLabel ?? "Toggle root path and filter"}
+          >
+            <SlidersHorizontal className="size-3" />
           </button>
         )}
         {onRename && !editing && (
@@ -726,7 +812,19 @@ function Section({
           </button>
         )}
       </div>
-      {open && !editing && <div className="mt-0.5 flex flex-col gap-px">{children}</div>}
+      {open && !editing && (
+        // `relative` anchors the section guide rail. The rail sits under the
+        // header chevron (~14px) and runs the full height of the children, so
+        // this section's direct rows visibly hang off the header above them.
+        <div className="group/section-body relative mt-0.5 flex flex-col gap-px">
+          <span
+            aria-hidden
+            className="bg-sidebar-border/60 group-hover/section-body:bg-sidebar-border pointer-events-none absolute inset-y-0 w-px"
+            style={{ left: SECTION_RAIL_LEFT }}
+          />
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -748,7 +846,10 @@ function WebRecentRow({
   }
   return (
     <div
-      className="group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 min-w-0 w-full items-center gap-1.5 rounded-sm pr-1 text-[13px] leading-tight transition-colors"
+      className={cn(
+        "group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 min-w-0 w-full items-center gap-1.5 rounded-sm pr-1 transition-colors",
+        TREE_ROW_TEXT
+      )}
       title={recent.url}
     >
       <button
@@ -760,7 +861,7 @@ function WebRecentRow({
         <div className="min-w-0 flex-1">
           <div className="truncate">{recent.name}</div>
           {host && (
-            <div className="text-muted-foreground truncate text-[10.5px]">
+            <div className="text-muted-foreground truncate text-[11px]">
               {host}
             </div>
           )}
@@ -808,7 +909,8 @@ function FileRow({
     <div
       data-file-id={file.id}
       className={cn(
-        "group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 min-w-0 w-full items-center gap-1.5 rounded-sm pr-1 text-[13px] leading-tight transition-colors",
+        "group/row text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-7 min-w-0 w-full items-center gap-1.5 rounded-sm pr-1 transition-colors",
+        TREE_ROW_TEXT,
         active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
       )}
       onContextMenu={(e) => {
@@ -819,7 +921,7 @@ function FileRow({
     >
       <button
         className="flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left"
-        style={{ paddingLeft: 8 + depth * 12 }}
+        style={{ paddingLeft: rowPadLeft(depth) }}
         onClick={onClick}
         title={fullTitle}
       >
@@ -837,7 +939,7 @@ function FileRow({
           </span>
           {subtitle && (
             <span
-              className="text-muted-foreground truncate text-[10px] leading-tight"
+              className="text-muted-foreground truncate text-[11px] leading-tight"
               title={subtitle}
             >
               {subtitle}
@@ -1008,8 +1110,11 @@ function TreeRow({
   return (
     <div>
       <button
-        className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-6 w-full items-center gap-1.5 rounded-sm py-1 pr-2 text-left text-[12px] leading-tight transition-colors"
-        style={{ paddingLeft: 8 + depth * 12 }}
+        className={cn(
+          "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex min-h-6 w-full items-center gap-1.5 rounded-sm py-1 pr-2 text-left transition-colors",
+          TREE_ROW_TEXT
+        )}
+        style={{ paddingLeft: rowPadLeft(depth) }}
         onClick={() => onToggle(node.path)}
         title={node.path}
       >
@@ -1021,19 +1126,30 @@ function TreeRow({
         />
         <span className="truncate font-medium">{node.name}</span>
       </button>
-      {!isClosed &&
-        node.children.map((c, i) => (
-          <TreeRow
-            key={i}
-            node={c}
-            depth={depth + 1}
-            activeId={activeId}
-            collapsed={collapsed}
-            onToggle={onToggle}
-            onClick={onClick}
-            onRemove={onRemove}
+      {!isClosed && (
+        // Guide rail: a thin vertical line under this folder's chevron so its
+        // descendants read as a connected group. Hovering the group brightens
+        // the rail. `relative` anchors the absolutely-positioned rail.
+        <div className="group/tree relative">
+          <span
+            aria-hidden
+            className="bg-sidebar-border/70 group-hover/tree:bg-sidebar-border pointer-events-none absolute inset-y-0 w-px"
+            style={{ left: treeRailLeft(depth) }}
           />
-        ))}
+          {node.children.map((c, i) => (
+            <TreeRow
+              key={i}
+              node={c}
+              depth={depth + 1}
+              activeId={activeId}
+              collapsed={collapsed}
+              onToggle={onToggle}
+              onClick={onClick}
+              onRemove={onRemove}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1060,7 +1176,7 @@ function FolderQuickFilter({
         }}
         placeholder={`Filter ${total} file${total === 1 ? "" : "s"}…`}
         className={cn(
-          "bg-background placeholder:text-muted-foreground/60 focus-visible:border-ring h-6 w-full rounded-sm border pl-6 pr-6 text-[11px] outline-none"
+          "bg-background placeholder:text-muted-foreground/60 focus-visible:border-ring h-6 w-full rounded-sm border pl-6 pr-6 text-[12px] outline-none"
         )}
       />
       {value && (

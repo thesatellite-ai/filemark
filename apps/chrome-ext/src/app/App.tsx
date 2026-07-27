@@ -38,6 +38,9 @@ export default function App() {
               restored.handle,
               restored.fileHandles
             );
+            // Permission survived the reload — top up the offline cache while
+            // we can, so future reloads keep working even if it later resets.
+            void useLibrary.getState().cacheFolderContent(folder.id);
           }
         })
       );

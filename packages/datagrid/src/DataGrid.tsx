@@ -69,6 +69,12 @@ const DENSITY: Record<
 const MIN_COL_WIDTH = 80;
 const MAX_COL_WIDTH = 480;
 const DEFAULT_COL_WIDTH = 160;
+// Default vertical cap for the scroll region when the author didn't pin an
+// explicit `height`. Used as a MAX height (not a fixed one) so a small table
+// shrinks to its content instead of leaving a tall empty gap, while a large
+// table caps here and scrolls internally. An author-supplied `height` still
+// wins as a fixed height.
+const DEFAULT_MAX_HEIGHT = 420;
 const PX_PER_CHAR = 7.5;
 const WIDTH_SAMPLE_ROWS = 30;
 const SELECT_COL_WIDTH = 36;
@@ -578,11 +584,19 @@ export function DataGrid({
   const totalCount = rows.length;
   const shownCount = tableRows.length;
   const contentHeight = rowVirtualizer.getTotalSize();
-  // In fullscreen the wrapper is `fixed inset-4 flex flex-col`, so the
-  // scroll region needs to flex-grow to fill the remaining vertical
-  // space (toolbar above, optional footer below). Outside fullscreen we
-  // honour the author-supplied height or fall back to a fixed 420px.
-  const scrollHeight: number | string = fullscreen ? "100%" : (height ?? 420);
+  // Scroll-region sizing has three modes:
+  //  • fullscreen  — wrapper is `fixed inset-4 flex flex-col`, so the region
+  //    flex-grows to fill the space between toolbar and footer (`flex-1`).
+  //  • author height — an explicitly pinned `height` is honoured as a FIXED
+  //    height (author wants a stable box).
+  //  • default — no pinned height: cap at DEFAULT_MAX_HEIGHT but let the box
+  //    SHRINK to its content, so a 2-row table isn't stuck at 420px of mostly
+  //    empty space (the reported bug). Tall tables hit the cap and scroll.
+  const scrollStyle: CSSProperties | undefined = fullscreen
+    ? undefined
+    : height != null
+      ? { height }
+      : { maxHeight: DEFAULT_MAX_HEIGHT };
 
   const hasAnyFilter =
     columnFilters.length > 0 || globalFilter.trim().length > 0;
@@ -851,7 +865,7 @@ export function DataGrid({
             ? "relative min-h-0 flex-1 overflow-auto outline-none"
             : "relative overflow-auto outline-none"
         }
-        style={fullscreen ? undefined : { height: scrollHeight }}
+        style={scrollStyle}
         tabIndex={0}
         role="grid"
         aria-rowcount={tableRows.length}

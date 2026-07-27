@@ -40,6 +40,7 @@ export function Viewer() {
   const linkIndex = useLinkIndex((s) => s.index);
   const backlinksFor = useLinkIndex((s) => s.backlinksFor);
   const setActive = useLibrary((s) => s.setActive);
+  const cacheFileContent = useLibrary((s) => s.cacheFileContent);
   const [content, setContent] = useState<string | null>(null);
   // Tracks which file the current `content` state is actually for.
   // Needed because file switches keep the previous file's `content`
@@ -88,6 +89,10 @@ export function Viewer() {
               setContent(text);
               setContentFileId(file.id);
               setError(null);
+              // Refresh the offline cache with the freshest bytes so a reload
+              // renders this file without needing a re-grant (and so files
+              // added before offline-caching existed get cached on first view).
+              cacheFileContent(file.id, text);
             }
             return;
           } catch (e) {

@@ -65,7 +65,7 @@ export function EnvVarsTable(
           {rows.map((r, i) => (
             <tr key={i} className="border-t">
               <td className="px-3 py-2 align-top">
-                <code className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-[12px] font-semibold">
+                <code className="bg-muted text-foreground whitespace-nowrap rounded px-1.5 py-0.5 font-mono text-[12px] font-semibold">
                   {r.name}
                 </code>
                 <div className="mt-1 flex gap-1">

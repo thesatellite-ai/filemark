@@ -40,7 +40,7 @@
 /* ─── Prose body: typography on library-rendered markdown DOM ──────── */
 
 .fv-mdx-body {
-  font-size: var(--fm-prose-font-size, var(--fv-font-size, 16px));
+  font-size: var(--fm-prose-font-size, var(--fv-font-size, 14px));
   line-height: var(--fm-prose-line-height, var(--fv-line-height, 1.65));
   font-family: var(--fm-prose-font, var(--fv-font-family, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif));
   color: var(--foreground);
@@ -453,6 +453,64 @@
   border-radius: var(--radius-md);
 }
 .fv-mdx-body .fv-mdx-table-wrap table { margin: 0; }
+
+/* Fullscreen expand — the outer container becomes a fixed viewport panel;
+   same table DOM, we only switch its positioning. The wrap flexes to fill so
+   long tables scroll inside the panel instead of the page. */
+.fv-mdx-body .fv-mdx-table-fs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: color-mix(in oklab, var(--foreground) 30%, transparent);
+  backdrop-filter: blur(2px);
+}
+.fv-mdx-body .fv-mdx-table-outer--fullscreen {
+  position: fixed;
+  inset: 24px;
+  z-index: 50;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.28);
+  padding: 12px;
+}
+.fv-mdx-body .fv-mdx-table-outer--fullscreen .fv-mdx-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: none;
+}
+/* Toolbar stays visible in fullscreen (no hover needed) and clears the
+   close button in the corner. */
+.fv-mdx-body .fv-mdx-table-outer--fullscreen .fv-mdx-table-actions {
+  opacity: 1;
+  top: 12px;
+  right: 46px;
+}
+.fv-mdx-body .fv-mdx-table-fs-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--background);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+.fv-mdx-body .fv-mdx-table-fs-close:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
 .fv-mdx-body .fv-mdx-table--compact th,
 .fv-mdx-body .fv-mdx-table--compact td {
   padding: var(--fm-table-row-padding-compact, 2px 8px);
@@ -469,6 +527,12 @@
 }
 .fv-mdx-body .fv-mdx-table--zebra tbody tr:nth-child(even) td {
   background: var(--fm-table-zebra-bg, color-mix(in oklab, var(--muted) 50%, transparent));
+}
+/* Row hover — highlight the whole row so the reader can track which one their
+   cursor is on. Declared AFTER the zebra rule (equal specificity) so it wins
+   the source-order tie and overrides the stripe on the hovered row. */
+.fv-mdx-body .fv-mdx-table tbody tr:hover td {
+  background: var(--fm-table-hover-bg, color-mix(in oklab, var(--accent) 70%, transparent));
 }
 .fv-mdx-body .fv-mdx-table--sticky thead th {
   position: sticky;
@@ -519,14 +583,21 @@
   z-index: 3;
 }
 .fv-mdx-body .fv-mdx-table-actions-row { display: flex; gap: 4px; }
+/* Toolbar buttons are uniform square icon buttons — same box for every action
+   so the row reads as one set (was mixed-width emoji+text chips). Labels live
+   in the `title` attribute (hover tooltip). */
 .fv-mdx-body .fv-mdx-table-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
   background: color-mix(in oklab, var(--background) 92%, transparent);
   border: 1px solid var(--border);
   color: var(--muted-foreground);
   border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  font-size: 11px;
-  line-height: 1.5;
+  line-height: 1;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(6px);
@@ -534,6 +605,33 @@
 .fv-mdx-body .fv-mdx-table-chip:hover {
   background: var(--accent);
   color: var(--accent-foreground);
+}
+/* Custom hover tooltip — the native `title` popup is slow (~1s) and easy to
+   miss, so we render the label from `data-tip` instantly below the button.
+   Inverted fill (foreground-on-background) so it reads on either theme. */
+.fv-mdx-body .fv-mdx-table-chip[data-tip] { position: relative; }
+.fv-mdx-body .fv-mdx-table-chip[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease 150ms;
+  z-index: 40;
+}
+.fv-mdx-body .fv-mdx-table-chip[data-tip]:hover::after,
+.fv-mdx-body .fv-mdx-table-chip[data-tip]:focus-visible::after {
+  opacity: 1;
 }
 .fv-mdx-body .fv-mdx-table-backdrop { position: fixed; inset: 0; z-index: 20; }
 .fv-mdx-body .fv-mdx-table-menu {
