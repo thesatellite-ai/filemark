@@ -18,6 +18,13 @@
   // still loads; only HTML is excluded.)
   const ct = document.contentType;
   if (ct === "text/html" || ct === "application/xhtml+xml") return;
+  // Beyond HTML: an EXTENSIONLESS URL (the service worker now lets these through
+  // on http(s) so JSON APIs are reachable) only proceeds when the response is
+  // raw JSON. Otherwise (e.g. an extensionless text/plain page) we'd needlessly
+  // load the heavy renderer. Supported-extension URLs always proceed — their
+  // type is known from the path. content/main.tsx does the authoritative gating.
+  const hasExtension = /\.[a-z0-9]+$/i.test(location.pathname);
+  if (!hasExtension && ct !== "application/json") return;
   try {
     const url = chrome.runtime.getURL("content/main.js");
     await import(/* @vite-ignore */ url);

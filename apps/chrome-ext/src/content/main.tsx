@@ -56,6 +56,13 @@ const ALL_INJECT_FORMATS = new Set([
 const SYNC_KEY = "fv:settings";
 const SENTINEL = "data-filemark-injected";
 
+// When an http(s) response is raw JSON but its URL has no `.json` extension
+// (e.g. an API endpoint like https://host/api/version), we detect it by the
+// document's Content-Type and treat it as the `json` format. `document.contentType`
+// strips the charset parameter, so `application/json; charset=utf-8` arrives here
+// as exactly this value.
+const JSON_CONTENT_TYPE = "application/json";
+
 function extOf(url: string): string | null {
   const bare = url.split("#")[0].split("?")[0];
   const m = /\.([a-z0-9]+)$/i.exec(bare);
@@ -133,12 +140,10 @@ function revealCurtain() {
 
 (async () => {
   const url = location.href;
-  const ext = extOf(url);
-  if (!ext) return;
+
   // Defense-in-depth (bootstrap.ts already bails on this before importing us):
-  // never take over a full HTML web app whose URL merely ends in a supported
-  // extension, e.g. github.com/<o>/<r>/blob/<b>/X.md (served as text/html).
-  // Raw files are text/plain; JSON is application/json — both pass.
+  // never take over a full HTML web app, even when its URL ends in a supported
+  // extension — e.g. github.com/<o>/<r>/blob/<b>/X.md (served as text/html).
   if (
     document.contentType === "text/html" ||
     document.contentType === "application/xhtml+xml"
@@ -146,8 +151,27 @@ function revealCurtain() {
     revealCurtain();
     return;
   }
+
+  // Effective inject format. Prefer a supported URL EXTENSION; otherwise fall
+  // back to `json` when the response itself is raw JSON. That fallback is what
+  // lets EXTENSIONLESS JSON APIs render — their URL has no `.json` in the path,
+  // so extension-only detection missed them. Anything else isn't ours → bail.
+  const ext = extOf(url);
   const normalizedExt = ext === "markdown" ? "md" : ext;
-  if (!(await isEnabledFormat(ext))) {
+  const effectiveExt =
+    normalizedExt && ALL_INJECT_FORMATS.has(normalizedExt)
+      ? normalizedExt
+      : document.contentType === JSON_CONTENT_TYPE
+        ? "json"
+        : null;
+  if (!effectiveExt) {
+    revealCurtain();
+    return;
+  }
+
+  // Respects the per-format enable toggle (JSON off → fall back to Chrome's
+  // default viewer).
+  if (!(await isEnabledFormat(effectiveExt))) {
     revealCurtain();
     return;
   }
@@ -170,12 +194,14 @@ function revealCurtain() {
     return;
   }
 
-  const name = decodeURIComponent(url.split("/").pop()?.split("?")[0] ?? `file.${normalizedExt}`);
+  const name = decodeURIComponent(
+    url.split("/").pop()?.split("?")[0] ?? `file.${effectiveExt}`,
+  );
   const fileId = `inject:${url}`;
   const file: LibraryFile = {
     id: fileId,
     name,
-    ext: normalizedExt,
+    ext: effectiveExt,
     path: name,
     folderId: null,
     size: content.length,
@@ -186,7 +212,7 @@ function revealCurtain() {
 
   // Persist this URL in the shared "Web Docs" recents so it shows up in
   // every Filemark sidebar (standalone + injected) for quick re-open.
-  void recordWebRecent({ url, name, ext: normalizedExt });
+  void recordWebRecent({ url, name, ext: effectiveExt });
 
   // Skip the regular hydrate (uses IndexedDB which is denied on sandboxed
   // pages) — seed the store state directly with this single intercepted

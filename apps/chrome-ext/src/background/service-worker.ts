@@ -280,7 +280,18 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   if (!isFile && !isHttp) return;
 
   const ext = extOf(url);
-  if (!ext || !INJECT_FORMATS.has(ext === "markdown" ? "md" : ext)) return;
+  const extSupported =
+    !!ext && INJECT_FORMATS.has(ext === "markdown" ? "md" : ext);
+  // file://: require a supported extension — there's no Content-Type detection
+  // path for local files, and we don't want to touch every local file.
+  // http(s): also let EXTENSIONLESS URLs (ext === null) through, so the content
+  // script can detect JSON APIs by their response Content-Type — e.g.
+  // https://host/api/version, served as application/json with no ".json" in the
+  // path. URLs with a NON-supported extension (.html/.png/.pdf/…) are skipped.
+  // bootstrap.ts + content/main.tsx bail on anything that isn't a supported
+  // type, so real HTML web apps are never hijacked.
+  if (isFile && !extSupported) return;
+  if (isHttp && !extSupported && ext !== null) return;
 
   if (isFile && !(await isFileAccessAllowed())) return;
   if (isHttp && !(await hasRemotePermission())) return;
