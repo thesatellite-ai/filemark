@@ -46,6 +46,17 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.10",
+    date: "2026-07-03",
+    tag: "JSON viewer & API detection",
+    notes: [
+      "JSON APIs now render even without a .json extension — Filemark detects them by their response type, so endpoints like /api/version open in the viewer",
+      "New browser-native JSON defaults: a Classic theme (white background, bold keys, green strings), array indices hidden, and a clean bare view (no toolbar/chrome) — a Reset to defaults button restores them anytime",
+      "Long string values now show in full by default (no more … truncation); you can still cap them from the options",
+      "Bare view hides all the surrounding UI so a JSON file fills the window like a raw browser view",
+    ],
+  },
+  {
     version: "0.1.9",
     date: "2026-07-27",
     tag: "Table tools & offline folders",
