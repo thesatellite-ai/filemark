@@ -449,12 +449,19 @@ export function Viewer() {
     return <GithubView rendererProps={rendererProps} githubWidth={githubWidth} />;
   }
 
+  // Bare JSON view drops the viewer padding too, so the tree is truly
+  // full-bleed (the JSON viewer + Shell already hide their own chrome).
+  const bareJson = isJson && jsonSettings?.bareView;
+
   // `data-toc` gates the TOC rendered inside `@filemark/mdx`. The package
   // renders the TOC unconditionally; toggling this attribute on the wrapper
   // lets the host show / hide it via CSS without the package needing to know
   // about host-level UI state.
   return (
-    <div className="px-6 pb-16 pt-8" data-toc={tocOpen ? "open" : "closed"}>
+    <div
+      className={bareJson ? "" : "px-6 pb-16 pt-8"}
+      data-toc={tocOpen ? "open" : "closed"}
+    >
       <BacklinksProvider value={backlinksValue}>
         <Renderer {...rendererProps} />
       </BacklinksProvider>

@@ -16,6 +16,7 @@ import { JSONErrorBoundary } from "./ErrorBoundary";
 const LARGE_FILE_THRESHOLD = 1_000_000; // 1 MB
 
 export type JsonThemeId =
+  | "classic"
   | "githubDark"
   | "githubLight"
   | "nord"
@@ -26,10 +27,46 @@ export type JsonThemeId =
   | "monokai"
   | "gruvbox";
 
+/**
+ * "Classic" — a light theme matching the browser's built-in JSON viewer
+ * (Chrome DevTools palette): white background, black keys, green strings, blue
+ * numbers. Not shipped by @uiw/react-json-view, so we define it here. This is
+ * the default theme. Keys are bolded via a CSS rule injected only for this
+ * theme (see renderJsonTree) since the theme object carries colors, not weight.
+ */
+const classicTheme = {
+  "--w-rjv-font-family": "monospace",
+  "--w-rjv-color": "#000000",
+  "--w-rjv-key-string": "#000000",
+  "--w-rjv-key-number": "#000000",
+  "--w-rjv-background-color": "#ffffff",
+  "--w-rjv-line-color": "#e6e6e6",
+  "--w-rjv-arrow-color": "#727272",
+  "--w-rjv-info-color": "#00000059",
+  "--w-rjv-copied-color": "#000000",
+  "--w-rjv-copied-success-color": "#0b7500",
+  "--w-rjv-curlybraces-color": "#000000",
+  "--w-rjv-colon-color": "#000000",
+  "--w-rjv-brackets-color": "#000000",
+  "--w-rjv-quotes-color": "#000000",
+  "--w-rjv-quotes-string-color": "#0b7500",
+  "--w-rjv-type-string-color": "#0b7500",
+  "--w-rjv-type-int-color": "#1a1aa6",
+  "--w-rjv-type-float-color": "#1a1aa6",
+  "--w-rjv-type-bigint-color": "#1a1aa6",
+  "--w-rjv-type-boolean-color": "#1a1aa6",
+  "--w-rjv-type-date-color": "#586e75",
+  "--w-rjv-type-url-color": "#0969da",
+  "--w-rjv-type-null-color": "#808080",
+  "--w-rjv-type-nan-color": "#808080",
+  "--w-rjv-type-undefined-color": "#808080",
+};
+
 /** Bundled themes from @uiw/react-json-view, keyed by stable id. The type
  *  is cast to `Record<JsonThemeId, object>` so tsup's DTS build doesn't try
  *  to portably name deep csstype types from node_modules. */
 const THEMES = {
+  classic: classicTheme,
   githubDark: githubDarkTheme,
   githubLight: githubLightTheme,
   nord: nordTheme,
@@ -50,6 +87,13 @@ export interface JSONViewerOptions {
   displayObjectSize?: boolean;
   enableClipboard?: boolean;
   shortenTextAfterLength?: number;
+  /** Hide array element index keys (the `0:` `1:` … labels) so array items show
+   *  just their value. Off by default (indices shown, like most JSON viewers). */
+  hideArrayIndices?: boolean;
+  /** Bare view: hide the viewer's own toolbar (JSON/valid/size + Collapse/Expand/
+   *  Download/Copy) and frame, rendering just the tree full-bleed — like a raw
+   *  browser JSON view. Off by default. */
+  bareView?: boolean;
 }
 
 /**
@@ -152,9 +196,14 @@ export function JSONViewer(
   ];
 
   const fileType = file.ext.toLowerCase();
+  // Bare view drops all viewer chrome (toolbar + frame + centering) so the tree
+  // fills the width like a raw browser JSON view. The viewer's OWN toolbar is
+  // all it can hide; the app top bar is separate (use reading/fullscreen mode).
+  const bareView = options?.bareView ?? false;
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className={bareView ? "w-full" : "mx-auto max-w-5xl"}>
+      {!bareView && (
       <div className="bg-muted sticky top-0 z-10 flex items-center justify-between gap-2 rounded-t-md border border-b-0 px-3 py-1.5 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider">
@@ -222,6 +271,7 @@ export function JSONViewer(
           </ToolbarBtn>
         </div>
       </div>
+      )}
 
       {parsed.errors.length > 0 && (
         <details className="border-x border-b-0 border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-foreground">
@@ -252,7 +302,11 @@ export function JSONViewer(
       )}
 
       <div
-        className="bg-card overflow-x-auto rounded-b-md border p-3 text-[13px] leading-relaxed"
+        className={
+          bareView
+            ? "overflow-x-auto p-3 text-[13px] leading-relaxed"
+            : "bg-card overflow-x-auto rounded-b-md border p-3 text-[13px] leading-relaxed"
+        }
         // Match the JSON theme's own background so the padding blends in
         // (no light frame around a dark tree). Inline style overrides the
         // bg-card class fallback when a theme background is present.
@@ -315,10 +369,27 @@ function renderJsonTree({
       </pre>
     );
   }
+  const hideArrayIndices = options?.hideArrayIndices ?? false;
   return (
     <JSONErrorBoundary>
+      {/* Classic theme bolds object keys to match the browser's built-in JSON
+          viewer (the theme object only carries colors, not font-weight). */}
+      {pickedTheme === "classic" && (
+        <style>{`.w-rjv-object-key{font-weight:700}`}</style>
+      )}
+      {/* Hide array index keys + the colon that follows them. The KeyName
+          override below emits a marker span for array elements. In the library's
+          row DOM the key lives inside a WRAPPER span and the colon is that
+          wrapper's next sibling (KeyValues renders [<span>…KeyName…</span>][Colon]).
+          So we hide the wrapper that contains our marker, and its sibling colon,
+          via :has() (Chrome-only — both our hosts are Chromium). Leaves the value. */}
+      {hideArrayIndices && (
+        <style>{`span:has(> .fv-json-array-index){display:none}span:has(> .fv-json-array-index) + .w-rjv-colon{display:none}`}</style>
+      )}
       <JsonView
-        key={`jv-${pickedTheme}-${collapsed}`}
+        // hideArrayIndices is in the key so toggling it remounts the tree (the
+        // KeyName slot is registered once on mount).
+        key={`jv-${pickedTheme}-${collapsed}-${hideArrayIndices ? 1 : 0}`}
         value={value as object}
         style={viewTheme}
         collapsed={tooLarge ? 1 : collapsed}
@@ -326,7 +397,19 @@ function renderJsonTree({
         displayDataTypes={options?.displayDataTypes ?? false}
         displayObjectSize={options?.displayObjectSize ?? true}
         shortenTextAfterLength={options?.shortenTextAfterLength ?? 140}
-      />
+      >
+        {hideArrayIndices && (
+          <JsonView.KeyName
+            // Array element? (parent is an array) → emit the hidden marker span.
+            // Object keys return null → default rendering (unaffected).
+            render={(_props, { parentValue }) =>
+              Array.isArray(parentValue) ? (
+                <span className="fv-json-array-index" />
+              ) : null
+            }
+          />
+        )}
+      </JsonView>
     </JSONErrorBoundary>
   );
 }

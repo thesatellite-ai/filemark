@@ -32,7 +32,7 @@ import {
 import { revisionStore } from "../revisionStore";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, PanelTop } from "lucide-react";
 
 export function Shell() {
   const hydrated = useLibrary((s) => s.hydrated);
@@ -89,6 +89,19 @@ export function Shell() {
   const viewMode = useLibrary((s) => s.viewMode);
   const setViewMode = useLibrary((s) => s.setViewMode);
   const settings = useSettings((s) => s.settings);
+  const patchJson = useSettings((s) => s.patchJson);
+  const activeFileExt = useLibrary((s) =>
+    s.activeFileId ? (s.files[s.activeFileId]?.ext ?? "") : "",
+  );
+  // "Bare" JSON view — the JSON viewer's bareView setting also drops the app
+  // chrome (top bar, tabs, revision bar, sidebar, notes) so a JSON file renders
+  // truly full-bleed, like a raw browser JSON view. JSON files only. Toggle it
+  // back off from the extension options page.
+  const bareJson =
+    settings.json.bareView &&
+    (activeFileExt === "json" || activeFileExt === "jsonc");
+  // App chrome is hidden by fullscreen OR bare JSON view.
+  const hideChrome = fullscreen || bareJson;
   useUrlSync();
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -306,7 +319,7 @@ export function Shell() {
       renderMarkdown={renderRevisionPreview}
     >
     <div className="bg-background text-foreground flex h-full w-full flex-col">
-      {!fullscreen && (
+      {!hideChrome && (
         <>
           <TopBar onOpenSearch={() => setSearchOpen(true)} />
           <Separator />
@@ -314,7 +327,7 @@ export function Shell() {
       )}
       <NotesProvider fileId={activeId} fileName={activeFileName}>
       <div className="relative flex min-h-0 flex-1">
-        {sidebarOpen && !fullscreen && !readingMode && (
+        {sidebarOpen && !hideChrome && !readingMode && (
           <>
             {/* Mobile backdrop — clicking it closes the slide-over sidebar. */}
             <button
@@ -331,13 +344,13 @@ export function Shell() {
           </>
         )}
         <main className="relative flex min-w-0 flex-1 flex-col">
-          {!fullscreen && <TabStrip />}
-          {!fullscreen && <RevisionBar />}
+          {!hideChrome && <TabStrip />}
+          {!hideChrome && <RevisionBar />}
           <RevisionMainArea>
             <ViewerScroll activeId={activeId}>
               <Viewer />
             </ViewerScroll>
-            {!fullscreen && (
+            {!hideChrome && (
               <NotesLayer source={activeFileSource} onRequestOpen={openNotesPanel} />
             )}
           </RevisionMainArea>
@@ -353,7 +366,7 @@ export function Shell() {
               <Minimize2 className="size-4" />
             </Button>
           )}
-          {!fullscreen && (
+          {!hideChrome && (
             <Button
               variant="ghost"
               size="sm"
@@ -363,6 +376,20 @@ export function Shell() {
               aria-label="Fullscreen"
             >
               <Maximize2 className="size-4" />
+            </Button>
+          )}
+          {/* Bare JSON view hides all chrome — provide one subtle escape so the
+              user isn't stranded (the only other way out is the options page). */}
+          {bareJson && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="fixed bottom-3 right-3 z-50 size-7 p-0 opacity-25 transition-opacity hover:opacity-100"
+              onClick={() => void patchJson({ bareView: false })}
+              title="Exit bare view — show the toolbar"
+              aria-label="Exit bare view"
+            >
+              <PanelTop className="size-4" />
             </Button>
           )}
         </main>

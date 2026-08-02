@@ -59,6 +59,7 @@ export const ALL_FORMATS = [
 export type FormatId = (typeof ALL_FORMATS)[number];
 
 export const JSON_THEMES = [
+  "classic",
   "githubDark",
   "githubLight",
   "nord",
@@ -86,6 +87,10 @@ export interface Settings {
     displayObjectSize: boolean;
     enableClipboard: boolean;
     shortenTextAfterLength: number;
+    /** Hide array element index keys (the `0:` `1:` … labels). Off = shown. */
+    hideArrayIndices: boolean;
+    /** Bare view — hide the viewer toolbar + frame, render just the tree. */
+    bareView: boolean;
     /** Indentation space count. Applied when re-serializing JSON (e.g. copy). */
     indent: number;
   };
@@ -124,12 +129,19 @@ export const DEFAULT_SETTINGS: Settings = {
     dbml: true,
   },
   json: {
-    theme: "githubDark",
+    // Defaults tuned for a clean, browser-native JSON view: the "classic"
+    // (Chrome DevTools) theme, no data-type/size/clipboard chrome, array
+    // indices hidden, and bare (chrome-less) layout.
+    theme: "classic",
     collapsedDepth: 2,
     displayDataTypes: false,
-    displayObjectSize: true,
-    enableClipboard: true,
-    shortenTextAfterLength: 140,
+    displayObjectSize: false,
+    enableClipboard: false,
+    // 0 = never truncate long strings (show them in full, like the browser's
+    // native JSON view). Users can cap it via the "Shorten strings after" slider.
+    shortenTextAfterLength: 0,
+    hideArrayIndices: true,
+    bareView: true,
     indent: 2,
   },
   shortcuts: {},

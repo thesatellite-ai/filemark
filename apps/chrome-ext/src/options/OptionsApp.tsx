@@ -22,6 +22,7 @@ import { ThemeProvider } from "@filemark/core";
 import { useLibrary } from "../app/store";
 import {
   useSettings,
+  DEFAULT_SETTINGS,
   ALL_SHORTCUTS,
   ALL_FORMATS,
   JSON_THEMES,
@@ -657,6 +658,37 @@ function JsonSection() {
             label={j.enableClipboard ? "On" : "Off"}
           />
         </Row>
+
+        <Row label="Hide array indices" hint="Hide the 0: 1: 2: … index labels on array items, showing just their values.">
+          <Toggle
+            checked={j.hideArrayIndices}
+            onChange={(v) => patchJson({ hideArrayIndices: v })}
+            label={j.hideArrayIndices ? "On" : "Off"}
+          />
+        </Row>
+
+        <Row label="Bare view" hint="Hide the JSON viewer's toolbar + frame and show just the tree, full-width — like a raw browser JSON view.">
+          <Toggle
+            checked={j.bareView}
+            onChange={(v) => patchJson({ bareView: v })}
+            label={j.bareView ? "On" : "Off"}
+          />
+        </Row>
+
+        <div className="flex justify-end pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            // Restore every JSON viewer option to its shipped default (Classic
+            // theme, bare view, hidden indices, …).
+            onClick={() => void patchJson({ ...DEFAULT_SETTINGS.json })}
+            disabled={
+              JSON.stringify(j) === JSON.stringify(DEFAULT_SETTINGS.json)
+            }
+          >
+            Reset to defaults
+          </Button>
+        </div>
       </div>
     </section>
   );
