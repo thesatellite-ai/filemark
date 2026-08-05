@@ -46,6 +46,15 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.11",
+    date: "2026-08-05",
+    tag: "Folders on top",
+    notes: [
+      "Sidebar now groups folders above files (like macOS Finder), sorted by name — no more folders scattered between your documents",
+      "New 'Folders on top' toggle in Options → Sidebar if you'd rather keep the old mixed ordering",
+    ],
+  },
+  {
     version: "0.1.10",
     date: "2026-07-03",
     tag: "JSON viewer & API detection",

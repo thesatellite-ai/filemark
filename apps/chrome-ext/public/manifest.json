@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Filemark: Markdown & Data Viewer",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Markdown viewer for Chrome that also renders JSON, CSV, and SQL/Prisma/DBML schemas as interactive views — 100% local, no uploads.",
   "homepage_url": "https://khanakia.com/apps/filemark/",
   "action": {
