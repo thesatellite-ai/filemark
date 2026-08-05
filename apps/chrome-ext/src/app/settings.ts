@@ -73,6 +73,12 @@ export const JSON_THEMES = [
 export type JsonThemeId = (typeof JSON_THEMES)[number];
 
 export interface Settings {
+  /** Sidebar file-tree preferences. */
+  sidebar: {
+    /** Group folders before files (macOS Finder "keep folders on top"). When
+     *  off, folders + files are interleaved, sorted by name. */
+    foldersFirst: boolean;
+  };
   /** Which file extensions the viewer will render. Disabling an extension
    *  makes the content script ignore it (so Chrome's default viewer takes
    *  over) and drops of that type are skipped. */
@@ -117,6 +123,9 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  sidebar: {
+    foldersFirst: true,
+  },
   formats: {
     md: true,
     mdx: true,
@@ -198,6 +207,7 @@ interface SettingsStore {
 function merge(stored: Partial<Settings> | null | undefined): Settings {
   const s = stored ?? {};
   return {
+    sidebar: { ...DEFAULT_SETTINGS.sidebar, ...(s.sidebar ?? {}) },
     formats: { ...DEFAULT_SETTINGS.formats, ...(s.formats ?? {}) },
     json: { ...DEFAULT_SETTINGS.json, ...(s.json ?? {}) },
     shortcuts: { ...(s.shortcuts ?? {}) },

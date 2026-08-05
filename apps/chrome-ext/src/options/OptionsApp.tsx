@@ -13,6 +13,7 @@ import {
   Globe,
   HelpCircle,
   Keyboard,
+  PanelLeft,
   Plus,
   RotateCcw,
   Settings as SettingsIcon,
@@ -62,6 +63,7 @@ const FORMAT_META: Record<FormatId, { label: string; icon: typeof FileText; desc
 // section component renders on the right.
 type SectionId =
   | "formats"
+  | "sidebar"
   | "remote"
   | "siterules"
   | "json"
@@ -71,6 +73,7 @@ type SectionId =
 
 const NAV: { id: SectionId; label: string; icon: typeof FileText }[] = [
   { id: "formats", label: "File formats", icon: FileCode2 },
+  { id: "sidebar", label: "Sidebar", icon: PanelLeft },
   { id: "remote", label: "Remote URLs", icon: Globe },
   { id: "siterules", label: "Site rules", icon: Ban },
   { id: "json", label: "JSON viewer", icon: FileJson },
@@ -156,6 +159,7 @@ export function OptionsApp() {
           {/* Content */}
           <main className="min-w-0 flex-1">
             {active === "formats" && <FormatsSection />}
+            {active === "sidebar" && <SidebarSection />}
             {active === "remote" && <RemoteUrlsSection />}
             {active === "siterules" && <SiteRulesSection />}
             {active === "json" && <JsonSection />}
@@ -212,6 +216,32 @@ function SectionHeading({
       </div>
       <p className="text-muted-foreground mt-0.5 text-xs">{subtitle}</p>
     </div>
+  );
+}
+
+/* ─── Sidebar ──────────────────────────────────────────────────────────── */
+
+function SidebarSection() {
+  const settings = useSettings((s) => s.settings);
+  const patch = useSettings((s) => s.patch);
+  const s = settings.sidebar;
+  return (
+    <section>
+      <SectionHeading
+        icon={PanelLeft}
+        title="Sidebar"
+        subtitle="How the library file tree is ordered and grouped."
+      />
+      <div className="space-y-5">
+        <Row label="Folders on top" hint="Group folders before files (like macOS Finder). Off: folders and files are mixed, sorted by name.">
+          <Toggle
+            checked={s.foldersFirst}
+            onChange={(v) => void patch({ sidebar: { foldersFirst: v } })}
+            label={s.foldersFirst ? "On" : "Off"}
+          />
+        </Row>
+      </div>
+    </section>
   );
 }
 

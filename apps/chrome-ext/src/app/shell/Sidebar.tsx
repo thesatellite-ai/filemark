@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useWebRecents, removeWebRecent, clearWebRecents, type WebRecent } from "../webRecents";
+import { useSettings } from "../settings";
 import { isInjectMode } from "../urlSync";
 import {
   useLibrary,
@@ -107,6 +108,8 @@ export function Sidebar() {
     [files]
   );
 
+  const foldersFirst = useSettings((s) => s.settings.sidebar.foldersFirst);
+
   const folderTrees = useMemo(() => {
     return Object.values(folders).map((folder) => {
       const folderFiles = Object.values(files).filter(
@@ -114,11 +117,11 @@ export function Sidebar() {
       );
       return {
         folder,
-        tree: buildTree(folderFiles),
+        tree: buildTree(folderFiles, foldersFirst),
         count: folderFiles.length,
       };
     });
-  }, [folders, files]);
+  }, [folders, files, foldersFirst]);
 
   // Count how many folders share each name. When a name appears more
   // than once (common when dropping multiple `docs/` from different
@@ -1203,7 +1206,7 @@ function pathContext(path: string): string {
   return idx > 0 ? path.slice(0, idx) : "";
 }
 
-function buildTree(files: LibraryFile[]): TreeNode[] {
+function buildTree(files: LibraryFile[], foldersFirst: boolean): TreeNode[] {
   const root: TreeNode[] = [];
   const folderMap = new Map<string, TreeNode & { kind: "folder" }>();
 
@@ -1228,7 +1231,34 @@ function buildTree(files: LibraryFile[]): TreeNode[] {
     }
     parentList.push({ kind: "file", file: f });
   }
+  sortNodes(root, foldersFirst);
   return root;
+}
+
+/** Display name for sorting — folder name, or a file's basename. */
+function nodeName(n: TreeNode): string {
+  return n.kind === "folder" ? n.name : n.file.name;
+}
+
+/**
+ * Sort each level of the tree in place, recursing into folders. With
+ * `foldersFirst` (the macOS Finder default) all folders sort ahead of all
+ * files; otherwise folders + files interleave, sorted by name. Within each
+ * group it's a case-insensitive, numeric-aware name compare.
+ */
+function sortNodes(nodes: TreeNode[], foldersFirst: boolean): void {
+  nodes.sort((a, b) => {
+    if (foldersFirst && a.kind !== b.kind) {
+      return a.kind === "folder" ? -1 : 1;
+    }
+    return nodeName(a).localeCompare(nodeName(b), undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+  for (const n of nodes) {
+    if (n.kind === "folder") sortNodes(n.children, foldersFirst);
+  }
 }
 
 /**
