@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { collectText } from "../collectText";
 
 /**
  * Treemap — nested rectangles sized by value.
@@ -204,18 +205,6 @@ function squarify(
     }
   }
   return out;
-}
-
-function collectText(node: ReactNode): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(collectText).join("");
-  if (typeof node === "object" && "props" in (node as object)) {
-    return collectText(
-      (node as { props: { children?: ReactNode } }).props.children
-    );
-  }
-  return "";
 }
 
 function asString(v: unknown): string {

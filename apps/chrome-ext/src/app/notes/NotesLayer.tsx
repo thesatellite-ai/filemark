@@ -13,6 +13,7 @@
 // (remarkSourceLine), with a raw-markdown text search as fallback.
 import { useEffect, useRef, useState } from "react";
 import { MessageSquarePlus } from "lucide-react";
+import { frontmatterLineOffset } from "@filemark/mdx";
 import { useNotes } from "./NotesContext";
 import { anchorIndexOf } from "./highlight";
 import {
@@ -52,16 +53,25 @@ function attrLine(node: Node | null, attr: typeof DATA_LINE_ATTR | typeof DATA_L
   return null;
 }
 
-/** Precise source-line reference from the stamped DOM: "42", "42–45", or "". */
-function domLineRange(range: Range): string {
+/**
+ * Precise source-line reference from the stamped DOM: "42", "42–45", or "".
+ * `data-line` is numbered from the POST-frontmatter body (MDXViewer strips the
+ * `---…---` block before parsing), so `offset` (frontmatter line count) is added
+ * to report whole-file lines — matching the raw-text `findLine` fallback, which
+ * searches the original source. Without this, notes on any doc with frontmatter
+ * report a line number short by the frontmatter's length.
+ */
+function domLineRange(range: Range, offset: number): string {
   const start = attrLine(range.startContainer, DATA_LINE_ATTR);
   if (start == null) return "";
   const end =
     attrLine(range.endContainer, DATA_LINE_ATTR) ??
     attrLine(range.startContainer, DATA_LINE_END_ATTR) ??
     start;
-  if (end === start) return String(start);
-  return start < end ? `${start}–${end}` : `${end}–${start}`;
+  const s = start + offset;
+  const e = end + offset;
+  if (e === s) return String(s);
+  return s < e ? `${s}–${e}` : `${e}–${s}`;
 }
 
 /**
@@ -139,7 +149,9 @@ export function NotesLayer({ source, onRequestOpen }: NotesLayerProps) {
         quote: text,
         heading: nearestHeading(body, range),
         // Precise DOM-stamped line first; source-text search as fallback.
-        line: domLineRange(range) || findLine(sourceRef.current, text),
+        line:
+          domLineRange(range, frontmatterLineOffset(sourceRef.current)) ||
+          findLine(sourceRef.current, text),
         anchorIndex: anchorIndexOf(body, range),
         x: rect.left + rect.width / 2,
         y: rect.top,

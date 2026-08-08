@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Filemark Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "/Volumes/D/www/projects/khanakia/chrome-extensions/filemark/examples",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "npm: build"
+    }
+  ]
+}

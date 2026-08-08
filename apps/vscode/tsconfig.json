@@ -1,0 +1,19 @@
+{
+  // Extension host — runs in VS Code's Node.js extension host (no DOM).
+  "compilerOptions": {
+    "target": "ES2022",
+    // Typecheck only (noEmit) — esbuild does the real CJS emit (--format=cjs).
+    // "bundler" resolution honours package.json "exports" subpaths (e.g.
+    // @filemark/tasks/pure), matching how esbuild resolves at build time.
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "types": ["node", "vscode"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
+    "noEmit": true
+  },
+  "include": ["src/extension.ts", "src/shared/**/*.ts"]
+}

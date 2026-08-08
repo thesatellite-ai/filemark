@@ -323,9 +323,12 @@ $$ \mathbf{A} = \begin{pmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{pmatrix
 
 Aligned equations:
 
-$$ \begin{aligned} f(x) &= (x + 1)^2 \\
+$$
+\begin{aligned}
+f(x) &= (x + 1)^2 \\
      &= x^2 + 2x + 1
-\end{aligned} $$
+\end{aligned}
+$$
 
 ---
 

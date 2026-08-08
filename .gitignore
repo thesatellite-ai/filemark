@@ -22,3 +22,6 @@ filemark.zip
 .lore/backups/
 .claude/settings.local.json
 .squad/
+
+# VS Code extension packages
+*.vsix

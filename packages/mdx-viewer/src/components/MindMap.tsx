@@ -80,7 +80,10 @@ export function MindMap(
         if (typeof window !== "undefined" && !(window as { katex?: unknown }).katex) {
           try {
             const katexMod = await import("katex");
-            (window as Record<string, unknown>).katex =
+            // Expose katex globally for markmap's KaTeX integration. Structural
+            // cast (not Record) so it matches the read on the line above and
+            // doesn't trip TS's Window-overlap check.
+            (window as { katex?: unknown }).katex =
               (katexMod as { default?: unknown }).default ?? katexMod;
           } catch {
             /* katex unavailable — math falls back to raw text */
@@ -303,41 +306,6 @@ function ToolbarBtn({
     </button>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-// Theme palette — read shadcn-token CSS vars off the document root so
-// the mindmap's branch colours track light / dark / sepia.
-// ─────────────────────────────────────────────────────────────────────────
-
-function readThemePalette(): string[] {
-  if (typeof window === "undefined") return DEFAULT_PALETTE;
-  try {
-    const cs = window.getComputedStyle(document.documentElement);
-    const v = (name: string, fallback: string) => {
-      const raw = cs.getPropertyValue(name).trim();
-      return raw ? `oklch(${raw})` : fallback;
-    };
-    return [
-      v("--primary", "#6366f1"),
-      v("--chart-1", "#3b82f6"),
-      v("--chart-2", "#10b981"),
-      v("--chart-3", "#f59e0b"),
-      v("--chart-4", "#ef4444"),
-      v("--chart-5", "#8b5cf6"),
-    ];
-  } catch {
-    return DEFAULT_PALETTE;
-  }
-}
-
-const DEFAULT_PALETTE = [
-  "#6366f1", // indigo
-  "#3b82f6", // blue
-  "#10b981", // emerald
-  "#f59e0b", // amber
-  "#ef4444", // rose
-  "#8b5cf6", // violet
-];
 
 // ─────────────────────────────────────────────────────────────────────────
 // CSS tree fallback — only rendered when markmap fails to load.

@@ -1,0 +1,21 @@
+# What NOT to ship in the .vsix. The published package needs only the built
+# output (dist/**: host bundle + webview entry + code-split chunks + fonts +
+# css), the marketplace icon (media/icon.png), and the docs (README, CHANGELOG,
+# LICENSE) — everything else here is source / dev tooling.
+#
+# NOTE: dist/** is intentionally NOT ignored — it's the whole runtime. Only its
+# sourcemaps are dropped (via **/*.map below).
+
+.vscode/**
+src/**
+node_modules/**
+tsconfig*.json
+vite.webview.config.ts
+vitest.config.ts
+Taskfile.yml
+.env
+.env.example
+.gitignore
+.DS_Store
+**/.DS_Store
+**/*.map

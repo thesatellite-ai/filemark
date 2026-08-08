@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { collectText } from "../collectText";
 import type { AssetResolver } from "@filemark/core";
 
 /**
@@ -221,18 +222,6 @@ function isoDate(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
-}
-
-function collectText(node: ReactNode): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(collectText).join("");
-  if (typeof node === "object" && "props" in (node as object)) {
-    return collectText(
-      (node as { props: { children?: ReactNode } }).props.children
-    );
-  }
-  return "";
 }
 
 function asString(v: unknown): string {

@@ -11,7 +11,6 @@ import { remarkGithubEmoji } from "./remarkGithubEmoji";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
 import rehypeRaw from "rehype-raw";
-import { parse as parseYaml } from "yaml";
 import type { ViewerProps } from "@filemark/core";
 
 import { Callout } from "./components/Callout";
@@ -81,6 +80,8 @@ import { Mermaid } from "./Mermaid";
 import { SchemaBlock } from "./SchemaBlock";
 import { DataBlock } from "./DataBlock";
 import { remarkCodeMeta } from "./remark-code-meta";
+import { normalizeMathFences } from "./normalizeMath";
+import { extractFrontmatter } from "./frontmatterParse";
 import { remarkSourceLine } from "./remarkSourceLine";
 import {
   parseInfoString,
@@ -154,6 +155,11 @@ export function MDXViewer(props: ViewerProps) {
   );
 
   const glossaryTerms = useMemo(() => extractGlossaryTerms(body), [body]);
+
+  // Repair non-canonical block-math fences before rendering (see normalizeMath).
+  // Only the render string is normalized — `body` (used for task/glossary
+  // extraction) keeps original line numbers. Canonical docs are unchanged.
+  const renderBody = useMemo(() => normalizeMathFences(body), [body]);
 
   const components = useMemo(
     () =>
@@ -556,7 +562,7 @@ export function MDXViewer(props: ViewerProps) {
               ]}
               components={components}
             >
-              {body}
+              {renderBody}
             </ReactMarkdown>
           </TasksProvider>
         </MDXComponentsProvider>
@@ -723,29 +729,6 @@ function DatagridMissingSrc() {
       </div>
     </div>
   );
-}
-
-const FRONT_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
-
-function extractFrontmatter(content: string): {
-  frontData: Record<string, unknown>;
-  body: string;
-} {
-  const match = FRONT_RE.exec(content);
-  if (!match) return { frontData: {}, body: content };
-  const yamlSrc = match[1];
-  try {
-    const data = parseYaml(yamlSrc);
-    if (data && typeof data === "object" && !Array.isArray(data)) {
-      return {
-        frontData: data as Record<string, unknown>,
-        body: content.slice(match[0].length),
-      };
-    }
-  } catch {
-    /* fall through — treat as body */
-  }
-  return { frontData: {}, body: content };
 }
 
 /**

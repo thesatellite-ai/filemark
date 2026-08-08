@@ -1,0 +1,91 @@
+version: '3'
+
+# Package / publish tasks for the Filemark VS Code extension.
+# Run `task --list`. Publishing tokens load from .env (git-ignored; see
+# .env.example): VSCE_PAT (VS Code Marketplace), OVSX_PAT (Open VSX).
+#
+# Why --no-dependencies on every vsce/ovsx call: the package manager is pnpm
+# (vsce can't walk pnpm's symlinked node_modules), AND the extension ships zero
+# runtime node_modules — the host (esbuild) and webview (vite) bundles inline
+# everything into dist/**. So there are no runtime deps to include.
+
+dotenv: ['.env']
+
+vars:
+  # Extension identity — keep in sync with package.json.
+  PUBLISHER: khanakia
+  NAME: filemark
+
+tasks:
+  build:
+    desc: Build host + webview bundles into dist/
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - pnpm run build
+
+  typecheck:
+    desc: Typecheck host + webview
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - pnpm run typecheck
+
+  test:
+    desc: Run the unit tests
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - pnpm run test
+
+  package:
+    # vscode:prepublish runs `pnpm run build` first (vsce invokes it).
+    desc: Build + produce the .vsix
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - pnpm dlx @vscode/vsce package --no-dependencies
+
+  ls:
+    desc: List exactly what the .vsix will contain (sanity-check .vscodeignore)
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - pnpm dlx @vscode/vsce ls --no-dependencies
+
+  publish:
+    desc: Publish to the VS Code Marketplace (needs VSCE_PAT in .env)
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - pnpm dlx @vscode/vsce publish --no-dependencies -p "$VSCE_PAT"
+
+  publish-ovsx:
+    desc: Publish to Open VSX for Cursor / VSCodium users (needs OVSX_PAT in .env)
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - task: package
+      - pnpm dlx ovsx create-namespace {{.PUBLISHER}} -p "$OVSX_PAT" || true
+      - pnpm dlx ovsx publish "{{.NAME}}-$(node -p "require('./package.json').version").vsix" -p "$OVSX_PAT"
+
+  release:
+    desc: Build the .vsix, tag vX.Y.Z, and cut a GitHub Release (needs gh auth)
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - task: package
+      - |
+        VER=$(node -p "require('./package.json').version")
+        git tag "vscode-v$VER"
+        git push origin "vscode-v$VER"
+        gh release create "vscode-v$VER" "{{.NAME}}-$VER.vsix" --title "Filemark for VS Code v$VER" --generate-notes
+
+  reinstall:
+    desc: Repackage and reinstall into VS Code + Cursor (run after editing code)
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - task: package
+      - |
+        VSIX="{{.NAME}}-$(node -p "require('./package.json').version").vsix"
+        code --install-extension "$VSIX" --force || true
+        cursor --install-extension "$VSIX" --force || true
+        echo ">> Installed. Reload each window (Cmd+Shift+P -> Reload Window)."
+
+  uninstall:
+    desc: Remove the extension from VS Code + Cursor
+    cmds:
+      - code --uninstall-extension {{.PUBLISHER}}.{{.NAME}} || true
+      - cursor --uninstall-extension {{.PUBLISHER}}.{{.NAME}} || true

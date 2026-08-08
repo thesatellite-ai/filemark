@@ -60,10 +60,13 @@ $$ f(x) = \begin{cases} x^2 & \text{if } x \geq 0 \\ -x  & \text{if } x < 0 \end
 
 Aligned multi-line derivation:
 
-$$ \begin{aligned} (a+b)^2 &= (a+b)(a+b) \\
+$$
+\begin{aligned}
+(a+b)^2 &= (a+b)(a+b) \\
         &= a^2 + ab + ba + b^2 \\
         &= a^2 + 2ab + b^2
-\end{aligned} $$
+\end{aligned}
+$$
 
 ## 8. Accents, vectors, decorations
 

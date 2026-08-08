@@ -1,4 +1,6 @@
 export { MDXViewer } from "./MDXViewer";
+export { normalizeMathFences } from "./normalizeMath";
+export { frontmatterLineOffset, extractFrontmatter } from "./frontmatterParse";
 export { GithubMarkdown } from "./GithubMarkdown";
 export { Callout } from "./components/Callout";
 export { Tabs, Tab } from "./components/Tabs";

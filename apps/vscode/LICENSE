@@ -1,0 +1,192 @@
+Filemark License
+Version 1.0, April 2026
+
+Copyright (c) 2026 The Satellite AI
+All rights reserved.
+
+This is a source-available license. The source code of the Software
+(defined below) is published so that you can read, audit, and evaluate
+it. It is NOT an open-source license. Your rights are limited to
+installing and using the Software; you may not modify, redistribute,
+sublicense, sell, or incorporate the Software into any other product.
+
+---
+
+1. DEFINITIONS
+
+"The Software" means Filemark, including its source code, compiled
+artifacts, documentation, example files, and any other files
+distributed under this License.
+
+"You" (or "Your") means the individual or legal entity exercising
+rights under this License.
+
+"Copyright Holder" means The Satellite AI.
+
+"Derivative Work" means any work, in source or binary form, that is
+based on or derived from the Software, including but not limited to
+modifications, translations, adaptations, ports, and compilations.
+
+---
+
+2. GRANT OF USE
+
+Subject to Your full compliance with this License, the Copyright
+Holder grants You a worldwide, royalty-free, non-exclusive, non-
+transferable, non-sublicensable license to:
+
+   (a) install and run the Software for Your personal, internal
+       business, educational, or research purposes;
+
+   (b) view, read, and study the source code of the Software for the
+       purpose of evaluating, auditing, understanding, or debugging
+       its behavior on Your own machine.
+
+No other rights are granted, whether by implication, estoppel, or
+otherwise. All rights not expressly granted are reserved by the
+Copyright Holder.
+
+---
+
+3. RESTRICTIONS
+
+You may NOT, and may not permit any third party to:
+
+   (a) modify, adapt, translate, port, or create any Derivative Work
+       of the Software, except for private, non-distributed
+       modifications You make solely for Your own personal use and
+       that are not shared with, distributed to, or made accessible
+       to any third party in any form;
+
+   (b) copy, reproduce, redistribute, publish, display, transmit,
+       upload, host, mirror, or otherwise make the Software (or any
+       substantial portion of it, in source or binary form) available
+       to any third party;
+
+   (c) sublicense, rent, lease, lend, loan, or sell the Software, or
+       include it in any paid service or paid product;
+
+   (d) incorporate, embed, bundle, or otherwise include the Software
+       or any substantial portion of it into any other software,
+       product, service, library, extension, plugin, or distribution;
+
+   (e) remove, alter, obscure, or render illegible any copyright
+       notice, trademark, attribution, or other proprietary marking
+       contained in the Software;
+
+   (f) use the Software, in whole or in part, to train, fine-tune,
+       benchmark, or otherwise develop any machine-learning model,
+       artificial-intelligence system, or large language model,
+       without the Copyright Holder's prior written consent;
+
+   (g) use the name "Filemark", "The Satellite AI", or any
+       confusingly similar mark to promote, endorse, or identify any
+       product, service, or work other than the Software itself,
+       without the Copyright Holder's prior written consent;
+
+   (h) reverse engineer, decompile, or disassemble any non-source-
+       form portion of the Software, except to the extent such
+       activity is expressly permitted by applicable law notwith-
+       standing this limitation;
+
+   (i) use the Software to develop, train, evaluate, or compete
+       with a substantially similar commercial product or service
+       offered by the Copyright Holder.
+
+---
+
+4. CONTRIBUTIONS
+
+If You submit any contribution (including but not limited to a
+patch, pull request, issue report, suggestion, bug report, feature
+request, translation, example file, or other feedback) to the
+Copyright Holder or to any repository maintained by the Copyright
+Holder, You grant the Copyright Holder a perpetual, irrevocable,
+worldwide, royalty-free, fully sublicensable, transferable license
+to use, reproduce, modify, distribute, sublicense, and relicense
+that contribution as part of the Software (or any future version or
+fork of it) under any terms the Copyright Holder chooses, without
+obligation to credit You.
+
+You represent and warrant that each contribution You submit is
+Your original work or is otherwise licensed to You in a way that
+allows You to grant the above rights.
+
+---
+
+5. TERMINATION
+
+This License terminates automatically, without notice, if You
+breach any of its terms. Upon termination You must immediately:
+
+   (a) cease all use of the Software;
+   (b) destroy all copies of the Software in Your possession or
+       control, in any form.
+
+Sections 3, 5, 6, 7, 8, and 9 survive termination.
+
+---
+
+6. THIRD-PARTY COMPONENTS
+
+The Software may include third-party software components that are
+distributed under their own licenses. Those components are
+governed by their respective licenses; this License does not
+alter, supersede, or affect them. The list of third-party
+components and their respective licenses, when applicable, is
+available in the repository.
+
+---
+
+7. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT
+WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, TITLE, AND NONINFRINGEMENT. THE COPYRIGHT HOLDER MAKES NO
+WARRANTY THAT THE SOFTWARE WILL BE ERROR-FREE, UNINTERRUPTED,
+SECURE, OR AVAILABLE AT ANY PARTICULAR TIME OR LOCATION.
+
+---
+
+8. LIMITATION OF LIABILITY
+
+IN NO EVENT AND UNDER NO LEGAL THEORY, WHETHER IN TORT (INCLUDING
+NEGLIGENCE), CONTRACT, STRICT LIABILITY, OR OTHERWISE, SHALL THE
+COPYRIGHT HOLDER BE LIABLE TO YOU FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES OF ANY
+CHARACTER ARISING OUT OF OR IN CONNECTION WITH THE USE OR INABILITY
+TO USE THE SOFTWARE, INCLUDING BUT NOT LIMITED TO DAMAGES FOR LOSS
+OF GOODWILL, WORK STOPPAGE, DATA LOSS, COMPUTER FAILURE OR MAL-
+FUNCTION, OR ANY OTHER COMMERCIAL DAMAGES OR LOSSES, EVEN IF THE
+COPYRIGHT HOLDER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGES.
+
+---
+
+9. GENERAL
+
+   (a) If any provision of this License is held unenforceable, the
+       remaining provisions continue in full force and effect.
+
+   (b) The Copyright Holder's failure to enforce any provision is
+       not a waiver of that provision.
+
+   (c) This License is the entire agreement between You and the
+       Copyright Holder regarding the Software and supersedes any
+       prior agreements or understandings.
+
+   (d) The Copyright Holder may publish updated versions of this
+       License. Updated versions apply to future releases of the
+       Software, not retroactively to previously released versions
+       unless accompanied by a new release.
+
+   (e) This License and any dispute arising under or related to it
+       are governed by the laws applicable to the Copyright Holder,
+       without regard to conflict-of-laws principles.
+
+---
+
+For permissions beyond the scope of this License — including
+redistribution, commercial bundling, or modifications for distri-
+bution — contact the Copyright Holder.

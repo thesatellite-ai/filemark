@@ -1,0 +1,136 @@
+/* Webview styling for the Filemark VS Code preview.
+ *
+ * Mirrors the chrome-ext / website contract: Tailwind v4 + the shadcn design
+ * tokens the viewer components use (bg-muted, text-foreground, border, …), the
+ * `[data-theme]` dark variant the ThemeProvider drives, and the shared MDX body
+ * styles from @filemark/mdx. This is the one stylesheet the webview loads. */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@filemark/mdx/styles.css";
+@import "katex/dist/katex.min.css";
+
+/* Tailwind only scans this app by default; opt the workspace viewer packages in
+   so their utility classes survive into the built CSS. Path is relative to this
+   file (apps/vscode/src/webview/ → repo root). */
+@source "../../../../packages/*/src/**/*.{ts,tsx,js,jsx}";
+
+/* ThemeProvider writes `data-theme` on <html>; map shadcn's dark variant to it. */
+@custom-variant dark (&:is([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.5rem;
+  --code-bg: oklch(0.97 0 0);
+
+  --fv-content-width: 820px;
+  --fv-font-size: 14px;
+  --fv-line-height: 1.65;
+  --fv-font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html[data-theme="dark"] {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.185 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.19 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.245 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.245 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --code-bg: oklch(0.12 0 0);
+}
+
+html[data-theme="sepia"] {
+  --background: oklch(0.95 0.03 85);
+  --foreground: oklch(0.3 0.04 60);
+  --card: oklch(0.97 0.025 85);
+  --card-foreground: oklch(0.3 0.04 60);
+  --popover: oklch(0.97 0.025 85);
+  --popover-foreground: oklch(0.3 0.04 60);
+  --primary: oklch(0.45 0.11 50);
+  --primary-foreground: oklch(0.98 0.02 85);
+  --secondary: oklch(0.9 0.045 85);
+  --secondary-foreground: oklch(0.3 0.04 60);
+  --muted: oklch(0.9 0.045 85);
+  --muted-foreground: oklch(0.5 0.05 65);
+  --accent: oklch(0.9 0.045 85);
+  --accent-foreground: oklch(0.3 0.04 60);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0.02 85);
+  --border: oklch(0.85 0.05 80);
+  --input: oklch(0.85 0.05 80);
+  --ring: oklch(0.55 0.09 60);
+  --code-bg: oklch(0.91 0.05 85);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--fv-font-family);
+  }
+}

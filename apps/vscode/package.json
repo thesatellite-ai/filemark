@@ -1,0 +1,256 @@
+{
+  "name": "filemark",
+  "displayName": "Filemark — Markdown & Data Preview",
+  "description": "Rich Markdown preview in VS Code, powered by filemark — callouts, charts, kanban, tasks, mermaid, math, and more. Raw stays your native editor; the preview scrolls with it.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "khanakia",
+  "license": "SEE LICENSE IN LICENSE",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Visualization", "Other"],
+  "keywords": [
+    "markdown",
+    "preview",
+    "mdx",
+    "mermaid",
+    "math",
+    "tasks",
+    "kanban",
+    "chart",
+    "gfm",
+    "filemark"
+  ],
+  "galleryBanner": { "color": "#0a0a0a", "theme": "dark" },
+  "repository": { "type": "git", "url": "https://github.com/thesatellite-ai/filemark.git" },
+  "bugs": { "url": "https://github.com/thesatellite-ai/filemark/issues" },
+  "homepage": "https://khanakia.com/apps/filemark/",
+  "main": "./dist/extension.js",
+  "activationEvents": ["onLanguage:markdown", "onView:filemark.tasks"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "filemark.openPreview",
+        "title": "Open Filemark Preview",
+        "icon": "$(book)"
+      },
+      {
+        "command": "filemark.openPreviewToSide",
+        "title": "Open Filemark Preview to the Side",
+        "icon": "$(layout-sidebar-right)"
+      },
+      {
+        "command": "filemark.openInBrowser",
+        "title": "Open in Browser (Filemark)",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "filemark.toggleGithubPreview",
+        "title": "Toggle GitHub Preview",
+        "category": "Filemark",
+        "icon": "$(github)"
+      },
+      {
+        "command": "filemark.tasks.refresh",
+        "title": "Refresh Tasks",
+        "category": "Filemark",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "filemark.tasks.openTask",
+        "title": "Open Task",
+        "category": "Filemark"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "filemark.openPreviewToSide",
+          "when": "editorLangId == markdown",
+          "group": "navigation@1"
+        },
+        {
+          "command": "filemark.openPreview",
+          "when": "editorLangId == markdown",
+          "group": "navigation@2"
+        },
+        {
+          "command": "filemark.openInBrowser",
+          "when": "editorLangId == markdown && resourceScheme == file",
+          "group": "navigation@3"
+        },
+        {
+          "command": "filemark.toggleGithubPreview",
+          "when": "editorLangId == markdown",
+          "group": "navigation@4"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "filemark.tasks.refresh",
+          "when": "view == filemark.tasks",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "filemark.openPreview",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "filemark.openPreviewToSide",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "filemark.openInBrowser",
+          "when": "editorLangId == markdown && resourceScheme == file"
+        },
+        {
+          "command": "filemark.toggleGithubPreview",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "filemark.tasks.refresh",
+          "when": "true"
+        },
+        {
+          "command": "filemark.tasks.openTask",
+          "when": "false"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "filemark.openPreview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorLangId == markdown"
+      },
+      {
+        "command": "filemark.openPreviewToSide",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v",
+        "when": "editorLangId == markdown"
+      }
+    ],
+    "configuration": {
+      "title": "Filemark",
+      "properties": {
+        "filemark.autoOpenPreview": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically open the Filemark preview when a Markdown file is opened."
+        },
+        "filemark.scrollSync": {
+          "type": "boolean",
+          "default": true,
+          "description": "Keep the editor and Filemark preview scroll positions in sync (both directions)."
+        },
+        "filemark.theme": {
+          "type": "string",
+          "enum": ["auto", "light", "dark", "sepia"],
+          "enumDescriptions": [
+            "Follow the VS Code color theme (light/dark)",
+            "Light",
+            "Dark",
+            "Sepia"
+          ],
+          "default": "auto",
+          "description": "Preview color theme. 'auto' follows VS Code's light/dark theme."
+        },
+        "filemark.fontFamily": {
+          "type": "string",
+          "enum": ["sans", "serif", "mono"],
+          "default": "sans",
+          "description": "Preview body font family."
+        },
+        "filemark.fontSize": {
+          "type": "number",
+          "default": 14,
+          "minimum": 10,
+          "maximum": 28,
+          "description": "Preview body font size, in pixels."
+        },
+        "filemark.lineHeight": {
+          "type": "number",
+          "default": 1.65,
+          "minimum": 1.2,
+          "maximum": 2.4,
+          "description": "Preview body line height (unitless multiplier)."
+        },
+        "filemark.contentWidth": {
+          "type": "number",
+          "default": 760,
+          "minimum": 480,
+          "maximum": 2000,
+          "description": "Maximum content column width, in pixels."
+        },
+        "filemark.customCss": {
+          "type": "string",
+          "default": "",
+          "editPresentation": "multilineText",
+          "description": "Custom CSS injected into the preview (e.g. `.markdown-body { ... }`, `.fv-mdx-body h1 { ... }`)."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "filemark",
+          "title": "Filemark",
+          "icon": "$(checklist)"
+        }
+      ]
+    },
+    "views": {
+      "filemark": [
+        {
+          "id": "filemark.tasks",
+          "name": "Tasks",
+          "icon": "$(checklist)",
+          "contextualTitle": "Filemark Tasks"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "filemark.tasks",
+        "contents": "No Markdown tasks found in this workspace.\n\nTasks are GFM checkboxes with optional sigils, e.g. `- [ ] Ship it !p1 @alice`.\n\n[Refresh](command:filemark.tasks.refresh)"
+      }
+    ]
+  },
+  "scripts": {
+    "build:host": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js --minify",
+    "build:webview": "vite build --config vite.webview.config.ts",
+    "build": "pnpm run build:webview && pnpm run build:host",
+    "watch:host": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js --sourcemap --watch",
+    "watch:webview": "vite build --watch --config vite.webview.config.ts",
+    "dev": "concurrently -k -n webview,host -c cyan,magenta \"pnpm run watch:webview\" \"pnpm run watch:host\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.webview.json",
+    "test": "vitest run",
+    "vscode:prepublish": "pnpm run build"
+  },
+  "dependencies": {
+    "@filemark/core": "workspace:*",
+    "@filemark/mdx": "workspace:*",
+    "@filemark/tasks": "workspace:*",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.0.0",
+    "@types/vscode": "^1.90.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "concurrently": "^9.1.0",
+    "esbuild": "^0.24.0",
+    "tailwindcss": "^4.3.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.0",
+    "vitest": "^4.1.5"
+  }
+}

@@ -36,6 +36,7 @@
 
 import { create } from "zustand";
 import { extractTasks, type Task } from "@filemark/tasks";
+import { extractFrontmatter } from "@filemark/mdx";
 
 interface CacheCell {
   /** FNV-1a hash of the file content string. */
@@ -86,15 +87,15 @@ export const useTaskIndex = create<TaskIndexState>((set, get) => ({
     // double-fires and auto-refresh ticks with identical bytes.
     if (prev && prev.hash === hash) return;
 
-    // Strip frontmatter BEFORE calling extractTasks so task.line values
-    // are body-relative — matching what @filemark/mdx's MDXViewer
-    // produces (it also parses the frontmatter-stripped body) and
-    // matching what react-markdown's `node.position.start.line` reports
-    // on each <li>'s data-fv-task-line attribute. Without this, panel
-    // click → openTaskLocation → scrollTarget.line would be
-    // full-content-relative, so querySelector would miss the target
-    // (or highlight the wrong row coincidentally at the same offset).
-    const body = stripFrontmatter(content);
+    // Strip frontmatter BEFORE calling extractTasks so task.line values are
+    // body-relative — matching what @filemark/mdx's MDXViewer produces (it
+    // parses the frontmatter-stripped body) and what react-markdown reports on
+    // each <li>'s data-fv-task-line attribute. Panel click → openTaskLocation
+    // → querySelector([data-fv-task-line=N]) relies on this exact agreement.
+    // We use MDXViewer's OWN extractFrontmatter (not a local copy) so the two
+    // can't diverge — notably on invalid-YAML fences, which a naive line strip
+    // would remove but MDXViewer keeps.
+    const body = extractFrontmatter(content).body;
 
     let tasks: Task[] = [];
     try {
@@ -168,21 +169,3 @@ function fnv1a(s: string): string {
   return h.toString(16).padStart(8, "0");
 }
 
-/**
- * Strip a leading YAML-ish `---` frontmatter block from markdown content.
- * Mirrors the extractor in @filemark/mdx's MDXViewer so the line numbers
- * produced by extractTasks here match what react-markdown sees when it
- * renders the body. If no frontmatter is present the original content
- * is returned unchanged.
- */
-function stripFrontmatter(content: string): string {
-  const lines = content.split(/\r?\n/);
-  if (lines[0]?.trim() !== "---") return content;
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim() === "---") {
-      return lines.slice(i + 1).join("\n");
-    }
-  }
-  // Unterminated frontmatter — bail safely.
-  return content;
-}

@@ -513,7 +513,10 @@ Absolutely — install it from source, unpack the build, distribute the `dist/` 
 - **Link graph / backlinks** between markdown files
 - **VS Code-style keyboard rebinding** with chord capture and conflict detection
 - **Full MDX with JavaScript expressions** via a sandboxed iframe
-- **VS Code extension** — the same renderers inside a VS Code webview
+
+### Shipped
+
+- **VS Code extension** — the same renderers inside a VS Code webview: live preview, open-to-the-side, two-way editor↔preview scroll sync, double-click-to-source, interactive task checkboxes that write back to the file, a GitHub-preview toggle, and a workspace task tree. See [`apps/vscode`](./apps/vscode/README.md). (Not yet on the Marketplace.)
 
 ---
 

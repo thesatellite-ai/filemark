@@ -5,7 +5,9 @@ import { defineConfig } from "tsup";
 // parser can be reused outside any specific markdown pipeline —
 // filemark/mdx walks mdast and feeds us the underlying source line).
 export default defineConfig({
-  entry: ["src/index.ts"],
+  // "." = full barrel (incl. React context); "./pure" = parser-only, React-free
+  // entry for non-React hosts (see src/pure.ts).
+  entry: ["src/index.ts", "src/pure.ts"],
   format: ["esm"],
   dts: true,
   sourcemap: true,

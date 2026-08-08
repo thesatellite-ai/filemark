@@ -9,6 +9,9 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
 import type { ViewerProps } from "@filemark/core";
+import { remarkSourceLine } from "./remarkSourceLine";
+import { normalizeMathFences } from "./normalizeMath";
+import { extractFrontmatter } from "./frontmatterParse";
 
 import { Mermaid } from "./Mermaid";
 import { SmartLink } from "./SmartLink";
@@ -29,10 +32,16 @@ import { SmartImage } from "./SmartImage";
 //  - <pre>/<code> style attributes (shiki writes inline colors).
 // Everything else stays at GitHub's defaults: unknown component tags
 // (<callout>, <chart>, <datagrid>, …) are stripped, exactly like GitHub.
+// data-line / data-line-end are stamped by remarkSourceLine (below) so a host
+// can map the rendered DOM back to source lines (scroll sync / jump-to-source).
+// They arrive as literal hyphenated hast properties; allow both the hyphenated
+// and camelCased forms on every element so sanitize keeps them.
+const SOURCE_LINE_ATTRS = ["data-line", "dataLine", "data-line-end", "dataLineEnd"];
 const SANITIZE_SCHEMA = {
   ...defaultSchema,
   attributes: {
     ...defaultSchema.attributes,
+    "*": [...(defaultSchema.attributes?.["*"] ?? []), ...SOURCE_LINE_ATTRS],
     code: [...(defaultSchema.attributes?.code ?? []), "className", "style"],
     span: [...(defaultSchema.attributes?.span ?? []), "className", "style"],
     pre: [...(defaultSchema.attributes?.pre ?? []), "className", "style"],
@@ -61,7 +70,13 @@ const SANITIZE_SCHEMA = {
 export function GithubMarkdown(props: ViewerProps) {
   const { content, assets, onNavigate } = props;
 
-  const body = useMemo(() => stripFrontmatter(content), [content]);
+  // Strip frontmatter (same helper as MDXViewer, so both viewers agree on what
+  // counts as frontmatter), then repair non-canonical block-math fences (see
+  // normalizeMath) so a `$$ …multi-line… $$` block can't swallow the doc.
+  const body = useMemo(
+    () => normalizeMathFences(extractFrontmatter(content).body),
+    [content],
+  );
 
   const components = useMemo(
     () =>
@@ -127,7 +142,9 @@ export function GithubMarkdown(props: ViewerProps) {
     <div className="fv-github-root">
       <article className="markdown-body">
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkGemoji]}
+          // remarkSourceLine LAST so data-line reflects the final mdast (lets a
+          // host sync scroll / jump-to-source in GitHub mode too).
+          remarkPlugins={[remarkGfm, remarkGemoji, remarkSourceLine]}
           urlTransform={(url) =>
             url.startsWith("data:image/") ? url : defaultUrlTransform(url)
           }
@@ -145,11 +162,3 @@ export function GithubMarkdown(props: ViewerProps) {
   );
 }
 
-// Minimal frontmatter strip — matches the `---\n…\n---` fence at the very start
-// of the file. GitHub renders frontmatter as a table; filemark's rich viewer
-// strips it, so we do the same here for parity. (See M-GHPREVIEW to render it
-// as a table later.)
-function stripFrontmatter(content: string): string {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(content);
-  return m ? content.slice(m[0].length) : content;
-}

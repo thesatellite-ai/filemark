@@ -1,4 +1,5 @@
-import { isValidElement, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { collectText } from "../collectText";
 import { collectMarkers, isMarker } from "./markerWalk";
 
 /**
@@ -218,14 +219,4 @@ function shortDate(d: Date): string {
 
 function computePct(t: number, fromMs: number, span: number): number {
   return ((t - fromMs) / span) * 100;
-}
-
-function collectText(node: ReactNode): string {
-  if (node == null) return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(collectText).join("");
-  if (isValidElement(node)) {
-    return collectText((node.props as { children?: ReactNode }).children);
-  }
-  return "";
 }

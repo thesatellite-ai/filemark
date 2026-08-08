@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { collectText } from "../collectText";
 
 // Inline SVG icons (no lucide-react dependency — this package renders with
 // hand-rolled SVGs; see Roadmap/Backlinks/ReadingTime). 16px, currentColor.
@@ -201,12 +202,3 @@ function parseOutline(text: string): TreeNode[] {
 
 /** Recursively flatten a ReactNode subtree to its text — for the `<FileTree>`
  *  HTML-tag form, where the outline arrives as rendered children. */
-function collectText(node: ReactNode): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(collectText).join("");
-  if (typeof node === "object" && "props" in (node as object)) {
-    return collectText((node as { props: { children?: ReactNode } }).props.children);
-  }
-  return "";
-}

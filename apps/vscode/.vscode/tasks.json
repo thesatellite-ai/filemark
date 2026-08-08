@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // One-shot build — used as the launch preLaunchTask so the first Run
+      // always has a complete dist/. Reliable (never hangs).
+      "label": "npm: build",
+      "type": "shell",
+      "command": "pnpm run build",
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      // Auto-rebuild on save (host + webview). Start it once via
+      // Terminal → Run Task → "watch" (or `pnpm --filter @filemark/vscode dev`).
+      // Then edits rebuild automatically — press Cmd/Ctrl+R in the Extension
+      // Development Host to apply (VS Code can't hot-reload extension code).
+      "label": "watch",
+      "type": "shell",
+      "command": "pnpm run dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "group": "build"
+    }
+  ]
+}
