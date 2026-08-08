@@ -182,7 +182,14 @@
   border-radius: 0;
   max-width: none;
 }
-.fv-mdx-body code:not(.fv-code-shiki code) {
+/* Inline-code pill styling — MUST exclude ALL code inside a code block, not just
+ * the shiki subtree. The plain fallback (.fv-code-plain code, rendered before
+ * shiki finishes loading async) is also a bare <code>; if it matched this rule it
+ * got the pill background+border, and because <code> is display:inline inside a
+ * pre-wrap <pre>, that background hugged each wrapped line — a per-line "band"
+ * that flickered in on first paint and vanished once shiki swapped in. Excluding
+ * the whole .fv-code-block covers plain + shiki + any future block variant. */
+.fv-mdx-body code:not(.fv-code-block code) {
   background: var(--fm-prose-code-bg, var(--code-bg));
   border: 1px solid var(--border);
   padding: 1px 5px;
@@ -790,7 +797,17 @@
   font-family: var(--fm-prose-code-font, ui-monospace, SFMono-Regular, Menlo, monospace);
   line-height: 1.55;
 }
-.fv-code-shiki pre { margin: 0; background: transparent !important; }
+/* Force the whole shiki subtree transparent so the block's single background
+ * (set on .fv-code-block) shows through. We MUST reset the inner <code> too, not
+ * just <pre>: shiki emits <pre><code><span class="line">…, and that <code> is
+ * display:inline. Hosts that inject a default `code { background }` — notably the
+ * VS Code webview's --vscode-textPreformat-background — otherwise paint an inline
+ * background that hugs each wrapped line, giving every row a subtle "selected"
+ * band. (Not reproducible without a host default stylesheet, e.g. a bare page.)
+ * Keep pre + code + .line all covered. */
+.fv-code-shiki pre,
+.fv-code-shiki code,
+.fv-code-shiki .line { margin: 0; background: transparent !important; }
 .fv-code-plain pre,
 .fv-code-plain code { margin: 0; background: transparent; font: inherit; color: inherit; }
 

@@ -7,7 +7,12 @@
  * packages/mdx-viewer/src/MonaSans-OFL.txt.
  */
 @font-face {
-  font-family: "Mona Sans";
+  /* Registered as BOTH "Mona Sans VF" (the exact name github.com's markdown
+   * body font-family stack leads with — the VF = variable-font build) and the
+   * plain "Mona Sans" alias. Without the "VF" name the first entry of GitHub's
+   * stack silently fell through to -apple-system, so our render used the system
+   * font instead of Mona Sans — the "looks off vs github.com" cause. */
+  font-family: "Mona Sans VF", "Mona Sans";
   font-weight: 200 900;
   font-style: normal;
   font-display: swap;
@@ -1402,6 +1407,36 @@
  * both here so the GitHub view mode lines up 1:1 with GitHub. The host must NOT
  * add horizontal padding in GitHub mode (it would widen the box past 902) — see
  * the Viewer/GithubDoc wrappers. Keep this block on regen. */
+
+/* ---- filemark: seamless GitHub canvas (the "two backgrounds" fix) ----
+ * .markdown-body is a centered, max-width column painted with GitHub's canvas
+ * (--bgColor-default: #0d1117 dark / #fff light). Its wrapper .fv-github-root
+ * had NO background, so the host surface (VS Code's near-black editor bg, or the
+ * chrome-ext page bg) showed through the left/right gutters — the content read as
+ * a lighter BOX floating on a darker page. github.com has no such seam: the page
+ * bg IS the content bg, edge-to-edge. So we paint the SAME canvas color across
+ * the full-width .fv-github-root and let it own the vertical page padding, making
+ * the whole surface one continuous color. Theme-aware via both the OS media query
+ * and the host's [data-theme] attribute (the webview theme can differ from OS).
+ * min-height keeps short docs filled so no host bg peeks below. Keep on regen. */
+.fv-github-root {
+  --fv-github-canvas: #ffffff;
+  background-color: var(--fv-github-canvas);
+  min-height: 100vh;
+  padding-block: 2rem 4rem;
+}
+@media (prefers-color-scheme: dark) {
+  .fv-github-root {
+    --fv-github-canvas: #0d1117;
+  }
+}
+[data-theme="light"] .fv-github-root {
+  --fv-github-canvas: #ffffff;
+}
+[data-theme="dark"] .fv-github-root {
+  --fv-github-canvas: #0d1117;
+}
+
 .markdown-body {
   box-sizing: border-box;
   /* Honor filemark's content-width control (the one reading pref that makes
@@ -1441,14 +1476,18 @@
   list-style-type: square;
 }
 
-/* ---- filemark: use GitHub's bundled Mona Sans (see @font-face at top) ----
- * Prefer Mona Sans; fall back to the exact github-markdown-css system stack if
- * the font fails to load. Appended last so it wins over the inlined sheet's
- * font-family on .markdown-body. Keep on regen. */
+/* ---- filemark: mirror github.com's EXACT markdown body font stack ----
+ * Copied verbatim from github.com's live `.markdown-body` font-family (2026).
+ * "Mona Sans VF" is GitHub's variable-font markdown-content face (NOT just the
+ * brand/UI font — GitHub renders README bodies in it), and it resolves to our
+ * bundled @font-face (registered under that exact name at the top of this sheet).
+ * "Noto Sans Backtick Fix" is GitHub's inline-code glyph shim. Appended last so
+ * it wins over the inlined sheet's default font-family. Keep on regen. */
 .markdown-body {
   font-family:
-    "Mona Sans", -apple-system, "system-ui", "Segoe UI", "Noto Sans", Helvetica,
-    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    "Mona Sans VF", -apple-system, "system-ui", "Segoe UI",
+    "Noto Sans Backtick Fix", "Noto Sans", Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 /* ---- filemark: match GitHub's text rendering (the "colors look lighter" fix) ----

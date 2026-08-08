@@ -174,7 +174,16 @@ export function App() {
   );
 
   if (!doc || !viewerProps) {
-    return <div className="text-muted-foreground p-6 text-sm">Loading…</div>;
+    // Matches the boot loader in the initial webview HTML (extension.ts buildHtml)
+    // so the spinner is continuous from bundle-load through content-render — no
+    // blank flash when React takes over #root. Inline styles + VS Code vars keep
+    // it independent of whether app CSS has applied yet.
+    return (
+      <div className="fv-boot">
+        <span className="fv-boot-spin" />
+        Loading preview…
+      </div>
+    );
   }
 
   const isGithub = doc.config.viewMode === "github";
@@ -186,7 +195,7 @@ export function App() {
       {/* User CSS from the filemark.customCss setting (live via config re-post). */}
       {doc.config.customCss ? <style>{doc.config.customCss}</style> : null}
 
-      <PreviewToolbar
+      <PreviewControls
         viewMode={doc.config.viewMode}
         zoom={zoom}
         onSetViewMode={setViewMode}
@@ -198,8 +207,10 @@ export function App() {
       {isGithub ? (
         // CSS `zoom` scales everything (getBoundingClientRect stays consistent,
         // so scroll math still lines up). Width var mirrors the chrome-ext.
+        // No padding here: .fv-github-root owns the page padding AND paints the
+        // GitHub canvas full-width, so any wrapper padding would re-expose the
+        // host editor bg as a band above/below the canvas (the "two bg" seam).
         <div
-          className="pb-16 pt-8"
           style={{
             zoom,
             ["--fv-content-width" as string]: `${doc.config.contentWidth}px`,
@@ -217,8 +228,12 @@ export function App() {
   );
 }
 
-/** Floating top-right controls: Filemark/GitHub render toggle + zoom. */
-function PreviewToolbar({
+/**
+ * Preview controls as a small floating icon (bottom-right, out of the heading
+ * area). It's persistent but subtle — no auto-hide fade. Click it to open a
+ * popover with the Filemark/GitHub toggle + zoom; click-outside or Esc closes.
+ */
+function PreviewControls({
   viewMode,
   zoom,
   onSetViewMode,
@@ -233,49 +248,105 @@ function PreviewToolbar({
   onZoomOut: () => void;
   onZoomReset: () => void;
 }) {
-  const seg =
-    "px-2 py-0.5 text-xs rounded transition-colors cursor-pointer";
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const seg = "px-2 py-0.5 text-xs rounded transition-colors cursor-pointer";
   const active = "bg-primary text-primary-foreground";
   const inactive = "text-muted-foreground hover:text-foreground";
   const zoomBtn =
     "w-6 h-6 grid place-items-center text-sm rounded text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer";
+
   return (
-    <div className="fixed right-2 top-2 z-50 flex items-center gap-1 rounded-md border bg-popover/90 p-1 shadow-sm backdrop-blur">
-      <div className="flex items-center gap-0.5">
-        <button
-          type="button"
-          title="Filemark render"
-          className={`${seg} ${viewMode === "filemark" ? active : inactive}`}
-          onClick={() => onSetViewMode("filemark")}
+    <div
+      ref={ref}
+      className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2"
+    >
+      {open ? (
+        <div className="flex items-center gap-1 rounded-md border bg-popover/95 p-1 shadow-md backdrop-blur">
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              title="Filemark render"
+              className={`${seg} ${viewMode === "filemark" ? active : inactive}`}
+              onClick={() => onSetViewMode("filemark")}
+            >
+              Filemark
+            </button>
+            <button
+              type="button"
+              title="GitHub render — how it looks pushed to GitHub"
+              className={`${seg} ${viewMode === "github" ? active : inactive}`}
+              onClick={() => onSetViewMode("github")}
+            >
+              GitHub
+            </button>
+          </div>
+          <div className="mx-0.5 h-4 w-px bg-border" />
+          <div className="flex items-center gap-0.5">
+            <button type="button" title="Zoom out (⌘−)" className={zoomBtn} onClick={onZoomOut}>
+              −
+            </button>
+            <button
+              type="button"
+              title="Reset zoom (⌘0)"
+              className="min-w-[3ch] cursor-pointer text-center text-xs text-muted-foreground hover:text-foreground"
+              onClick={onZoomReset}
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <button type="button" title="Zoom in (⌘+)" className={zoomBtn} onClick={onZoomIn}>
+              +
+            </button>
+          </div>
+        </div>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Preview options"
+        aria-expanded={open}
+        title="Preview options — render mode & zoom"
+        className={`grid size-9 cursor-pointer place-items-center rounded-full border bg-popover/80 text-muted-foreground shadow-sm backdrop-blur transition hover:bg-popover hover:text-foreground ${
+          open ? "opacity-100" : "opacity-60 hover:opacity-100"
+        }`}
+      >
+        {/* sliders-horizontal — represents the view/zoom controls */}
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
         >
-          Filemark
-        </button>
-        <button
-          type="button"
-          title="GitHub render — how it looks pushed to GitHub"
-          className={`${seg} ${viewMode === "github" ? active : inactive}`}
-          onClick={() => onSetViewMode("github")}
-        >
-          GitHub
-        </button>
-      </div>
-      <div className="mx-0.5 h-4 w-px bg-border" />
-      <div className="flex items-center gap-0.5">
-        <button type="button" title="Zoom out (⌘−)" className={zoomBtn} onClick={onZoomOut}>
-          −
-        </button>
-        <button
-          type="button"
-          title="Reset zoom (⌘0)"
-          className="min-w-[3ch] text-center text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-          onClick={onZoomReset}
-        >
-          {Math.round(zoom * 100)}%
-        </button>
-        <button type="button" title="Zoom in (⌘+)" className={zoomBtn} onClick={onZoomIn}>
-          +
-        </button>
-      </div>
+          <line x1="21" x2="14" y1="4" y2="4" />
+          <line x1="10" x2="3" y1="4" y2="4" />
+          <line x1="21" x2="12" y1="12" y2="12" />
+          <line x1="8" x2="3" y1="12" y2="12" />
+          <line x1="21" x2="16" y1="20" y2="20" />
+          <line x1="12" x2="3" y1="20" y2="20" />
+          <line x1="14" x2="14" y1="2" y2="6" />
+          <line x1="8" x2="8" y1="10" y2="14" />
+          <line x1="16" x2="16" y1="18" y2="22" />
+        </svg>
+      </button>
     </div>
   );
 }

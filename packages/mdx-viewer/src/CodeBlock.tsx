@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { highlight, getCachedHighlight } from "./shiki";
+import { highlight, getCachedHighlight, highlightSync } from "./shiki";
 import { useTheme } from "@filemark/core";
 
 const IconCopy = () => (
@@ -40,24 +40,35 @@ export function CodeBlock({
   const lang = /language-(\w+)/.exec(className ?? "")?.[1] ?? "";
   const trimmed = raw.replace(/\n$/, "");
   const [wrap, setWrap] = useState(true);
-  // Synchronous cache hit on first render → no plain-text flash on the
-  // tab-switch-back path. Uncached → still falls through to the async
-  // useEffect below.
+  // Seed the first render synchronously so the block paints ALREADY highlighted
+  // whenever possible — cheapest-first: the LRU cache (re-render / tab-switch),
+  // then highlightSync (engine + grammar already warm, e.g. after MDXViewer's
+  // warm() preloaded this doc's languages). Both return null on a genuinely cold
+  // block → we render the readable plain fallback and the async effect below
+  // fills in colours a moment later. Shiki is lazy-loaded to keep the initial
+  // chunk small (no full-page loader), so this warm-vs-cold split is what keeps
+  // the cold flash rare and brief instead of gating the whole page.
   const [html, setHtml] = useState<string | null>(() =>
     inline || !trimmed.trim()
       ? null
-      : getCachedHighlight(trimmed, lang, isDark),
+      : getCachedHighlight(trimmed, lang, isDark) ??
+        highlightSync(trimmed, lang, isDark),
   );
 
+  // Re-highlight when the code, language, or theme changes (the useState seed
+  // above only runs on mount). Try the sync path first — after warm, a theme
+  // toggle recolours instantly with no flash; only a genuinely cold block falls
+  // through to the async load, showing the readable plain fallback meanwhile.
   useEffect(() => {
     if (inline || !trimmed.trim()) return;
-    // If we hydrated synchronously from cache for the same inputs, skip
-    // the async pass.
-    const cached = getCachedHighlight(trimmed, lang, isDark);
-    if (cached !== null) {
-      if (cached !== html) setHtml(cached);
+    const sync =
+      getCachedHighlight(trimmed, lang, isDark) ??
+      highlightSync(trimmed, lang, isDark);
+    if (sync !== null) {
+      setHtml(sync);
       return;
     }
+    setHtml(null);
     let cancelled = false;
     highlight(trimmed, lang, isDark)
       .then((h) => !cancelled && setHtml(h))
@@ -65,7 +76,6 @@ export function CodeBlock({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trimmed, lang, isDark, inline]);
 
   if (inline) {
@@ -109,6 +119,9 @@ export function CodeBlock({
       {html ? (
         <div className="fv-code-shiki" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
+        // Only reached if the synchronous highlighter failed to build (see
+        // shiki.ts getHighlighter) — render the raw code plainly so it's always
+        // readable. Not a transient loading state: highlightSync is synchronous.
         <pre className="fv-code-plain">
           <code className={className}>{raw}</code>
         </pre>

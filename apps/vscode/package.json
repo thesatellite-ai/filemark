@@ -33,18 +33,68 @@
     "commands": [
       {
         "command": "filemark.openPreview",
-        "title": "Open Filemark Preview",
+        "title": "Open Preview",
+        "category": "Filemark",
         "icon": "$(book)"
       },
       {
         "command": "filemark.openPreviewToSide",
-        "title": "Open Filemark Preview to the Side",
+        "title": "Open Preview to the Side",
+        "category": "Filemark",
         "icon": "$(layout-sidebar-right)"
       },
       {
         "command": "filemark.openInBrowser",
-        "title": "Open in Browser (Filemark)",
+        "title": "Open in Browser",
+        "category": "Filemark",
         "icon": "$(globe)"
+      },
+      {
+        "command": "filemark.openSettings",
+        "title": "Open Settings",
+        "category": "Filemark",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "filemark.zoomIn",
+        "title": "Zoom In",
+        "category": "Filemark",
+        "icon": "$(zoom-in)"
+      },
+      {
+        "command": "filemark.zoomOut",
+        "title": "Zoom Out",
+        "category": "Filemark",
+        "icon": "$(zoom-out)"
+      },
+      {
+        "command": "filemark.zoomReset",
+        "title": "Reset Zoom",
+        "category": "Filemark"
+      },
+      {
+        "command": "filemark.toggleScrollSync",
+        "title": "Toggle Scroll Sync",
+        "category": "Filemark",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "filemark.reloadPreview",
+        "title": "Reload Preview",
+        "category": "Filemark",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "filemark.openDocs",
+        "title": "Open Documentation",
+        "category": "Filemark",
+        "icon": "$(book)"
+      },
+      {
+        "command": "filemark.reportIssue",
+        "title": "Report an Issue",
+        "category": "Filemark",
+        "icon": "$(bug)"
       },
       {
         "command": "filemark.toggleGithubPreview",

@@ -82,6 +82,15 @@ import { DataBlock } from "./DataBlock";
 import { remarkCodeMeta } from "./remark-code-meta";
 import { normalizeMathFences } from "./normalizeMath";
 import { extractFrontmatter } from "./frontmatterParse";
+import { warm } from "./shiki";
+
+/**
+ * Matches the language token of a fenced code block at line start (optionally
+ * indented). Used only to discover which grammars a document needs so shiki can
+ * be pre-warmed — a loose match is fine (component fences like ```csv resolve to
+ * a no-op grammar load). Group 1 is the language id.
+ */
+const FENCE_LANG_RE = /^[ \t]*```([a-zA-Z0-9_+-]+)/gm;
 import { remarkSourceLine } from "./remarkSourceLine";
 import {
   parseInfoString,
@@ -140,6 +149,16 @@ export function MDXViewer(props: ViewerProps) {
     () => extractFrontmatter(content),
     [content]
   );
+
+  // Pre-warm shiki with this document's fenced-code languages so blocks can paint
+  // already highlighted (via highlightSync's first-render seed) instead of showing
+  // the plain fallback and colouring a tick later. Fire-and-forget: warm() loads
+  // the engine + grammars in parallel and never rejects into render.
+  useEffect(() => {
+    const langs = new Set<string>();
+    for (const m of body.matchAll(FENCE_LANG_RE)) langs.add(m[1].toLowerCase());
+    if (langs.size > 0) void warm(langs);
+  }, [body]);
 
   // Task parse — one pass per file render, memoized by (body, file.path).
   // The result is provided via TasksProvider so every downstream component

@@ -11,17 +11,37 @@
       "group": "build"
     },
     {
-      // Auto-rebuild on save (host + webview). Start it once via
-      // Terminal → Run Task → "watch" (or `pnpm --filter @filemark/vscode dev`).
-      // Then edits rebuild automatically — press Cmd/Ctrl+R in the Extension
+      // Auto-rebuild on save (host + webview via `concurrently`). Used as the
+      // F5 preLaunchTask so a Run both builds AND leaves a watcher running —
+      // edits then rebuild automatically; press Cmd/Ctrl+R in the Extension
       // Development Host to apply (VS Code can't hot-reload extension code).
+      //
+      // Why the background problemMatcher: an `isBackground` preLaunchTask never
+      // exits, so VS Code needs begins/endsPattern to know WHEN the initial
+      // build is done and it's safe to launch — otherwise F5 hangs forever.
+      // endsPattern matches the "done" line every underlying tool prints:
+      //   • vite/rolldown one-shot: "built in 1.9s"
+      //   • esbuild --watch:        "build finished, watching for changes"
+      //   • rollup/rolldown watch:  "waiting for changes"
+      // Any one of them firing flips the task to "ready" and F5 proceeds.
       "label": "watch",
       "type": "shell",
       "command": "pnpm run dev",
       "isBackground": true,
-      "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" },
-      "group": "build"
+      "group": "build",
+      "problemMatcher": {
+        "owner": "filemark-watch",
+        "pattern": {
+          "regexp": "^\\s*(error|✘)\\s+(.*)$",
+          "message": 2
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "(build started|transforming|changed:|\\[watch\\] build started)",
+          "endsPattern": "(built in|build finished|watching for (file )?changes|waiting for changes)"
+        }
+      }
     }
   ]
 }

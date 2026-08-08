@@ -16,7 +16,13 @@ import {
   type PreviewConfig,
   type ViewMode,
 } from "./shared/messages";
-import { DEFAULT_ZOOM, clampZoom } from "./shared/constants";
+import { DEFAULT_ZOOM, ZOOM_STEP, clampZoom } from "./shared/constants";
+
+// Help-link fallbacks — used only if package.json somehow lacks these fields
+// (they're normally read from context.extension.packageJSON so the URLs live in
+// one place). Kept in sync with package.json `homepage` / `bugs.url`.
+const HOMEPAGE_URL_FALLBACK = "https://khanakia.com/apps/filemark/";
+const ISSUES_URL_FALLBACK = "https://github.com/thesatellite-ai/filemark/issues";
 import { toggleTaskMarker } from "./features/taskToggle";
 import { registerSymbols } from "./features/symbols";
 import { registerFolding } from "./features/folding";
@@ -39,6 +45,9 @@ const ZOOM_KEY = "runtime.zoom";
 const DEFAULT_VIEW_MODE: ViewMode = "filemark";
 /** Per-document saved scroll line, keyed `scroll:<uri>` in globalState. */
 const SCROLL_MEMORY_PREFIX = "scroll:";
+/** How long (ms) transient status-bar confirmations (e.g. scroll-sync toggle)
+ *  stay visible before auto-clearing. */
+const STATUS_MESSAGE_MS = 2000;
 /** Debounce (ms) for persisting scroll position as the user scrolls. */
 const SCROLL_PERSIST_DEBOUNCE_MS = 400;
 /** Debounce (ms) for live preview re-render while typing — one re-parse +
@@ -155,6 +164,86 @@ export function activate(context: vscode.ExtensionContext): void {
       if (editor && editor.document.uri.scheme === "file") {
         openInBrowser(editor.document.uri);
       }
+    }),
+  );
+
+  // Open the Settings UI scoped to just this extension's `filemark.*` settings.
+  // We use context.extension.id (not a hard-coded id) because the Marketplace
+  // build ships under a different name than the Open VSX build (khanakia.filemark
+  // vs khanakia.khanakia-filemark — see PUBLISHING.md), so the `@ext:` filter has
+  // to be derived at runtime to match whichever id is actually installed.
+  context.subscriptions.push(
+    vscode.commands.registerCommand("filemark.openSettings", () => {
+      vscode.commands.executeCommand(
+        "workbench.action.openSettings",
+        `@ext:${context.extension.id}`,
+      );
+    }),
+  );
+
+  // Zoom commands — drive the SAME runtime zoom the in-preview FAB uses. Zoom is
+  // stored in globalState (getZoom/ZOOM_KEY) and read by readConfig(); updating it
+  // + repostAll() re-sends config to every preview, which re-applies the CSS zoom.
+  // Mirrors the webview's own Cmd/Ctrl +/-/0 keybindings so both entry points stay
+  // consistent. Bindings are contributed in package.json, scoped to the preview.
+  const applyZoom = (next: number): void => {
+    void context.globalState.update(ZOOM_KEY, clampZoom(next)).then(repostAll);
+  };
+  context.subscriptions.push(
+    vscode.commands.registerCommand("filemark.zoomIn", () =>
+      applyZoom(getZoom() + ZOOM_STEP),
+    ),
+    vscode.commands.registerCommand("filemark.zoomOut", () =>
+      applyZoom(getZoom() - ZOOM_STEP),
+    ),
+    vscode.commands.registerCommand("filemark.zoomReset", () =>
+      applyZoom(DEFAULT_ZOOM),
+    ),
+  );
+
+  // Toggle editor↔preview scroll sync by flipping the `filemark.scrollSync`
+  // setting. The onDidChangeConfiguration listener below re-posts to all previews,
+  // so we don't repost here. Written to the Global target (a user-wide preference,
+  // not per-workspace). A toast confirms the new state since there's no visible UI.
+  context.subscriptions.push(
+    vscode.commands.registerCommand("filemark.toggleScrollSync", () => {
+      const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const next = !cfg.get<boolean>("scrollSync", true);
+      void cfg
+        .update("scrollSync", next, vscode.ConfigurationTarget.Global)
+        .then(() =>
+          vscode.window.setStatusBarMessage(
+            `Filemark: scroll sync ${next ? "on" : "off"}`,
+            STATUS_MESSAGE_MS,
+          ),
+        );
+    }),
+  );
+
+  // Reload — force a full re-render (re-parse + re-highlight) of every open
+  // preview with the current file contents. Handy after an external file change
+  // or if a preview looks stale. Reuses repostAll (same path as a settings change).
+  context.subscriptions.push(
+    vscode.commands.registerCommand("filemark.reloadPreview", () => repostAll()),
+  );
+
+  // Help links — open the docs / issue tracker in the default browser. URLs come
+  // from package.json (homepage / bugs.url) so they live in one place, with the
+  // constants above as a defensive fallback.
+  const pkg = context.extension.packageJSON as {
+    homepage?: string;
+    bugs?: { url?: string };
+  };
+  context.subscriptions.push(
+    vscode.commands.registerCommand("filemark.openDocs", () => {
+      void vscode.env.openExternal(
+        vscode.Uri.parse(pkg.homepage ?? HOMEPAGE_URL_FALLBACK),
+      );
+    }),
+    vscode.commands.registerCommand("filemark.reportIssue", () => {
+      void vscode.env.openExternal(
+        vscode.Uri.parse(pkg.bugs?.url ?? ISSUES_URL_FALLBACK),
+      );
     }),
   );
 
@@ -292,7 +381,13 @@ function openPreview(
   dismissed.delete(key);
   const existing = panels.get(key);
   if (existing) {
-    existing.reveal(existing.viewColumn, !focus);
+    // Reveal in the REQUESTED column, not wherever it currently sits — otherwise
+    // "Open Preview to the Side" (column = Beside) is a no-op whenever a preview
+    // already exists (auto-open, or a prior Open Preview), because it would just
+    // re-reveal the panel in place. Passing `column` moves the existing panel to
+    // the side (or back to the active column for plain Open Preview), matching
+    // VS Code's built-in showPreview / showPreviewToSide behaviour.
+    existing.reveal(column, !focus);
     return;
   }
 
@@ -615,11 +710,24 @@ function buildHtml(
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="${csp}" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<style>html,body{margin:0;background:var(--vscode-editor-background);color:var(--vscode-editor-foreground);}</style>
+<style>
+html,body{margin:0;background:var(--vscode-editor-background);color:var(--vscode-editor-foreground);}
+/* Boot loader shown until the JS bundle parses + React mounts (the bundle is
+ * large, so #root would otherwise sit blank with no signal). Styled only with
+ * VS Code theme vars + inline CSS so it needs neither main.css nor React. React
+ * replaces #root on mount; App's pending state renders a matching loader, so the
+ * spinner is continuous until the document actually renders. */
+.fv-boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;
+  color:var(--vscode-descriptionForeground,#8a8a8a);
+  font:13px/1.4 var(--vscode-font-family,-apple-system,system-ui,sans-serif);}
+.fv-boot-spin{width:15px;height:15px;border:2px solid currentColor;border-top-color:transparent;
+  border-radius:50%;display:inline-block;animation:fv-spin .7s linear infinite;}
+@keyframes fv-spin{to{transform:rotate(360deg)}}
+</style>
 <link rel="stylesheet" href="${cssUri}" />
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div class="fv-boot"><span class="fv-boot-spin"></span>Loading preview…</div></div>
 <script type="module" nonce="${nonce}" src="${jsUri}"></script>
 </body>
 </html>`;

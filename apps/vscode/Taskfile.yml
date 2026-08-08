@@ -35,6 +35,18 @@ tasks:
     cmds:
       - pnpm run build
 
+  dev:
+    # Auto-rebuild on save (host via esbuild --watch, webview via vite --watch,
+    # run together with concurrently). Leave running in a terminal alongside the
+    # F5 Extension Development Host; after each rebuild press Cmd/Ctrl+R in that
+    # host to apply — VS Code can't hot-reload extension code. Pressing F5 in the
+    # editor already starts this same watcher via the "watch" preLaunchTask, so
+    # this task is only for running the watcher standalone (no dev host).
+    desc: Auto-rebuild host + webview on file changes (watch mode)
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - pnpm run dev
+
   typecheck:
     desc: Typecheck host + webview
     dir: '{{.TASKFILE_DIR}}'
