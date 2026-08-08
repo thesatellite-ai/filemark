@@ -46,6 +46,17 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.12",
+    date: "2026-08-09",
+    tag: "Code rendering polish",
+    notes: [
+      "Code blocks now paint fully highlighted right away — no more flash of plain text before the colours appear",
+      "Fixed a faint 'selected' band that showed behind each line of code",
+      "GitHub view mode fills the page edge-to-edge (no floating box) and uses GitHub's exact content font for a true-to-github look",
+      "Same rendering fixes shipped to the Filemark VS Code extension (v0.1.1), which also added command-palette actions — open settings, zoom, toggle scroll-sync, reload — and a loading indicator when a preview opens",
+    ],
+  },
+  {
     version: "0.1.11",
     date: "2026-08-05",
     tag: "Folders on top",
