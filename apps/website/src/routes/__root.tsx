@@ -17,9 +17,11 @@ import {
   ScrollText,
   ShieldCheck,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import { GithubIcon } from "../components/BrandIcons";
-import { useEffect, useState } from "react";
+import { INSTALL_TARGETS, REPO_URL } from "../lib/links";
+import { useEffect, useRef, useState } from "react";
 import appCss from "../styles.css?url";
 import {
   GoogleTagManagerNoScript,
@@ -294,16 +296,7 @@ function Header(): React.ReactElement {
             <GithubIcon size={14} aria-hidden />
             <span className="hidden sm:inline">GitHub</span>
           </a>
-          <a
-            href="https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Add Filemark to Chrome (Chrome Web Store)"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
-          >
-            Add to Chrome
-            <ExternalLink size={12} aria-hidden />
-          </a>
+          <DownloadMenu />
           {/* Hamburger — below lg only. */}
           <button
             type="button"
@@ -324,6 +317,95 @@ function Header(): React.ReactElement {
         height). */}
     <MobileNav open={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
+  );
+}
+
+/** Primary header CTA: a "Download" dropdown listing every place Filemark
+ *  ships (Chrome, VS Code, Open VSX) + a source link. Native-feeling menu with
+ *  click-outside + Escape to close. Data comes from ../lib/links so it can't
+ *  drift from the on-page install table. */
+function DownloadMenu(): React.ReactElement {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex h-8 items-center gap-1 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
+      >
+        Download
+        <ChevronDown
+          size={13}
+          aria-hidden
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-border bg-popover p-1 shadow-lg"
+        >
+          {INSTALL_TARGETS.map((t) => (
+            <a
+              key={t.id}
+              role="menuitem"
+              href={t.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-start gap-3 rounded-lg px-2.5 py-2 hover:bg-muted"
+            >
+              <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-md bg-foreground/[0.06] text-foreground">
+                <t.icon size={15} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-medium text-foreground">
+                  {t.name}
+                </span>
+                <span className="block text-[11px] text-muted-foreground">
+                  {t.where}
+                </span>
+              </span>
+              <ExternalLink
+                size={12}
+                aria-hidden
+                className="mt-1 shrink-0 text-muted-foreground"
+              />
+            </a>
+          ))}
+          <a
+            role="menuitem"
+            href={REPO_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setOpen(false)}
+            className="mt-1 flex items-center gap-3 border-t border-border px-2.5 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <span className="grid size-7 shrink-0 place-items-center">
+              <GithubIcon size={15} aria-hidden />
+            </span>
+            Source on GitHub
+          </a>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -402,25 +484,40 @@ function MobileNav({
           ))}
         </nav>
 
-        {/* CTAs */}
+        {/* CTAs — download targets + source */}
         <div className="shrink-0 space-y-1.5 border-t border-border p-2.5">
+          <p className="px-1 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Download
+          </p>
+          {INSTALL_TARGETS.map((t) => (
+            <a
+              key={t.id}
+              href={t.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={onClose}
+              className="flex h-9 w-full items-center gap-2.5 rounded-md border border-border px-2.5 text-[12px] font-medium hover:bg-muted"
+            >
+              <t.icon size={14} aria-hidden />
+              <span className="flex-1 text-left">{t.name}</span>
+              <span className="text-[10px] font-normal text-muted-foreground">
+                {t.where}
+              </span>
+              <ExternalLink
+                size={11}
+                aria-hidden
+                className="text-muted-foreground"
+              />
+            </a>
+          ))}
           <a
-            href="https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm"
+            href={REPO_URL}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-primary text-[12px] font-medium text-primary-foreground hover:opacity-90"
-          >
-            Add to Chrome
-            <ExternalLink size={12} aria-hidden />
-          </a>
-          <a
-            href="https://github.com/thesatellite-ai/filemark"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-border text-[12px] font-medium hover:bg-muted"
+            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <GithubIcon size={13} aria-hidden />
-            View on GitHub
+            Source on GitHub
           </a>
         </div>
       </aside>

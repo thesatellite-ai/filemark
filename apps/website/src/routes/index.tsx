@@ -21,6 +21,7 @@ import {
   Minus,
   MousePointerClick,
   FolderOpen,
+  ExternalLink,
 } from "lucide-react";
 import { GithubIcon, ChromeIcon } from "../components/BrandIcons";
 import {
@@ -29,10 +30,11 @@ import {
   softwareSourceCodeLd,
   faqLd,
 } from "../lib/schema";
+import { INSTALL_TARGETS, REPO_URL, CHROME_URL } from "../lib/links";
 
 const SITE = "https://khanakia.com/apps/filemark";
-const STORE_URL =
-  "https://chromewebstore.google.com/detail/filemark/cidgogmffaflfghnebkfjbccfgbdjicm";
+// The Chrome Web Store link (canonical URLs live in ../lib/links).
+const STORE_URL = CHROME_URL;
 
 // Real product screenshots live in public/screenshots and ship under the
 // site's base path (/apps/filemark/). Resolve through BASE_URL so they work
@@ -101,6 +103,7 @@ function Home(): React.ReactElement {
   return (
     <main className="bg-background text-foreground">
       <Hero />
+      <GetItSection />
       <TrustStrip />
       <Problem />
       <BeforeAfter />
@@ -478,6 +481,80 @@ function WhoFor(): React.ReactElement {
 }
 
 /* ─────────── FAQ ──────────────────────────────────────────────────── */
+
+/* ─────────── Get it — install table (Chrome / VS Code / Open VSX) ───── */
+
+function GetItSection(): React.ReactElement {
+  return (
+    <section
+      id="download"
+      className="scroll-mt-16 border-b border-border bg-muted/30"
+    >
+      <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Get Filemark
+            </p>
+            <h2 className="mt-2 text-[26px] font-semibold leading-[1.1] tracking-tight sm:text-[32px]">
+              Install it where you work.
+            </h2>
+          </div>
+          <p className="text-[13px] text-muted-foreground sm:max-w-xs sm:text-right">
+            One renderer across the browser, your editor, and the open
+            registries — all free. Source on{" "}
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              GitHub
+            </a>
+            .
+          </p>
+        </div>
+
+        <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-card">
+          {INSTALL_TARGETS.map((t, i) => (
+            <div
+              key={t.id}
+              className={`grid grid-cols-1 items-center gap-4 px-5 py-4 sm:grid-cols-[minmax(180px,220px)_1fr_auto] sm:px-6 sm:py-5 ${
+                i > 0 ? "border-t border-border" : ""
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground">
+                  <t.icon size={17} aria-hidden />
+                </span>
+                <span>
+                  <span className="block text-[15px] font-semibold tracking-tight">
+                    {t.name}
+                  </span>
+                  <span className="block text-[12px] text-muted-foreground">
+                    {t.where}
+                  </span>
+                </span>
+              </div>
+              <p className="text-[13px] leading-relaxed text-muted-foreground">
+                {t.blurb}
+              </p>
+              <a
+                href={t.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90 sm:justify-self-end"
+              >
+                Install
+                <ExternalLink size={13} aria-hidden />
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function FAQSection(): React.ReactElement {
   return (
