@@ -2,7 +2,7 @@
   "name": "filemark",
   "displayName": "Filemark — Markdown & Data Preview",
   "description": "Rich Markdown preview in VS Code, powered by filemark — callouts, charts, kanban, tasks, mermaid, math, and more. Raw stays your native editor; the preview scrolls with it.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "publisher": "khanakia",
   "license": "SEE LICENSE IN LICENSE",

@@ -2,6 +2,24 @@
 
 All notable changes to the Filemark VS Code extension are documented here. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.1.1 — 2026-08-09
+
+### Added
+
+- **Command palette** — `Filemark: Open Settings`, `Zoom In` / `Zoom Out` / `Reset Zoom`, `Toggle Scroll Sync`, `Reload Preview`, `Open Documentation`, and `Report an Issue`, all grouped under the Filemark category.
+- **Boot loader** — a centered spinner shows the instant a preview opens, continuously from bundle-load through first render, so it's clear the preview is loading.
+
+### Fixed
+
+- **Open Preview to the Side now always works** — when a preview was already open, the command re-revealed it in place instead of moving it beside the editor. It now honors the requested column.
+- **No per-line background band in code blocks** — the host's default `code` background was leaking onto highlighted lines; the shiki subtree is now fully transparent.
+- **No plain-then-coloured flash** — code blocks paint highlighted on first frame when the grammar is warm; the plain fallback no longer shows a stray inline-code background.
+- **GitHub preview mode** — seamless full-width canvas (no floating box), and the exact github.com body font stack (`Mona Sans VF`).
+
+### Changed
+
+- **Side-preview shortcut** is `Cmd/Ctrl+Alt+V` (the earlier `Cmd+K V` chord was unreliable).
+
 ## 0.1.0 — 2026-08-08
 
 First release.
