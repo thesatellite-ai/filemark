@@ -43,46 +43,32 @@ The preview reuses the host-agnostic `@filemark/*` packages unchanged — this e
 | `filemark.contentWidth` | `760` | Max content column width (px). |
 | `filemark.customCss` | `""` | Custom CSS injected into the preview. |
 
-## Develop
+## Development
+
+Quick start (the workspace package is named `filemark`):
 
 ```bash
 pnpm install
-pnpm --filter @filemark/vscode build
+pnpm --filter filemark build     # host (esbuild) + webview (vite) → dist/
+pnpm --filter filemark dev       # watch both; then Cmd/Ctrl+R in the dev host to apply
+pnpm --filter filemark test      # unit tests
 ```
 
-Open `apps/vscode` in VS Code and start the extension: **Run and Debug → "Run Filemark Extension"** (or F5 if that key isn't taken by macOS). This launches an Extension Development Host with the extension loaded; open any `.md` to see the preview.
+Open `apps/vscode` in VS Code → **Run and Debug → "Run Filemark Extension"** (F5) to launch an Extension Development Host.
 
-### Fast iteration loop
+Full setup, the fast-iteration loop, the code map, and conventions are in **[CONTRIBUTING.md](./CONTRIBUTING.md)**.
 
-VS Code **cannot hot-reload extension code** — every extension dev reloads the dev host after a change. Run the watcher once so you never rebuild by hand:
+## How it works
 
-```bash
-pnpm --filter @filemark/vscode dev   # or: Terminal → Run Task → "watch"
-```
+A thin **host shell** over the shared `@filemark/*` renderer packages: the raw text editor stays native, and the preview is a separate webview panel. Host (Node) and webview (browser) are two runtimes that talk over a typed `postMessage` protocol; the heavy render libraries are code-split and load on demand. The full design — the host/webview boundary, the message protocol, scroll-sync internals, and task write-back — is in **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**.
 
-It rebuilds the host + webview on every save. To apply a change in the running Extension Development Host:
+## Documentation
 
-- **Host / manifest changes** (commands, settings, views, `extension.ts`) → `Cmd/Ctrl+R` (Reload Window) in the dev host.
-- **Webview changes** (`App.tsx` / styles) → reopen the preview tab, or `Cmd/Ctrl+R`.
-
-So the loop is: edit → (auto-rebuild) → `Cmd+R`.
-
-### Testing
-
-Pure logic (frontmatter offset, math-fence normalization, task toggle, scroll interpolation, zoom clamp) has unit tests:
-
-```bash
-pnpm --filter @filemark/vscode test    # host/webview pure logic
-pnpm --filter @filemark/mdx test       # renderer helpers
-```
-
-Host and webview wiring is verified by `pnpm --filter @filemark/vscode typecheck` plus the build; runtime behavior (webview CSP, mermaid, images) is verified by hand in the dev host.
-
-## Build outputs
-
-- `dist/extension.js` — extension host (esbuild, CJS, `vscode` external).
-- `dist/webview/main.js` + `main.css` — the preview webview entry. Heavy libraries (mermaid, shiki language grammars, katex) are **code-split** into sibling chunks loaded on demand, so a plain document loads only the small entry bundle. The host loads it via `asWebviewUri` under a strict CSP (`script-src 'nonce-…' 'strict-dynamic'`, which lets the nonce'd entry pull its chunks).
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** — dev setup, iteration loop, code layout, testing, conventions.
+- **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — how the extension is built and the invariants to preserve.
+- **[PUBLISHING.md](./PUBLISHING.md)** — packaging + releasing to the VS Code Marketplace and Open VSX.
+- **[CHANGELOG.md](./CHANGELOG.md)** — release history.
 
 ## Status
 
-Feature-complete for Markdown. Not yet published to the Marketplace. See `docsi/VSCODE_EXTENSION_PLAN.md` for the roadmap (Marketplace publishing; additional file formats are intentionally out of scope for now).
+Feature-complete for Markdown; first release is `0.1.0`. Publishing is set up (see [PUBLISHING.md](./PUBLISHING.md)) but not yet pushed to the Marketplace. Additional file formats (JSON/CSV/schema) are intentionally out of scope for now.

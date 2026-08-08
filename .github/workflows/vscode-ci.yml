@@ -1,0 +1,49 @@
+# CI for the Filemark VS Code extension (apps/vscode) and the renderer package
+# it depends on. Typecheck + unit tests + build — NO publishing (that's a
+# deliberate local step with tokens; see apps/vscode/PUBLISHING.md).
+name: vscode-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/vscode/**'
+      - 'packages/**'
+      - '.github/workflows/vscode-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/vscode/**'
+      - 'packages/**'
+      - '.github/workflows/vscode-ci.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck (extension)
+        run: pnpm --filter filemark typecheck
+
+      - name: Unit tests (extension)
+        run: pnpm --filter filemark test
+
+      - name: Unit tests (renderer helpers)
+        run: pnpm --filter @filemark/mdx test
+
+      - name: Build (host + webview)
+        run: pnpm --filter filemark build
+
+      - name: Package check (.vsix contents, no publish)
+        run: pnpm dlx @vscode/vsce package --no-dependencies
+        working-directory: apps/vscode

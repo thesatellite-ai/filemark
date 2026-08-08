@@ -19,3 +19,8 @@ Taskfile.yml
 .DS_Store
 **/.DS_Store
 **/*.map
+# Dev docs — shipped on GitHub for contributors, not inside the installed .vsix
+# (the Marketplace shows README + CHANGELOG + LICENSE only).
+CONTRIBUTING.md
+PUBLISHING.md
+docs/**
