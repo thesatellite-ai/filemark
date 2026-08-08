@@ -9,59 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as FeaturesRouteImport } from './routes/features'
-import { Route as DocsRouteImport } from './routes/docs'
-import { Route as DemoRouteImport } from './routes/demo'
-import { Route as ChangelogRouteImport } from './routes/changelog'
-import { Route as BrandRouteImport } from './routes/brand'
-import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as AiRouteImport } from './routes/ai'
+import { Route as BrandRouteImport } from './routes/brand'
+import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as DocsRouteImport } from './routes/docs'
+import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as DemoIndexRouteImport } from './routes/demo.index'
-import { Route as DocsViewersRouteImport } from './routes/docs.viewers'
-import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
-import { Route as DocsTasksRouteImport } from './routes/docs.tasks'
-import { Route as DocsShortcutsRouteImport } from './routes/docs.shortcuts'
-import { Route as DocsSettingsRouteImport } from './routes/docs.settings'
-import { Route as DocsRevisionsRouteImport } from './routes/docs.revisions'
-import { Route as DocsReadingRouteImport } from './routes/docs.reading'
-import { Route as DocsNotesRouteImport } from './routes/docs.notes'
-import { Route as DocsMarkdownRouteImport } from './routes/docs.markdown'
-import { Route as DocsLocalRemoteRouteImport } from './routes/docs.local-remote'
-import { Route as DocsLibraryRouteImport } from './routes/docs.library'
-import { Route as DocsGettingStartedRouteImport } from './routes/docs.getting-started'
 import { Route as DemoPlayRouteImport } from './routes/demo.play'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as DocsGettingStartedRouteImport } from './routes/docs.getting-started'
+import { Route as DocsLibraryRouteImport } from './routes/docs.library'
+import { Route as DocsLocalRemoteRouteImport } from './routes/docs.local-remote'
+import { Route as DocsMarkdownRouteImport } from './routes/docs.markdown'
+import { Route as DocsNotesRouteImport } from './routes/docs.notes'
+import { Route as DocsReadingRouteImport } from './routes/docs.reading'
+import { Route as DocsRevisionsRouteImport } from './routes/docs.revisions'
+import { Route as DocsSettingsRouteImport } from './routes/docs.settings'
+import { Route as DocsShortcutsRouteImport } from './routes/docs.shortcuts'
+import { Route as DocsTasksRouteImport } from './routes/docs.tasks'
+import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
+import { Route as DocsViewersRouteImport } from './routes/docs.viewers'
 import { Route as DemoGalleryExampleIdRouteImport } from './routes/demo.gallery.$exampleId'
 
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeaturesRoute = FeaturesRouteImport.update({
-  id: '/features',
-  path: '/features',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChangelogRoute = ChangelogRouteImport.update({
-  id: '/changelog',
-  path: '/changelog',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrandRoute = BrandRouteImport.update({
-  id: '/brand',
-  path: '/brand',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AiRoute = AiRouteImport.update({
@@ -69,74 +44,49 @@ const AiRoute = AiRouteImport.update({
   path: '/ai',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const BrandRoute = BrandRouteImport.update({
+  id: '/brand',
+  path: '/brand',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsIndexRoute = DocsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DocsRoute,
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DemoIndexRoute = DemoIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DemoRoute,
 } as any)
-const DocsViewersRoute = DocsViewersRouteImport.update({
-  id: '/viewers',
-  path: '/viewers',
-  getParentRoute: () => DocsRoute,
+const DemoPlayRoute = DemoPlayRouteImport.update({
+  id: '/play',
+  path: '/play',
+  getParentRoute: () => DemoRoute,
 } as any)
-const DocsTroubleshootingRoute = DocsTroubleshootingRouteImport.update({
-  id: '/troubleshooting',
-  path: '/troubleshooting',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsTasksRoute = DocsTasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsShortcutsRoute = DocsShortcutsRouteImport.update({
-  id: '/shortcuts',
-  path: '/shortcuts',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsSettingsRoute = DocsSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsRevisionsRoute = DocsRevisionsRouteImport.update({
-  id: '/revisions',
-  path: '/revisions',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsReadingRoute = DocsReadingRouteImport.update({
-  id: '/reading',
-  path: '/reading',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsNotesRoute = DocsNotesRouteImport.update({
-  id: '/notes',
-  path: '/notes',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsMarkdownRoute = DocsMarkdownRouteImport.update({
-  id: '/markdown',
-  path: '/markdown',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsLocalRemoteRoute = DocsLocalRemoteRouteImport.update({
-  id: '/local-remote',
-  path: '/local-remote',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsLibraryRoute = DocsLibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => DocsRoute,
 } as any)
 const DocsGettingStartedRoute = DocsGettingStartedRouteImport.update({
@@ -144,10 +94,60 @@ const DocsGettingStartedRoute = DocsGettingStartedRouteImport.update({
   path: '/getting-started',
   getParentRoute: () => DocsRoute,
 } as any)
-const DemoPlayRoute = DemoPlayRouteImport.update({
-  id: '/play',
-  path: '/play',
-  getParentRoute: () => DemoRoute,
+const DocsLibraryRoute = DocsLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsLocalRemoteRoute = DocsLocalRemoteRouteImport.update({
+  id: '/local-remote',
+  path: '/local-remote',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsMarkdownRoute = DocsMarkdownRouteImport.update({
+  id: '/markdown',
+  path: '/markdown',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsNotesRoute = DocsNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsReadingRoute = DocsReadingRouteImport.update({
+  id: '/reading',
+  path: '/reading',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsRevisionsRoute = DocsRevisionsRouteImport.update({
+  id: '/revisions',
+  path: '/revisions',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsSettingsRoute = DocsSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsShortcutsRoute = DocsShortcutsRouteImport.update({
+  id: '/shortcuts',
+  path: '/shortcuts',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsTasksRoute = DocsTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsTroubleshootingRoute = DocsTroubleshootingRouteImport.update({
+  id: '/troubleshooting',
+  path: '/troubleshooting',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsViewersRoute = DocsViewersRouteImport.update({
+  id: '/viewers',
+  path: '/viewers',
+  getParentRoute: () => DocsRoute,
 } as any)
 const DemoGalleryExampleIdRoute = DemoGalleryExampleIdRouteImport.update({
   id: '/gallery/$exampleId',
@@ -324,46 +324,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/features': {
-      id: '/features'
-      path: '/features'
-      fullPath: '/features'
-      preLoaderRoute: typeof FeaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/changelog': {
-      id: '/changelog'
-      path: '/changelog'
-      fullPath: '/changelog'
-      preLoaderRoute: typeof ChangelogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/brand': {
-      id: '/brand'
-      path: '/brand'
-      fullPath: '/brand'
-      preLoaderRoute: typeof BrandRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ai': {
@@ -373,19 +338,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AiRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/brand': {
+      id: '/brand'
+      path: '/brand'
+      fullPath: '/brand'
+      preLoaderRoute: typeof BrandRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs/': {
-      id: '/docs/'
-      path: '/'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof DocsIndexRouteImport
-      parentRoute: typeof DocsRoute
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/demo/': {
       id: '/demo/'
@@ -394,81 +387,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoIndexRouteImport
       parentRoute: typeof DemoRoute
     }
-    '/docs/viewers': {
-      id: '/docs/viewers'
-      path: '/viewers'
-      fullPath: '/docs/viewers'
-      preLoaderRoute: typeof DocsViewersRouteImport
-      parentRoute: typeof DocsRoute
+    '/demo/play': {
+      id: '/demo/play'
+      path: '/play'
+      fullPath: '/demo/play'
+      preLoaderRoute: typeof DemoPlayRouteImport
+      parentRoute: typeof DemoRoute
     }
-    '/docs/troubleshooting': {
-      id: '/docs/troubleshooting'
-      path: '/troubleshooting'
-      fullPath: '/docs/troubleshooting'
-      preLoaderRoute: typeof DocsTroubleshootingRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/tasks': {
-      id: '/docs/tasks'
-      path: '/tasks'
-      fullPath: '/docs/tasks'
-      preLoaderRoute: typeof DocsTasksRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/shortcuts': {
-      id: '/docs/shortcuts'
-      path: '/shortcuts'
-      fullPath: '/docs/shortcuts'
-      preLoaderRoute: typeof DocsShortcutsRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/settings': {
-      id: '/docs/settings'
-      path: '/settings'
-      fullPath: '/docs/settings'
-      preLoaderRoute: typeof DocsSettingsRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/revisions': {
-      id: '/docs/revisions'
-      path: '/revisions'
-      fullPath: '/docs/revisions'
-      preLoaderRoute: typeof DocsRevisionsRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/reading': {
-      id: '/docs/reading'
-      path: '/reading'
-      fullPath: '/docs/reading'
-      preLoaderRoute: typeof DocsReadingRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/notes': {
-      id: '/docs/notes'
-      path: '/notes'
-      fullPath: '/docs/notes'
-      preLoaderRoute: typeof DocsNotesRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/markdown': {
-      id: '/docs/markdown'
-      path: '/markdown'
-      fullPath: '/docs/markdown'
-      preLoaderRoute: typeof DocsMarkdownRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/local-remote': {
-      id: '/docs/local-remote'
-      path: '/local-remote'
-      fullPath: '/docs/local-remote'
-      preLoaderRoute: typeof DocsLocalRemoteRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/library': {
-      id: '/docs/library'
-      path: '/library'
-      fullPath: '/docs/library'
-      preLoaderRoute: typeof DocsLibraryRouteImport
+    '/docs/': {
+      id: '/docs/'
+      path: '/'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
       parentRoute: typeof DocsRoute
     }
     '/docs/getting-started': {
@@ -478,12 +408,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsGettingStartedRouteImport
       parentRoute: typeof DocsRoute
     }
-    '/demo/play': {
-      id: '/demo/play'
-      path: '/play'
-      fullPath: '/demo/play'
-      preLoaderRoute: typeof DemoPlayRouteImport
-      parentRoute: typeof DemoRoute
+    '/docs/library': {
+      id: '/docs/library'
+      path: '/library'
+      fullPath: '/docs/library'
+      preLoaderRoute: typeof DocsLibraryRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/local-remote': {
+      id: '/docs/local-remote'
+      path: '/local-remote'
+      fullPath: '/docs/local-remote'
+      preLoaderRoute: typeof DocsLocalRemoteRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/markdown': {
+      id: '/docs/markdown'
+      path: '/markdown'
+      fullPath: '/docs/markdown'
+      preLoaderRoute: typeof DocsMarkdownRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/notes': {
+      id: '/docs/notes'
+      path: '/notes'
+      fullPath: '/docs/notes'
+      preLoaderRoute: typeof DocsNotesRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/reading': {
+      id: '/docs/reading'
+      path: '/reading'
+      fullPath: '/docs/reading'
+      preLoaderRoute: typeof DocsReadingRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/revisions': {
+      id: '/docs/revisions'
+      path: '/revisions'
+      fullPath: '/docs/revisions'
+      preLoaderRoute: typeof DocsRevisionsRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/settings': {
+      id: '/docs/settings'
+      path: '/settings'
+      fullPath: '/docs/settings'
+      preLoaderRoute: typeof DocsSettingsRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/shortcuts': {
+      id: '/docs/shortcuts'
+      path: '/shortcuts'
+      fullPath: '/docs/shortcuts'
+      preLoaderRoute: typeof DocsShortcutsRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/tasks': {
+      id: '/docs/tasks'
+      path: '/tasks'
+      fullPath: '/docs/tasks'
+      preLoaderRoute: typeof DocsTasksRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/troubleshooting': {
+      id: '/docs/troubleshooting'
+      path: '/troubleshooting'
+      fullPath: '/docs/troubleshooting'
+      preLoaderRoute: typeof DocsTroubleshootingRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/viewers': {
+      id: '/docs/viewers'
+      path: '/viewers'
+      fullPath: '/docs/viewers'
+      preLoaderRoute: typeof DocsViewersRouteImport
+      parentRoute: typeof DocsRoute
     }
     '/demo/gallery/$exampleId': {
       id: '/demo/gallery/$exampleId'
