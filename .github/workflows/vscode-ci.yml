@@ -32,6 +32,12 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # The extension imports the @filemark/* packages by their built dist
+      # (e.g. @filemark/tasks/pure, @filemark/mdx), so build the workspace
+      # packages first — a fresh checkout has no dist/ yet.
+      - name: Build workspace packages
+        run: pnpm run build:packages
+
       - name: Typecheck (extension)
         run: pnpm --filter filemark typecheck
 
