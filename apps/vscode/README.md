@@ -4,6 +4,8 @@ Rich Markdown preview inside VS Code, powered by [filemark](https://khanakia.com
 
 The preview reuses the host-agnostic `@filemark/*` packages unchanged — this extension is only the VS Code host shell (a webview plus `ViewerProps` adapters for storage, assets, and navigation).
 
+![Raw Markdown on the left, the live Filemark preview on the right](https://raw.githubusercontent.com/thesatellite-ai/filemark/main/apps/vscode/media/screenshots/split-view.png)
+
 ## Features
 
 - **Live preview** — the rendered view updates as you type (debounced), while the raw text editor stays native.
@@ -42,6 +44,17 @@ The preview reuses the host-agnostic `@filemark/*` packages unchanged — this e
 | `filemark.lineHeight` | `1.65` | Preview body line height. |
 | `filemark.contentWidth` | `760` | Max content column width (px). |
 | `filemark.customCss` | `""` | Custom CSS injected into the preview. |
+
+## Screenshots
+
+Open the preview from the editor title bar — **Open Filemark Preview** (`⇧⌘V`) or **Open Preview to the Side**, and **Open in Browser** to hand the file to Chrome:
+
+![Editor-title command: Open Filemark Preview](https://raw.githubusercontent.com/thesatellite-ai/filemark/main/apps/vscode/media/screenshots/toolbar-open-preview.png)
+![Editor-title command: Open in Browser](https://raw.githubusercontent.com/thesatellite-ai/filemark/main/apps/vscode/media/screenshots/toolbar-open-in-browser.png)
+
+All appearance and behavior is configurable in Settings (`filemark.*`):
+
+![Filemark settings](https://raw.githubusercontent.com/thesatellite-ai/filemark/main/apps/vscode/media/screenshots/settings.png)
 
 ## Development
 

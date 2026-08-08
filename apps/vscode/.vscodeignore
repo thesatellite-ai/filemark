@@ -24,3 +24,6 @@ Taskfile.yml
 CONTRIBUTING.md
 PUBLISHING.md
 docs/**
+# Screenshots are referenced by absolute GitHub-raw URL in the README, so they
+# don't need to bloat the .vsix. The marketplace icon (media/icon.png) stays.
+media/screenshots/**
