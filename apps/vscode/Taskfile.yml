@@ -4,6 +4,17 @@ version: '3'
 # Run `task --list`. Publishing tokens load from .env (git-ignored; see
 # .env.example): VSCE_PAT (VS Code Marketplace), OVSX_PAT (Open VSX).
 #
+# TWO NAMES, one product (see PUBLISHING.md § Two names):
+#   • Open VSX      → `filemark`          → id khanakia.filemark
+#   • VS Code Mktpl → `khanakia-filemark` → id khanakia.khanakia-filemark
+# The bare name `filemark` is globally unique on the VS Code Marketplace and is
+# already taken (billyl320.filemark), but Open VSX scopes names per-namespace so
+# `khanakia.filemark` is fine there. package.json holds the Open VSX name
+# (`filemark`); the Marketplace tasks below TEMPORARILY override it to
+# `{{.VSCE_NAME}}` (backup → edit → run → restore via trap), leaving package.json
+# untouched. displayName ("Filemark — …") and command ids (`filemark.*`) are the
+# same on both — only the internal name/id differs.
+#
 # Why --no-dependencies on every vsce/ovsx call: the package manager is pnpm
 # (vsce can't walk pnpm's symlinked node_modules), AND the extension ships zero
 # runtime node_modules — the host (esbuild) and webview (vite) bundles inline
@@ -14,7 +25,8 @@ dotenv: ['.env']
 vars:
   # Extension identity — keep in sync with package.json.
   PUBLISHER: khanakia
-  NAME: filemark
+  NAME: filemark            # Open VSX name (package.json canonical)
+  VSCE_NAME: khanakia-filemark   # VS Code Marketplace name (override at build)
 
 tasks:
   build:
@@ -36,11 +48,25 @@ tasks:
       - pnpm run test
 
   package:
+    # Open VSX build — name `filemark` straight from package.json.
     # vscode:prepublish runs `pnpm run build` first (vsce invokes it).
-    desc: Build + produce the .vsix
+    desc: Build + produce the Open VSX .vsix (name filemark)
     dir: '{{.TASKFILE_DIR}}'
     cmds:
       - pnpm dlx @vscode/vsce package --no-dependencies
+
+  package:vsce:
+    # Marketplace build — temporarily override name to {{.VSCE_NAME}}, package,
+    # then restore package.json (trap runs even if packaging fails).
+    desc: Build the VS Code Marketplace .vsix (name {{.VSCE_NAME}} → id {{.PUBLISHER}}.{{.VSCE_NAME}})
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - |
+        set -e
+        cp package.json .package.json.bak
+        trap 'mv -f .package.json.bak package.json' EXIT
+        node -e "const fs=require('fs');const p=require('./package.json');p.name='{{.VSCE_NAME}}';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+        pnpm dlx @vscode/vsce package --no-dependencies
 
   ls:
     desc: List exactly what the .vsix will contain (sanity-check .vscodeignore)
@@ -49,10 +75,18 @@ tasks:
       - pnpm dlx @vscode/vsce ls --no-dependencies
 
   publish:
-    desc: Publish to the VS Code Marketplace (needs VSCE_PAT in .env)
+    # CLI publish with the name override active for the whole publish (vsce
+    # re-packages during publish, so the override must wrap it). Manual web
+    # upload of `task package:vsce`'s .vsix is the no-PAT alternative.
+    desc: Publish to the VS Code Marketplace as {{.PUBLISHER}}.{{.VSCE_NAME}} (needs VSCE_PAT in .env)
     dir: '{{.TASKFILE_DIR}}'
     cmds:
-      - pnpm dlx @vscode/vsce publish --no-dependencies -p "$VSCE_PAT"
+      - |
+        set -e
+        cp package.json .package.json.bak
+        trap 'mv -f .package.json.bak package.json' EXIT
+        node -e "const fs=require('fs');const p=require('./package.json');p.name='{{.VSCE_NAME}}';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+        pnpm dlx @vscode/vsce publish --no-dependencies -p "$VSCE_PAT"
 
   publish-ovsx:
     desc: Publish to Open VSX for Cursor / VSCodium users (needs OVSX_PAT in .env)

@@ -68,9 +68,23 @@ Users can install a `.vsix` directly via **Extensions → ⋯ → Install from V
 - **Icon** — `media/icon.png` (512×512), rendered from the repo's `brand/icon.svg`.
 - **First Marketplace publish** can take a few minutes to appear in search.
 
-## Name note
+## Two names (important)
 
-`khanakia.filemark` is unique to this publisher, but an unrelated `billyl320.filemark` ("FileMark") already exists on both registries (plus `nicegyuha.filemarks` and `filemark.filemarker` on the Marketplace). The **displayName** "Filemark — Markdown & Data Preview" sets it apart. If a reviewer ever rejects the bare `name`, the fallback is `filemark-preview` (update `name` in `package.json`, this doc, and the Taskfile).
+The two stores enforce name uniqueness differently, so this extension ships under **two names** — same product, same `displayName` ("Filemark — Markdown & Data Preview"), same command ids (`filemark.*`), only the internal `name`/id differs:
+
+| Store | name | ID | Built by |
+|---|---|---|---|
+| **Open VSX** (Cursor/VSCodium) | `filemark` | `khanakia.filemark` | `task package` / `task publish-ovsx` |
+| **VS Code Marketplace** | `khanakia-filemark` | `khanakia.khanakia-filemark` | `task package:vsce` / `task publish` |
+
+Why: the VS Code Marketplace requires `name` to be **globally unique across all publishers**, and `filemark` is already taken (`billyl320.filemark`) — the `khanakia.` prefix does not exempt it. Open VSX scopes names **per namespace**, so `khanakia.filemark` is fine there.
+
+`package.json` holds the Open VSX name (`filemark`). The Marketplace tasks **temporarily override** `name` to `khanakia-filemark` (backup → edit → build → restore via a trap), leaving `package.json` untouched. So every release is two builds:
+
+- **Open VSX:** `task publish-ovsx` (uses `filemark`).
+- **Marketplace:** `task package:vsce` → upload the `khanakia-filemark-<ver>.vsix` manually (or `task publish` with a `VSCE_PAT`).
+
+If you ever want a single clean name on both, switch to something free on both (e.g. `filemark-preview`) in `package.json` + this doc + the Taskfile, and re-publish Open VSX under it (the old `khanakia.filemark` becomes an orphan you can delete from open-vsx.org/user-settings/extensions).
 
 ## CI
 

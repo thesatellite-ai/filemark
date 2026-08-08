@@ -25,3 +25,6 @@ filemark.zip
 
 # VS Code extension packages
 *.vsix
+
+# transient backup from the Marketplace name-override build task
+.package.json.bak

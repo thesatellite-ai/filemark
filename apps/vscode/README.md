@@ -84,4 +84,13 @@ A thin **host shell** over the shared `@filemark/*` renderer packages: the raw t
 
 ## Status
 
-Feature-complete for Markdown; first release is `0.1.0`. Publishing is set up (see [PUBLISHING.md](./PUBLISHING.md)) but not yet pushed to the Marketplace. Additional file formats (JSON/CSV/schema) are intentionally out of scope for now.
+Feature-complete for Markdown; first release is `0.1.0`. Additional file formats (JSON/CSV/schema) are intentionally out of scope for now.
+
+## Links
+
+- **Website:** https://khanakia.com/apps/filemark/
+- **Source:** https://github.com/thesatellite-ai/filemark
+- **Open VSX** (Cursor / VSCodium / Windsurf): https://open-vsx.org/extension/khanakia/filemark
+- **VS Code Marketplace:** https://marketplace.visualstudio.com/items?itemName=khanakia.khanakia-filemark
+
+Part of [Filemark](https://khanakia.com/apps/filemark/) — the same renderer powers the Chrome extension and the web playground.
