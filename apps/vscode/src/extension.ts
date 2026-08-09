@@ -34,6 +34,12 @@ const MARKDOWN_LANGUAGE_ID = "markdown";
 const CONFIG_SECTION = "filemark";
 const AUTO_OPEN_KEY = "autoOpenPreview";
 const SCROLL_SYNC_KEY = "scrollSync";
+/** `filemark.closePreviewWithEditor` — when true, closing the source editor
+ *  disposes its preview; when false (default) the preview stays open. */
+const CLOSE_WITH_EDITOR_KEY = "closePreviewWithEditor";
+/** `filemark.enableCsv` — render .csv/.tsv as the Filemark data grid. Default
+ *  true. Flows to the webview via PreviewConfig; also gates the preview menus. */
+const ENABLE_CSV_KEY = "enableCsv";
 /** How long (ms) to ignore an editor's visible-range change after WE moved it
  *  (from a preview scroll), so the reveal doesn't echo back to the preview. */
 const EDITOR_SYNC_SUPPRESS_MS = 200;
@@ -84,6 +90,7 @@ function readConfig(): PreviewConfig {
     scrollSync: c.get<boolean>(SCROLL_SYNC_KEY, true),
     viewMode: getViewMode(),
     zoom: getZoom(),
+    enableCsv: c.get<boolean>(ENABLE_CSV_KEY, true),
   };
 }
 
@@ -91,6 +98,14 @@ function scrollSyncEnabled(): boolean {
   return vscode.workspace
     .getConfiguration(CONFIG_SECTION)
     .get<boolean>(SCROLL_SYNC_KEY, true);
+}
+
+/** Whether closing a source editor should also dispose its preview. Default
+ *  false — the preview outlives the raw file so you can keep reading. */
+function closePreviewWithEditor(): boolean {
+  return vscode.workspace
+    .getConfiguration(CONFIG_SECTION)
+    .get<boolean>(CLOSE_WITH_EDITOR_KEY, false);
 }
 
 function getViewMode(): ViewMode {
@@ -126,34 +141,77 @@ const dismissed = new Set<string>();
  */
 const suppressEditorSync = new Set<string>();
 
+/**
+ * Resolve the document a preview command should target.
+ *
+ * VS Code passes the clicked resource's Uri as the first argument when a command
+ * is invoked from a menu bound to a resource — the Explorer context menu, the
+ * editor title bar, etc. When there's no Uri (Command Palette / keybinding) we
+ * fall back to the active editor. This is what lets "Open Filemark Preview" work
+ * by right-clicking a file in the tree that isn't even open in an editor.
+ */
+async function resolvePreviewDoc(
+  uri?: vscode.Uri,
+): Promise<vscode.TextDocument | undefined> {
+  if (uri) return vscode.workspace.openTextDocument(uri);
+  return vscode.window.activeTextEditor?.document;
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   extContext = context;
 
-  // Command + editor-title button + keybinding all route here.
+  // Command routes here from the palette, keybinding, editor-title button, AND
+  // the Explorer context menu (which passes the clicked file's Uri).
   context.subscriptions.push(
-    vscode.commands.registerCommand("filemark.openPreview", () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor) {
-        openPreview(context, editor.document, {
-          focus: true,
-          column: vscode.ViewColumn.Active,
-        });
-      }
-    }),
+    vscode.commands.registerCommand(
+      "filemark.openPreview",
+      async (uri?: vscode.Uri) => {
+        const doc = await resolvePreviewDoc(uri);
+        if (doc) {
+          openPreview(context, doc, {
+            focus: true,
+            column: vscode.ViewColumn.Active,
+          });
+        }
+      },
+    ),
   );
 
   // Same as openPreview, but opens the preview in the column BESIDE the editor
   // (a split), so raw + preview are visible at once — where scroll sync shines.
   context.subscriptions.push(
-    vscode.commands.registerCommand("filemark.openPreviewToSide", () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor) {
-        openPreview(context, editor.document, {
-          focus: true,
-          column: vscode.ViewColumn.Beside,
-        });
-      }
-    }),
+    vscode.commands.registerCommand(
+      "filemark.openPreviewToSide",
+      async (uri?: vscode.Uri) => {
+        const doc = await resolvePreviewDoc(uri);
+        if (doc) {
+          openPreview(context, doc, {
+            focus: true,
+            column: vscode.ViewColumn.Beside,
+          });
+        }
+      },
+    ),
+  );
+
+  // Explorer context-menu aliases. Separate commands only because VS Code shows a
+  // command's bare TITLE in context menus (no "Filemark:" category prefix), so
+  // reusing openPreview would render as "Open Preview" — indistinguishable from
+  // the built-in Markdown entry. These carry a "Filemark:"-prefixed title and are
+  // hidden from the Command Palette (see package.json commandPalette when:false).
+  const openPreviewIn = (column: vscode.ViewColumn) => async (uri?: vscode.Uri) => {
+    const doc = await resolvePreviewDoc(uri);
+    if (doc) openPreview(context, doc, { focus: true, column });
+  };
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "filemark.explorerOpenPreview",
+      openPreviewIn(vscode.ViewColumn.Active),
+    ),
+    vscode.commands.registerCommand(
+      "filemark.explorerOpenPreviewToSide",
+      openPreviewIn(vscode.ViewColumn.Beside),
+    ),
   );
 
   // Open the current file as file://… in Chrome, where the filemark Chrome
@@ -302,13 +360,16 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // Closing the raw file closes its preview and clears any dismissal, so
-  // reopening the file starts fresh (auto-open can fire again).
+  // Closing the raw file clears any dismissal so reopening starts fresh
+  // (auto-open can fire again). Whether it ALSO disposes the preview depends on
+  // `filemark.closePreviewWithEditor` (default false → preview stays open; its
+  // interactive features resume when the source reopens — the existing panel is
+  // reused, no duplicate). When true, the old tied-lifecycle behaviour applies.
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument((doc) => {
       const key = doc.uri.toString();
       dismissed.delete(key);
-      panels.get(key)?.dispose();
+      if (closePreviewWithEditor()) panels.get(key)?.dispose();
     }),
   );
 
@@ -669,6 +730,25 @@ async function handleNavigate(
 const KNOWN_THEMES = new Set(["light", "dark", "sepia"]);
 
 /**
+ * CSP `frame-src` allow-list for the preview webview — the origins <VideoEmbed>
+ * frames DIRECTLY from a `vscode-webview://` origin. Under the webview's
+ * default-src 'none', anything not listed renders as an empty box.
+ *
+ * Note the YouTube entry is the filemark website, NOT youtube-nocookie: in a
+ * non-web host the webview can't give YouTube a valid Referer (Error 153), so
+ * VideoEmbed frames the https helper page (YT_EMBED_HELPER, on khanakia.com)
+ * which in turn frames YouTube. So the webview only frames khanakia.com here;
+ * the youtube-nocookie frame lives inside the helper's own (unrestricted)
+ * document. Vimeo/Loom are still framed directly. Keep this in lockstep with
+ * packages/mdx-viewer/src/components/VideoEmbed.tsx (parseVideo + YT_EMBED_HELPER).
+ */
+const VIDEO_EMBED_ORIGINS = [
+  "https://khanakia.com",
+  "https://player.vimeo.com",
+  "https://www.loom.com",
+] as const;
+
+/**
  * Webview HTML: loads the single built bundle (dist/webview/main.{js,css}) via
  * asWebviewUri, with a strict CSP + nonce. filemark is already eval-free (from
  * the MV3 work), so a nonce'd script + inline styles (for shiki/mermaid) is all
@@ -702,6 +782,15 @@ function buildHtml(
     // code-split chunks (mermaid, shiki langs, katex, markmap) which aren't
     // themselves nonce-tagged. Without it a strict script-src blocks them.
     `script-src 'nonce-${nonce}' 'strict-dynamic'`,
+    // Allow ONLY the embed origins the <VideoEmbed> component actually emits.
+    // With default-src 'none' an omitted frame-src blocks every iframe, so the
+    // VS Code webview rendered VideoEmbed as an empty black box (Chrome's
+    // extension-page CSP doesn't restrict frames, so it worked there). Keep this
+    // list in lockstep with providerEmbed() in
+    // packages/mdx-viewer/src/components/VideoEmbed.tsx — it is the source of
+    // truth for which providers are reachable; add an origin here whenever a new
+    // provider is added there.
+    `frame-src ${VIDEO_EMBED_ORIGINS.join(" ")}`,
   ].join("; ");
 
   return `<!DOCTYPE html>

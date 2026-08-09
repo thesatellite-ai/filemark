@@ -222,6 +222,9 @@ importers:
       '@filemark/core':
         specifier: workspace:*
         version: link:../../packages/viewer-core
+      '@filemark/csv':
+        specifier: workspace:*
+        version: link:../../packages/csv-viewer
       '@filemark/mdx':
         specifier: workspace:*
         version: link:../../packages/mdx-viewer
