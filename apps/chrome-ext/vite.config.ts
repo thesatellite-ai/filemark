@@ -40,6 +40,13 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
+    // Disable <link rel="modulepreload"> injection. On a chrome-extension:// page
+    // Vite's preload hints carry `crossorigin`, which Chrome treats as a different
+    // "world" than the actual module fetch — so it discards each preload as an
+    // unused "cross-world extension resource mismatch" (console noise, no function
+    // lost). Turning preload off removes the hints entirely; chunks still load on
+    // import, and the cost is nil for local (on-disk) extension assets.
+    modulePreload: false,
     rollupOptions: {
       input: {
         app: "src/app/index.html",

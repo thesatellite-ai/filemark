@@ -12,6 +12,9 @@ import {
 } from "./fs";
 import { sessionHandles } from "./sessionHandles";
 
+/** Product name — the tab-title suffix (and welcome-screen title). */
+const APP_NAME = "Filemark";
+
 export default function App() {
   const hydrate = useLibrary((s) => s.hydrate);
   const hydrateSettings = useSettings((s) => s.hydrate);
@@ -19,6 +22,20 @@ export default function App() {
   const setTheme = useLibrary((s) => s.setTheme);
   const addFiles = useLibrary((s) => s.addFiles);
   const setActive = useLibrary((s) => s.setActive);
+
+  // Keep the browser tab title in sync with the active file, so multiple open
+  // Filemark tabs are distinguishable and history/bookmarks read meaningfully.
+  // The static <title> in index.html only ever says "Filemark"; nothing updated
+  // it as the user switched files. Falls back to the bare app name on the
+  // welcome screen (no active file).
+  const activeFileName = useLibrary((s) =>
+    s.activeFileId ? (s.files[s.activeFileId]?.name ?? null) : null,
+  );
+  useEffect(() => {
+    document.title = activeFileName
+      ? `${activeFileName} — ${APP_NAME}`
+      : APP_NAME;
+  }, [activeFileName]);
 
   useEffect(() => {
     (async () => {
@@ -76,7 +93,15 @@ export default function App() {
         await addFiles([intercepted]);
         await setActive(intercepted.id);
       }
-    })();
+    })().catch((err) => {
+      // Boot backstop. Every step above already degrades gracefully on its own
+      // (trySilentRestore returns null for moved folders, loose-file restore is
+      // per-item try/caught, cacheFolderContent swallows unreadable files). This
+      // catch is the last line so an UNEXPECTED failure in hydrate / intercept
+      // pickup can never become an uncaught promise rejection — which Chrome
+      // renders as a raw error overlay the instant the app opens.
+      console.error("Filemark: boot sequence failed", err);
+    });
   }, [hydrate, hydrateSettings, addFiles, setActive]);
 
   // Dev auto-reload
