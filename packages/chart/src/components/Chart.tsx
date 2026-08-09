@@ -96,7 +96,7 @@ function ChartInner({ columns, rows, options }: ChartProps) {
         fullscreen={fullscreen}
         onToggleFullscreen={() => setFullscreen((v) => !v)}
       >
-        <ChartErrorCard messages={warnings} height={merged.height ?? 120} />
+        <ChartErrorCard messages={warnings} />
       </ChartContainer>
     );
   }
