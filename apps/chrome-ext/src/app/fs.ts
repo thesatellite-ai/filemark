@@ -140,11 +140,50 @@ export async function ensurePermission(
 }
 
 /**
+ * Walk a restored directory handle and build the session file-handle map keyed
+ * `${folderId}:${relPath}` — the exact key shape `sessionHandles.getFile()`
+ * looks up and the Viewer resolves a file's live handle by.
+ *
+ * Why it returns `null` instead of throwing on failure: the handle is restored
+ * from IndexedDB and may point at a folder the user has since **deleted, moved,
+ * or renamed** on disk. In that case Chrome throws a DOMException
+ * (`NotFoundError` — "A requested file or directory could not be found…") the
+ * moment we iterate `dir.values()` inside walkDirectory. Both callers
+ * (`trySilentRestore` on boot, `restoreFolder` on explicit Reconnect) treat an
+ * unreachable folder identically — as "no live handles" — so the throw is
+ * collapsed to `null` here at the single shared site.
+ *
+ * The bug this fixes: `trySilentRestore` ran inside an unguarded `Promise.all`
+ * in the boot sequence. When one saved folder had moved on disk, the raw throw
+ * became an **uncaught promise rejection** — surfacing to users as a scary
+ * "NotFoundError" overlay the instant they opened a file whose folder was gone,
+ * and aborting silent restore for every OTHER (still-valid) folder in the map.
+ */
+export async function buildFolderHandleMap(
+  folderId: string,
+  handle: FileSystemDirectoryHandle,
+): Promise<Map<string, FileSystemFileHandle> | null> {
+  try {
+    const entries = await walkDirectory(handle);
+    const fileHandles = new Map<string, FileSystemFileHandle>();
+    for (const e of entries) {
+      fileHandles.set(`${folderId}:${e.path}`, e.handle);
+    }
+    return fileHandles;
+  } catch {
+    // Deleted / moved / renamed on disk since the handle was persisted — the
+    // folder is simply offline until the user re-picks it. Never rethrow.
+    return null;
+  }
+}
+
+/**
  * Try silently (no user gesture) to bring a saved folder back online. If the
  * underlying permission is already "granted" (Chrome's persisted-permission
  * behavior will often return this for handles stored in IndexedDB within the
  * same origin), we walk the directory and register live handles without any
- * user interaction. Returns null if a user gesture is required.
+ * user interaction. Returns null if a user gesture is required OR the folder is
+ * no longer reachable on disk (see buildFolderHandleMap) — so this never throws.
  */
 export async function trySilentRestore(folder: LibraryFolder): Promise<{
   handle: FileSystemDirectoryHandle;
@@ -154,11 +193,8 @@ export async function trySilentRestore(folder: LibraryFolder): Promise<{
   if (!handle) return null;
   const state = await queryPermissionState(handle, "read");
   if (state !== "granted") return null;
-  const entries = await walkDirectory(handle);
-  const fileHandles = new Map<string, FileSystemFileHandle>();
-  for (const e of entries) {
-    fileHandles.set(`${folder.id}:${e.path}`, e.handle);
-  }
+  const fileHandles = await buildFolderHandleMap(folder.id, handle);
+  if (!fileHandles) return null;
   return { handle, fileHandles };
 }
 
@@ -243,12 +279,8 @@ export async function restoreFolder(folder: LibraryFolder): Promise<{
   if (!handle) return null;
   const granted = await ensurePermission(handle, "read");
   if (!granted) return null;
-  const entries = await walkDirectory(handle);
-  const fileHandles = new Map<string, FileSystemFileHandle>();
-  for (const e of entries) {
-    const fid = `${folder.id}:${e.path}`;
-    fileHandles.set(fid, e.handle);
-  }
+  const fileHandles = await buildFolderHandleMap(folder.id, handle);
+  if (!fileHandles) return null;
   return { handle, fileHandles };
 }
 
