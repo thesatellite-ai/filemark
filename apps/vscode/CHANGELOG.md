@@ -2,6 +2,18 @@
 
 All notable changes to the Filemark VS Code extension are documented here. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.1.2 — 2026-08-09
+
+### Added
+
+- **CSV / TSV preview** — `.csv` and `.tsv` files render in the Filemark preview as a sortable, filterable data grid (the same viewer the Chrome extension uses). Reachable from the editor title bar, the Explorer right-click menu, the command palette, and `Cmd/Ctrl+Shift+V`.
+- **`filemark.enableCsv` setting** (default on) — turn CSV/TSV rendering off to keep those files in the plain text editor; the preview commands hide for CSV/TSV when it's off.
+
+### Fixed
+
+- **YouTube embeds now play in the preview** — YouTube refuses to run in a VS Code webview (Error 153 — a referrer restriction, not a per-video setting), so embeds are routed through a small https helper page that supplies a valid referrer. Vimeo and Loom were unaffected. Raw pasted `<iframe>` embeds are handled the same way.
+- **Chart mis-configuration card** no longer stretches to the full chart height, leaving a large empty band below the message.
+
 ## 0.1.1 — 2026-08-09
 
 ### Added

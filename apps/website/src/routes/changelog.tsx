@@ -46,6 +46,18 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.13",
+    date: "2026-08-09",
+    tag: "Reliability & embeds",
+    notes: [
+      "Fixed a crash when opening a file from a folder that had been moved, renamed, or deleted on disk — Filemark now recovers gracefully instead of showing an error overlay on open",
+      "The browser tab title now shows the active file name instead of always reading 'Filemark'",
+      "YouTube videos embedded in docs now play inside the extension — routed through a privacy-friendly helper page so YouTube receives a valid referrer (Vimeo and Loom already worked); pasted YouTube `<iframe>` embeds are handled too",
+      "Tightened the chart mis-configuration error card so it no longer leaves a large empty area below the message",
+      "Fixed a rare case where a `<details>` block rendered as an empty arrow with no label",
+    ],
+  },
+  {
     version: "0.1.12",
     date: "2026-08-09",
     tag: "Code rendering polish",
