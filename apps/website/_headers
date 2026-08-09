@@ -17,3 +17,24 @@
 # Hashed build assets are content-addressed — cache them forever.
 /apps/filemark/assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# The YouTube embed helper (embed/youtube.html) exists SPECIFICALLY to be framed
+# cross-origin: filemark's non-web hosts (Chrome extension `chrome-extension://`,
+# VS Code webview `vscode-webview://`, `file://`) iframe it so YouTube receives a
+# valid https Referer and plays (works around YouTube's Error 153). The site-wide
+# `X-Frame-Options: SAMEORIGIN` above would forbid that framing, so drop it for
+# this path so ANY embedder can frame it. The page only wraps a public YouTube
+# video — no auth, cookies, or secrets — so unrestricted framing is safe here.
+#
+# Why no `frame-ancestors` allow-list at all:
+#   • `frame-ancestors *` fails — `*` matches only NETWORK schemes
+#     (http/https/ws/wss), so `chrome-extension://` is still blocked.
+#   • `frame-ancestors https: chrome-extension: vscode-webview: file:` fixes the
+#     Chrome extension, but the VS Code webview embeds from a SANDBOXED / OPAQUE
+#     (null) origin, and CSP has NO token that can allowlist a null origin — so
+#     it stays blocked no matter what schemes are listed.
+# The only way to permit an opaque-origin embedder is to send no framing
+# restriction at all: drop X-Frame-Options and set no frame-ancestors. That
+# leaves the page framable everywhere, which is acceptable for this one path.
+/apps/filemark/embed/*
+  ! X-Frame-Options

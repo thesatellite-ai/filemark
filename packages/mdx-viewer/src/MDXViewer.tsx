@@ -37,7 +37,7 @@ import { DecisionTree, Branch } from "./components/DecisionTree";
 import { Steps, Step } from "./components/Steps";
 import { Badge } from "./components/Badge";
 import { LastUpdated, EditThisPage } from "./components/DocMeta";
-import { VideoEmbed } from "./components/VideoEmbed";
+import { VideoEmbed, resolveIframeSrc } from "./components/VideoEmbed";
 import { Cards, DocCard } from "./components/Cards";
 import { Diff } from "./components/Diff";
 import { APIEndpoint } from "./components/APIEndpoint";
@@ -243,6 +243,22 @@ export function MDXViewer(props: ViewerProps) {
         lastupdated: LastUpdated,
         editthispage: EditThisPage,
         videoembed: VideoEmbed,
+        // Raw <iframe> pasted from YouTube's "Share → Embed" bypasses
+        // <VideoEmbed>. Reroute a YouTube src through the https helper on
+        // non-web host origins (Error-153 fix); all other iframes (Vimeo,
+        // Loom, CodePen, YouTube on the website) pass through untouched.
+        iframe: ({
+          node: _node,
+          src,
+          ...rest
+        }: React.IframeHTMLAttributes<HTMLIFrameElement> & {
+          node?: unknown;
+        }) => (
+          <iframe
+            src={typeof src === "string" ? resolveIframeSrc(src) : src}
+            {...rest}
+          />
+        ),
         cards: Cards,
         doccard: DocCard,
         diff: Diff,
