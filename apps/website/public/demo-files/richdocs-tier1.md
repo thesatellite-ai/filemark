@@ -150,7 +150,7 @@ Fetch a single order by id.
 
 Privacy-conscious iframe (uses `youtube-nocookie.com`):
 
-<VideoEmbed src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Demo video"></VideoEmbed>
+<VideoEmbed src="https://www.youtube.com/watch?v=aqz-KE-bpKQ" title="Demo video"></VideoEmbed>
 
 Vimeo:
 

@@ -92,7 +92,7 @@ Three forms: markdown links, typed shortcodes, bare URLs. All become icon chips.
 - [ ] Check issue gh:anthropic/filemark!87 @alice !p2 #tasks
 - [ ] Linear follow-up linear:ENG-1234 @linus !p1 #planning
 - [ ] Design review figma:abc123xyz @karen !p2 ~tuesday
-- [ ] Watch onboarding video yt:dQw4w9WgXcQ @alice !p3
+- [ ] Watch onboarding video yt:aqz-KE-bpKQ @alice !p3
 - [ ] Read the spec [design doc](https://example.com/spec) @alice !p1 ~fri
 - [ ] Bare URL detection https://github.com/anthropic/filemark/pull/200 @grace !p1
 
