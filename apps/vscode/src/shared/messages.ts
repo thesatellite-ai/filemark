@@ -56,6 +56,10 @@ export interface PreviewConfig {
   viewMode: ViewMode;
   /** Zoom multiplier for the preview content (1 = 100%). Runtime, persisted. */
   zoom: number;
+  /** Whether .csv/.tsv files render as the Filemark data grid (filemark.enableCsv).
+   *  When false the webview shows a "CSV preview disabled" note for those files
+   *  (and the host hides the preview commands via `when` clauses). */
+  enableCsv: boolean;
 }
 
 /** host → webview: full render payload. `docBaseUri` is

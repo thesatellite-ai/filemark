@@ -2,7 +2,7 @@
   "name": "filemark",
   "displayName": "Filemark — Markdown & Data Preview",
   "description": "Rich Markdown preview in VS Code, powered by filemark — callouts, charts, kanban, tasks, mermaid, math, and more. Raw stays your native editor; the preview scrolls with it.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "publisher": "khanakia",
   "license": "SEE LICENSE IN LICENSE",
@@ -10,7 +10,10 @@
   "engines": {
     "vscode": "^1.90.0"
   },
-  "categories": ["Visualization", "Other"],
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
   "keywords": [
     "markdown",
     "preview",
@@ -23,13 +26,48 @@
     "gfm",
     "filemark"
   ],
-  "galleryBanner": { "color": "#0a0a0a", "theme": "dark" },
-  "repository": { "type": "git", "url": "https://github.com/thesatellite-ai/filemark.git" },
-  "bugs": { "url": "https://github.com/thesatellite-ai/filemark/issues" },
+  "galleryBanner": {
+    "color": "#0a0a0a",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thesatellite-ai/filemark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thesatellite-ai/filemark/issues"
+  },
   "homepage": "https://khanakia.com/apps/filemark/",
   "main": "./dist/extension.js",
-  "activationEvents": ["onLanguage:markdown", "onView:filemark.tasks"],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onLanguage:csv",
+    "onLanguage:tsv",
+    "onView:filemark.tasks"
+  ],
   "contributes": {
+    "languages": [
+      {
+        "id": "csv",
+        "aliases": [
+          "CSV",
+          "csv"
+        ],
+        "extensions": [
+          ".csv"
+        ]
+      },
+      {
+        "id": "tsv",
+        "aliases": [
+          "TSV",
+          "tsv"
+        ],
+        "extensions": [
+          ".tsv"
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "filemark.openPreview",
@@ -97,6 +135,16 @@
         "icon": "$(bug)"
       },
       {
+        "command": "filemark.explorerOpenPreview",
+        "title": "Filemark: Open Preview",
+        "icon": "$(book)"
+      },
+      {
+        "command": "filemark.explorerOpenPreviewToSide",
+        "title": "Filemark: Open Preview to the Side",
+        "icon": "$(layout-sidebar-right)"
+      },
+      {
         "command": "filemark.toggleGithubPreview",
         "title": "Toggle GitHub Preview",
         "category": "Filemark",
@@ -115,20 +163,32 @@
       }
     ],
     "menus": {
+      "explorer/context": [
+        {
+          "command": "filemark.explorerOpenPreview",
+          "when": "resourceLangId == markdown || (config.filemark.enableCsv && resourceLangId =~ /^(csv|tsv)$/)",
+          "group": "navigation@100"
+        },
+        {
+          "command": "filemark.explorerOpenPreviewToSide",
+          "when": "resourceLangId == markdown || (config.filemark.enableCsv && resourceLangId =~ /^(csv|tsv)$/)",
+          "group": "navigation@101"
+        }
+      ],
       "editor/title": [
         {
           "command": "filemark.openPreviewToSide",
-          "when": "editorLangId == markdown",
+          "when": "editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)",
           "group": "navigation@1"
         },
         {
           "command": "filemark.openPreview",
-          "when": "editorLangId == markdown",
+          "when": "editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)",
           "group": "navigation@2"
         },
         {
           "command": "filemark.openInBrowser",
-          "when": "editorLangId == markdown && resourceScheme == file",
+          "when": "(editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)) && resourceScheme == file",
           "group": "navigation@3"
         },
         {
@@ -147,15 +207,15 @@
       "commandPalette": [
         {
           "command": "filemark.openPreview",
-          "when": "editorLangId == markdown"
+          "when": "editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)"
         },
         {
           "command": "filemark.openPreviewToSide",
-          "when": "editorLangId == markdown"
+          "when": "editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)"
         },
         {
           "command": "filemark.openInBrowser",
-          "when": "editorLangId == markdown && resourceScheme == file"
+          "when": "(editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)) && resourceScheme == file"
         },
         {
           "command": "filemark.toggleGithubPreview",
@@ -168,6 +228,14 @@
         {
           "command": "filemark.tasks.openTask",
           "when": "false"
+        },
+        {
+          "command": "filemark.explorerOpenPreview",
+          "when": "false"
+        },
+        {
+          "command": "filemark.explorerOpenPreviewToSide",
+          "when": "false"
         }
       ]
     },
@@ -176,13 +244,13 @@
         "command": "filemark.openPreview",
         "key": "ctrl+shift+v",
         "mac": "cmd+shift+v",
-        "when": "editorLangId == markdown"
+        "when": "editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)"
       },
       {
         "command": "filemark.openPreviewToSide",
         "key": "ctrl+alt+v",
         "mac": "cmd+alt+v",
-        "when": "editorLangId == markdown"
+        "when": "editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)"
       }
     ],
     "configuration": {
@@ -193,6 +261,16 @@
           "default": false,
           "description": "Automatically open the Filemark preview when a Markdown file is opened."
         },
+        "filemark.enableCsv": {
+          "type": "boolean",
+          "default": true,
+          "description": "Render .csv / .tsv files with the Filemark data grid (sortable, filterable). When off, the Filemark preview commands are hidden for CSV/TSV files and they open only in the native text editor."
+        },
+        "filemark.closePreviewWithEditor": {
+          "type": "boolean",
+          "default": false,
+          "description": "Close the Filemark preview when its source file's editor is closed. When off (default), the preview stays open so you can keep reading after closing the raw file; interactive features (live update, scroll sync, task toggles) resume when you reopen the source."
+        },
         "filemark.scrollSync": {
           "type": "boolean",
           "default": true,
@@ -200,7 +278,12 @@
         },
         "filemark.theme": {
           "type": "string",
-          "enum": ["auto", "light", "dark", "sepia"],
+          "enum": [
+            "auto",
+            "light",
+            "dark",
+            "sepia"
+          ],
           "enumDescriptions": [
             "Follow the VS Code color theme (light/dark)",
             "Light",
@@ -212,7 +295,11 @@
         },
         "filemark.fontFamily": {
           "type": "string",
-          "enum": ["sans", "serif", "mono"],
+          "enum": [
+            "sans",
+            "serif",
+            "mono"
+          ],
           "default": "sans",
           "description": "Preview body font family."
         },
@@ -284,6 +371,7 @@
   },
   "dependencies": {
     "@filemark/core": "workspace:*",
+    "@filemark/csv": "workspace:*",
     "@filemark/mdx": "workspace:*",
     "@filemark/tasks": "workspace:*",
     "react": "^19.2.7",

@@ -2,8 +2,16 @@
 // unconditionally. Its selectors (.fv-github-root / .markdown-body) only match
 // when GithubMarkdown is mounted, so there's no leakage into Filemark mode.
 import "@filemark/mdx/github.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { MDXViewer, GithubMarkdown, frontmatterLineOffset } from "@filemark/mdx";
+import { CSVViewer } from "@filemark/csv";
 import {
   ThemeProvider,
   DEFAULT_THEME,
@@ -20,7 +28,12 @@ import { vscode } from "./vscodeApi";
 import { webviewStorage } from "./adapters/storage";
 import { createWebviewAssetResolver } from "./adapters/assets";
 import { createScrollSync, type ScrollSyncController } from "./scrollSync";
-import { ZOOM_STEP, clampZoom } from "../shared/constants";
+import {
+  ZOOM_STEP,
+  clampZoom,
+  pickPreviewRenderer,
+  type PreviewRenderer,
+} from "../shared/constants";
 
 /** Current document + appearance, pushed from the host on open, on every edit,
  *  and whenever the `filemark.*` settings / runtime toggles change. */
@@ -186,7 +199,16 @@ export function App() {
     );
   }
 
-  const isGithub = doc.config.viewMode === "github";
+  // The renderer choice (markdown / github / csv / csv-disabled) is a pure,
+  // unit-tested decision — see pickPreviewRenderer. PreviewControls (the
+  // rendered/github toggle + zoom) only make sense for markdown; the CSV grid
+  // owns its own toolbar, so it's shown for the two markdown-ish renderers only.
+  const renderer = pickPreviewRenderer(
+    doc.fileExt,
+    doc.config.viewMode,
+    doc.config.enableCsv,
+  );
+  const showControls = renderer === "markdown" || renderer === "github";
 
   return (
     // Controlled ThemeProvider — the value comes from VS Code settings; there's
@@ -195,37 +217,83 @@ export function App() {
       {/* User CSS from the filemark.customCss setting (live via config re-post). */}
       {doc.config.customCss ? <style>{doc.config.customCss}</style> : null}
 
-      <PreviewControls
-        viewMode={doc.config.viewMode}
-        zoom={zoom}
-        onSetViewMode={setViewMode}
-        onZoomIn={() => setZoom(zoom + ZOOM_STEP)}
-        onZoomOut={() => setZoom(zoom - ZOOM_STEP)}
-        onZoomReset={() => setZoom(1)}
-      />
+      {showControls ? (
+        <PreviewControls
+          viewMode={doc.config.viewMode}
+          zoom={zoom}
+          onSetViewMode={setViewMode}
+          onZoomIn={() => setZoom(zoom + ZOOM_STEP)}
+          onZoomOut={() => setZoom(zoom - ZOOM_STEP)}
+          onZoomReset={() => setZoom(1)}
+        />
+      ) : null}
 
-      {isGithub ? (
-        // CSS `zoom` scales everything (getBoundingClientRect stays consistent,
-        // so scroll math still lines up). Width var mirrors the chrome-ext.
-        // No padding here: .fv-github-root owns the page padding AND paints the
-        // GitHub canvas full-width, so any wrapper padding would re-expose the
-        // host editor bg as a band above/below the canvas (the "two bg" seam).
+      {renderPreviewBody(renderer, viewerProps, zoom, doc.config.contentWidth)}
+    </ThemeProvider>
+  );
+}
+
+/**
+ * Render the body for a resolved PreviewRenderer. Kept as a standalone function
+ * with an EXHAUSTIVE switch (the `never` default) so adding a PreviewRenderer
+ * kind is a compile error here until it's handled — no silent fall-through to a
+ * blank pane. `zoom` scales via CSS `zoom` so getBoundingClientRect stays
+ * consistent and the scroll-sync math keeps lining up.
+ */
+function renderPreviewBody(
+  renderer: PreviewRenderer,
+  viewerProps: ViewerProps,
+  zoom: number,
+  contentWidth: number,
+): ReactNode {
+  switch (renderer) {
+    case "csv":
+      // The CSV grid owns its own chrome (sort/filter/export/fullscreen); it
+      // just needs the page padding + shared zoom for parity with other files.
+      return (
+        <div className="px-6 py-6" style={{ zoom }}>
+          <CSVViewer {...viewerProps} />
+        </div>
+      );
+    case "csv-disabled":
+      // Reachable only if a preview command runs while filemark.enableCsv is off
+      // (the menus are hidden in that case). Be explicit rather than blank.
+      return (
+        <div className="text-muted-foreground p-8 text-center text-sm">
+          CSV preview is disabled. Enable{" "}
+          <strong>Filemark › Enable Csv</strong> in Settings to render
+          .csv / .tsv files as a data grid.
+        </div>
+      );
+    case "github":
+      // No padding here: .fv-github-root owns the page padding AND paints the
+      // GitHub canvas full-width, so any wrapper padding would re-expose the host
+      // editor bg as a band above/below the canvas (the "two bg" seam).
+      return (
         <div
           style={{
             zoom,
-            ["--fv-content-width" as string]: `${doc.config.contentWidth}px`,
+            ["--fv-content-width" as string]: `${contentWidth}px`,
           }}
         >
           <GithubMarkdown {...viewerProps} />
         </div>
-      ) : (
-        // data-toc="closed" hides the MDXViewer's TOC rail in the preview pane.
+      );
+    case "markdown":
+      // data-toc="closed" hides the MDXViewer's TOC rail in the preview pane.
+      return (
         <div className="px-6 py-6" data-toc="closed" style={{ zoom }}>
           <MDXViewer {...viewerProps} />
         </div>
-      )}
-    </ThemeProvider>
-  );
+      );
+    default: {
+      // Exhaustiveness guard — if a new PreviewRenderer kind is added without a
+      // case above, this line fails to compile (renderer is not assignable to
+      // never), forcing the author to handle it.
+      const unhandled: never = renderer;
+      throw new Error(`Unhandled preview renderer: ${String(unhandled)}`);
+    }
+  }
 }
 
 /**
