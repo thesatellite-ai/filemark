@@ -191,6 +191,11 @@
  * the whole .fv-code-block covers plain + shiki + any future block variant. */
 .fv-mdx-body code:not(.fv-code-block code) {
   background: var(--fm-prose-code-bg, var(--code-bg));
+  /* Explicit colour is REQUIRED — without it, hosts that inject a default
+   * `code { color }` (the VS Code webview sets --vscode-textPreformat-foreground,
+   * a tan/orange) win the cascade and inline code renders off-theme. Pin it to the
+   * body foreground so inline code matches the surrounding text across all hosts. */
+  color: var(--fm-prose-code-fg, var(--foreground));
   border: 1px solid var(--border);
   padding: 1px 5px;
   border-radius: 4px;
@@ -808,6 +813,13 @@
 .fv-code-shiki pre,
 .fv-code-shiki code,
 .fv-code-shiki .line { margin: 0; background: transparent !important; }
+/* Inherit the shiki <pre>'s inline theme foreground for the <code> element, so
+ * UNTOKENIZED text (plaintext / no-language blocks, whitespace) uses the theme
+ * colour instead of a host default. VS Code injects `code { color:
+ * --vscode-textPreformat-foreground }` (a tan/orange) which otherwise wins on the
+ * bare <code> and tints no-language blocks off-theme; syntax tokens set their own
+ * inline colour and are unaffected. !important to beat the host's rule. */
+.fv-code-shiki code { color: inherit !important; }
 .fv-code-plain pre,
 .fv-code-plain code { margin: 0; background: transparent; font: inherit; color: inherit; }
 
@@ -896,7 +908,10 @@
   background: var(--card);
   padding: 0 14px;
 }
-.fv-details-summary {
+/* Both the filemark wrapper's summary AND a native GFM <summary> child (see
+ * Details.tsx — native <details><summary>…</summary> renders children verbatim). */
+.fv-details-summary,
+.fv-details > summary {
   cursor: pointer;
   padding: 10px 0;
   font-weight: 600;
@@ -905,6 +920,15 @@
 .fv-details-body {
   padding: 2px 0 12px;
   border-top: 1px solid var(--border);
+}
+/* Native usage has no .fv-details-body wrapper — space the toggled content and
+ * separate it from the summary the way the wrapper does. */
+.fv-details[open] > summary {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.fv-details > summary ~ * {
+  margin-bottom: 0.6em;
 }
 
 
