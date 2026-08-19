@@ -1018,10 +1018,11 @@
   margin-bottom: 8px;
 }
 .fv-toc ul { list-style: none; padding: 0; margin: 0; }
+/* Left indent is set inline per item (padding-left), RELATIVE to the doc's
+   shallowest heading — see tocIndentLevels in MDXViewer.tsx. Do NOT reintroduce
+   absolute `[data-depth=N]` padding here; it made h1 collide with h2 and broke
+   docs that don't start at h2. */
 .fv-toc li { padding: 2px 0; line-height: 1.4; }
-.fv-toc li[data-depth="2"] { padding-left: 0; }
-.fv-toc li[data-depth="3"] { padding-left: 10px; }
-.fv-toc li[data-depth="4"] { padding-left: 20px; font-size: 11px; }
 .fv-toc a {
   color: var(--muted-foreground);
   text-decoration: none;

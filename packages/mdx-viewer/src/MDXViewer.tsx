@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { tocIndentLevels, TOC_INDENT_STEP_PX } from "./toc";
 import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -141,6 +142,13 @@ export function MDXViewer(props: ViewerProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [toc, setToc] = useState<TocItem[]>([]);
   const [activeTocId, setActiveTocId] = useState<string | null>(null);
+  // TOC indent per item, relative to the shallowest heading in this doc — so
+  // the outermost heading (h1 OR h2 OR h3, whatever the doc uses) is flush-left
+  // and deeper ones nest under it. See tocIndentLevels.
+  const tocLevels = useMemo(
+    () => tocIndentLevels(toc.map((t) => t.depth)),
+    [toc],
+  );
 
   // Frontmatter extraction. Browser-friendly: match `---\n…\n---\n` at the
   // very start, parse the YAML body with the `yaml` package (pure JS), and
@@ -607,7 +615,14 @@ export function MDXViewer(props: ViewerProps) {
           <div className="fv-toc-title">On this page</div>
           <ul>
             {toc.map((t, i) => (
-              <li key={i} data-depth={t.depth}>
+              // Indent is applied inline (not by absolute data-depth CSS) because
+              // it's RELATIVE to the shallowest heading in THIS doc — see
+              // tocIndentLevels. data-depth stays for optional per-tag styling.
+              <li
+                key={i}
+                data-depth={t.depth}
+                style={{ paddingLeft: tocLevels[i] * TOC_INDENT_STEP_PX }}
+              >
                 <a
                   href={`#${t.id}`}
                   aria-current={t.id === activeTocId ? "location" : undefined}

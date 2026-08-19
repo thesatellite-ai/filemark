@@ -2,6 +2,14 @@
 
 All notable changes to the Filemark VS Code extension are documented here. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+Not yet published to any store — merged to `main`, ships in the next version.
+
+### Fixed
+
+- **Table of contents indentation** — the "On this page" TOC now indents each entry relative to the **shallowest heading in the document**, so a doc that uses `#` as a section heading correctly nests `##` / `###` beneath it. Previously the indent was anchored on `##`, so `#` and `##` shared the same level (no hierarchy). Docs that start at `##` are unchanged. (Shared `@filemark/mdx` fix — also affects the Chrome extension + website.)
+
 ## 0.1.2 — 2026-08-09
 
 ### Added
