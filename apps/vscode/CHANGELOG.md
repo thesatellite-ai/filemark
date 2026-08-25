@@ -8,6 +8,7 @@ Not yet published to any store — merged to `main`, ships in the next version.
 
 ### Fixed
 
+- **Mermaid diagrams look right in dark mode** — nodes given a custom fill (`style N fill:#…` or a `classDef`) rendered as washed-out, near-white boxes with unreadable label text in the dark preview: mermaid's dark theme forces label text light while the author's light pastel fills (tuned for a white page) stay pale. In dark mode each author light fill is now deepened to a saturated, same-hue version (pale green → forest green, pale amber → deep amber, pale pink → dark red) with a light label, so the color semantics read clearly on a dark canvas; light mode keeps the fills and just picks a contrasting label. Edge labels (the little text chips on the arrows) also lose their clunky gray background in dark mode — it now blends into the diagram card. (Shared `@filemark/mdx` fix — also affects the Chrome extension + website.)
 - **Table of contents indentation** — the "On this page" TOC now indents each entry relative to the **shallowest heading in the document**, so a doc that uses `#` as a section heading correctly nests `##` / `###` beneath it. Previously the indent was anchored on `##`, so `#` and `##` shared the same level (no hierarchy). Docs that start at `##` are unchanged. (Shared `@filemark/mdx` fix — also affects the Chrome extension + website.)
 
 ## 0.1.2 — 2026-08-09
