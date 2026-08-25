@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { useThemeOptional } from "@filemark/core";
+import { recolorMermaidLabels } from "./mermaidContrast";
 
 /**
  * Mermaid diagram renderer with a mini viewport.
@@ -104,7 +105,15 @@ export function Mermaid({ source }: { source: string }) {
           fontFamily: "inherit",
         });
         await mermaid.parse(source);
-        const { svg: rendered } = await mermaid.render(idRef.current, source);
+        const { svg: raw } = await mermaid.render(idRef.current, source);
+        // Repaint author-styled nodes: in dark mode deepen washed light fills
+        // to a saturated same-hue color + light labels (so green/amber/red read
+        // on black, not near-white); in light mode keep fills + pick a
+        // contrasting label. No-op for theme-default nodes. Done before caching
+        // so the cached SVG (keyed by theme) is already corrected.
+        const rendered = recolorMermaidLabels(raw, {
+          deepenLightFills: mode === "dark",
+        });
         if (cancelled) return;
         setCachedSvg(source, mermaidTheme, rendered);
         setSvg(rendered);
