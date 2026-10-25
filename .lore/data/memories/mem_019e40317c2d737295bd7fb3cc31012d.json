@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **MDX JSX expressions** — need sandboxed iframe. Architecture supports it.\n- **JSON / code / CSV / image / log viewers** — each lands as its own package; registry plugs them in.\n- **URL interception for remote markdown** (raw.githubusercontent, gist raw, `text/plain`-served `.md` URLs on the open web). Needs content script on `<all_urls>` or `matches` patterns; tradeoff is a broader permission ask.\n- **Edit mode** (Monaco or CodeMirror). Deferred to v0.2+.\n- **Custom icons** — using `http-lens` placeholders.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.421210000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317c2d737295bd7fb3cc31012d",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.421210000Z",
+  "updated_at": "2026-05-19T12:24:05.421210000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

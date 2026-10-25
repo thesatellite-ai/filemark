@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Authoring filemark docs (full grammar = skills/filemark/SKILL.md; invoke /filemark skill). Highest-impact traps: (1) Block components (Callout/Tabs/Tab/Details/ADR/DocBlock) need a BLANK LINE after the opening tag and before the closing tag or markdown inside renders literally (CommonMark HTML-block type 6). (2) Never self-close unknown components — <TaskStats md/> eats every following sibling; always write <Tag></Tag>. (3) Opening tag + all attrs must fit on ONE line (CommonMark type 7). (4) In task-view filter= never use < or >; use `in (p0,p1)` — angle brackets break HTML attr parsing. (5) Prefer double quotes in attrs (single quotes get mangled by shadcn stacks). (6) Recurrence (every:) does NOT auto-generate bullets — filemark is a reader; next instance is written by hand. (7) Don't double-render tasks: GFM renders - [ ] AND <TaskList> reprints them — hoist views to top, one canonical source appendix at end. (8) MindMap: prefer ```mindmap fence over <MindMap> wrapper (blank-line edge case). Task line numbers are body-relative (frontmatter stripped first).",
+  "confidence": null,
+  "created_at": "2026-05-19T12:41:15.368557000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e404133687883942d4327e4c17efd",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:41:15.368557000Z",
+  "updated_at": "2026-05-19T12:41:15.368557000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

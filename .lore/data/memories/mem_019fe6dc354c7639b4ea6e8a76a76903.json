@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Publishing to the VS Code Marketplace needs an Azure DevOps PAT (scope: All accessible organizations -> Marketplace: Manage). Open VSX + `vsce package` do not need it; only `vsce publish` to the Marketplace does.\nGOTCHA (2026-08-09): Microsoft now REQUIRES linking an active Azure subscription to CREATE a new Azure DevOps org (signup: \"you need to link it to an Azure subscription... Owner or Contributor role\"). Both a work account (aman@khanakia.com, stale Entra sub) and a personal account (khanakia@live.com, no sub) hit this wall. dev.azure.com is the right (free) product; portal.azure.com / azure.microsoft.com pricing pages are Azure CLOUD (wrong; wants a card). User resolved by upgrading to Pay-As-You-Go, then created the org + PAT.\nBudget reality: Azure has NO native hard spend cap. Budgets (Cost Management -> Budgets) are ALERT-ONLY (email at thresholds, do not stop billing). The old \"Spending limit\" that halts services exists only on free/credit subs, not PAYG. A true auto-stop needs budget + Action Group + automation runbook (overkill). BUT the DevOps org + PAT + vsce publish workflow provisions ZERO billable resources — cost is $0 as long as no paid resource (VM/DB/pipeline beyond free) is created; a $10 budget with 50/80/100% email alerts is just a tripwire.\nCurrent state: VSCE_PAT (84 chars) is in apps/vscode/.env (gitignored) and VERIFIED (`vsce verify-pat khanakia` succeeded), so `cd apps/vscode && task publish` now auto-publishes to the Marketplace. PAT expires (max 1yr) -> regenerate + update that line.",
+  "confidence": null,
+  "created_at": "2026-08-09T14:10:19.084407000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019fe6dc354c7639b4ea6e8a76a76903",
+  "kind": "procedural",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "agent-proposal",
+  "source_ref": "session 2026-08-09 (release 0.1.13/0.1.2, PR #1)",
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-08-09T14:10:19.084407000Z",
+  "updated_at": "2026-08-09T14:10:19.084407000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

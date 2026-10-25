@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`FileSystemDirectoryHandle` objects can be stored in IndexedDB via `idb-keyval` directly — Chrome serializes them. On page load, `queryPermission({mode: \"read\"})` tells us whether the previously granted permission still holds. If not, `requestPermission` must be called synchronously in response to a user gesture. So after a fresh Chrome restart, the user clicks \"Reconnect folder\" on the sidebar → that click provides the user-activation token that lets the permission prompt show.\n\nHandles persist across sessions. Permission grants persist within a session but are re-requested after browser restart. This is a Chrome security constraint, not something our code can bypass.\n\nSession-live file handles (per-file `FileSystemFileHandle` for every renderable file inside a picked folder) are kept in a plain in-memory `Map` (`sessionHandles` singleton). Not serialized because that's cheap to rebuild — one directory walk after reconnect.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.379541000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317c03788fb02268d9cf927e81",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.379542000Z",
+  "updated_at": "2026-05-19T12:24:05.379541000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

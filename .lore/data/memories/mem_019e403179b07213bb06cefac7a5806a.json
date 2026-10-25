@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **CSV-driven Stats (`<Stats src=\"./kpis.csv\" />`).** Deferred. If a\n  user has row data that's really a stat list, they can author the\n  `<Stat>` elements directly — no real ergonomic win from CSV until\n  there are many.\n- **Inline sparkline / trendline in Stat.** Nice-to-have; sparkline\n  already exists as a datagrid column type. Could pull in as an optional\n  `trend-data=` attr later. Not MVP.\n- **Icons in Stat.** Requires lucide (or similar) in `@filemark/mdx`,\n  which isn't worth a new dep for one feature. Authors can embed an\n  emoji in `title=`.\n- **ADR index page / linked graph.** Each ADR is self-contained;\n  cross-ADR navigation via conventional id references + markdown links.\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:04.784114000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403179b07213bb06cefac7a5806a",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:04.784115000Z",
+  "updated_at": "2026-05-19T12:24:04.784114000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Extension | Renderer | Notes |\n|---|---|---|\n| `.md` | MDX pipeline | GFM, tables, task lists |\n| `.mdx` | MDX pipeline | JSX components (sandboxed for non-local sources) |\n| `.json`, `.jsonc` | Tree viewer + raw tab | Virtualized for large files |\n| `.ts`, `.tsx`, `.js`, `.jsx` | Shiki code viewer | Fold, copy, line links |\n| `.yaml`, `.yml`, `.toml` | Shiki code viewer | |\n| `.css`, `.scss`, `.html` | Shiki code viewer | |\n| `.csv`, `.tsv` | Table viewer | Sticky header, filter, sort |\n| `.log`, `.txt` | Monospace viewer | Grep / highlight box |\n| `.diff`, `.patch` | Shiki diff grammar | |\n| `.svg`, `.png`, `.jpg`, `.webp` | Image viewer | Zoom, pan |\n| (unknown) | Fallback: Shiki auto-detect or plain text | |\n\nv0.2+: `.ipynb`, `.sqlite`, `.parquet` (sample), `.xml`, `.geojson` map view.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.733773000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403175957c1d9df70107558e459a",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.733773000Z",
+  "updated_at": "2026-05-19T12:24:03.733773000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

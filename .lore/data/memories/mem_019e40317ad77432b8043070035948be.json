@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n**MV3 forbids `'unsafe-eval'` in extension-page CSP.** The default is effectively `script-src 'self'` for any `chrome-extension://` page. Loading a manifest that tries to add `'unsafe-eval'` is rejected by Chrome.\n\nThis kills `@mdx-js/mdx`'s `evaluate()` flow, which depends on `new AsyncFunction(compiledCode)` at runtime. Every path that compiles MDX → runtime React component uses eval.\n\n**The available escape hatches:**\n1. **Sandboxed pages** (`sandbox` manifest key) — get `'unsafe-eval'` implicitly but lose access to `chrome.*` APIs. Viewer has to live inside an iframe; parent shell communicates via `postMessage`.\n2. **No-eval pipeline** — give up MDX JSX expression evaluation. Use `unified → remarkParse → remarkGfm → remarkRehype({allowDangerousHtml}) → rehypeRaw → React` instead. MDX JSX expressions (`{count * 2}`) don't work; HTML-tag components (`<Callout>`) do, because rehype-raw keeps them as tags for react-markdown's components map.\n\n**v0.1 chose option 2.** Reasons: no iframe bridging, no `postMessage` plumbing, no split between \"safe remote\" and \"trusted local\" content. The tradeoff: users can't compute values in MDX. In practice for a reading-focused viewer, that's fine — the 99% use case is \"pretty rendering + callouts + task lists + math + code\". All of those work without eval.\n\n**v0.2+ can add the sandbox-iframe path** as an opt-in renderer for true `.mdx` with JSX expressions. Architecture supports it: add a second renderer entry to the registry (`mdx-full` → `SandboxedMDXViewer`) and a `trust` prop on `ViewerProps`.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.079250000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317ad77432b8043070035948be",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.079250000Z",
+  "updated_at": "2026-05-19T12:24:05.079250000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Limitation | Reason | Workaround |\n| --- | --- | --- |\n| True MDX JSX expressions (`{count * 2}`) | MV3 strict CSP blocks `unsafe-eval` | HTML-tag components only for now; sandbox iframe path for a later milestone |\n| FSA folder absolute path hidden | Chrome security | User pastes `rootPath` once per folder, or uses file:// interception |\n| Tab shortcuts limited to bare keys | Chrome claims every Ctrl/⌘/Alt combo at the browser level | Vim-style no-modifier chords, gated on not-in-input |\n| Monaco editor | ~3 MB gzipped + worker / CSP collisions | Shiki for read-only today; CodeMirror 6 is the planned editable path |\n| VS Code–style chord rebinding UI | Requires keymap + chord capture + conflict detection | v0.3+ feature; current options page has on/off per shortcut only |\n| Single-tab Chrome process cache | Extension code caches aggressively between reloads | After every `pnpm build`, reload the extension card at `chrome://extensions` |\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.073817000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403173017cc5ac2fbfeceb508e98",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.073817000Z",
+  "updated_at": "2026-05-19T12:24:03.073817000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

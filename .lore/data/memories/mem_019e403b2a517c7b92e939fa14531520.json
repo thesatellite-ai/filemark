@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "filemark package dir names != package names: packages/viewer-core=@filemark/core, packages/json-viewer=@filemark/json, packages/csv-viewer=@filemark/csv, packages/mdx-viewer=@filemark/mdx, plus @filemark/datagrid|chart|kanban|tasks|schema. All private:true, versioned together, never npm-published.",
+  "confidence": null,
+  "created_at": "2026-05-19T12:34:39.825815000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e403b2a517c7b92e939fa14531520",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:34:39.825816000Z",
+  "updated_at": "2026-05-19T12:34:39.825816000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "apps/desktop status after 'do all' (2026-05-19): Phases 1-6 code-complete + electron-vite build + tsc --noEmit BOTH clean. Implemented: secure Electron shell (contextIsolation), libsql+Drizzle persistence w/ migration runner, sqlStorage adapter, drag-dir→project + fs walk + chokidar live-reload, all 9 viewers via registry, ThemeProvider(controlled, persisted), shortcuts ⌘K/⌘B/⌘E/⌘S/[/], per-file scroll memory, FlexSearch palette, CodeMirror editor w/ mtime conflict guard, file ops (rename/new/trash-to-OS), OS open/reveal. NOT verified: runtime (needs a display — one USER ACTION: task dev). NOT done: full electron-builder packaging (pnpm-symlink asar issue, see hotfix), full chrome-ext store parity (recents-list/tab-model port), tabs+drag-reorder in sidebar.",
+  "confidence": null,
+  "created_at": "2026-05-19T13:55:59.685203000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e4085a0457324adc48dcd6a0a75f7",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T13:55:59.685204000Z",
+  "updated_at": "2026-05-19T13:55:59.685204000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

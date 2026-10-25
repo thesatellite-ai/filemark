@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **Recent list is stable.** A file keeps its slot once added; clicking an existing recent does *not* move it to the top. Users rely on muscle memory.\n- **Drop folders mark `kind: \"drop\"`.** The \"Reconnect folder\" button is reserved for `kind: \"fsa\"` since drop-folders have no handle to reconnect.\n- **`remark-breaks` is on.** Single newlines in prose become hard breaks so ASCII trees and tables-in-paragraphs render faithfully. Authors can still double-newline for paragraph breaks.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:21:36.209748000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e402f35517b9ca03e9abd876a2bc3",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:21:36.209748000Z",
+  "updated_at": "2026-05-19T12:21:36.209748000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

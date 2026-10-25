@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Attr | Default | Notes |\n|---|---|---|\n| `title` (alias: `label`) | — | Small uppercase eyebrow above the value. |\n| `value` | — | The big number / text — any string. |\n| `delta` | — | Change indicator. `+` prefix → up/green, `-` → down/red. `0` / no sign → flat/muted. |\n| `description` (alias: `caption`) | — | Secondary muted caption below the delta. |\n| `intent` | auto | Override tone: `success` / `warn` / `danger` / `info` / `muted` / `primary`. Used when \"down is good\" (e.g. latency). |\n| `trend` | auto | Override arrow only: `up` / `down` / `flat`. |\n| `href` | — | Wrap the card in a link. Renders a hover ring. |\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:04.301418000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403177cd769f98bee50fed671d7e",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:04.301418000Z",
+  "updated_at": "2026-05-19T12:24:04.301418000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

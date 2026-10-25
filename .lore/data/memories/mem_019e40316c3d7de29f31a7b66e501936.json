@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **Core (v1):** sort, per-column filter, global search, column\n  resize + double-click-to-fit (canvas-measured), column visibility,\n  row virtualization, sticky header, StorageAdapter persistence,\n  JSON/MD export of filtered view.\n- **v1.1 quick wins:** multi-column sort (shift-click), match\n  highlight, density toggle, aggregation footer, row selection + bulk\n  copy to clipboard, keyboard nav, pinned columns.\n- **v1.2 structural:** row grouping with per-group aggregations,\n  typed filter UIs (numeric range / date range / multi-select / bool\n  tri-state), row expansion detail panel, URL-sync for shareable\n  views.\n- **v2 rich types:** `sparkline`, `icon`, `country`, `duration`,\n  `range`, `code-block`, `json`, `image`.\n- **UX polish:** minimal-icon toolbar with hover reveal, full-screen\n  toggle, raw-source toggle (shows authored fence in monospace),\n  author-specified column widths, canvas text measurement, persisted\n  state versioning (`_v: 2`) so cached narrow widths don't override\n  new auto-sizes.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.341895000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316c3d7de29f31a7b66e501936",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.341895000Z",
+  "updated_at": "2026-05-19T12:24:01.341895000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

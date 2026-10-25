@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "filemark has TWO markdown pipelines. Main = MDXViewer (full plugin chain). Second = packages/mdx-viewer/src/components/TaskDetailSheet.tsx, a portal re-parsing a task's detail substring with [remarkGfm,remarkMath,remarkBreaks,remarkCodeMeta]+[rehypeRaw,rehypeSlug,rehypeKatex] — deliberately WITHOUT rehypeGlossary (line-offset complexity, acceptable for v1). It reuses the main components map via useMDXComponents() so fenced/MDX components still render inside task details.",
+  "confidence": null,
+  "created_at": "2026-05-19T12:40:58.736117000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e4040f27071dc98e5c1a9ef5822dd",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:40:58.736117000Z",
+  "updated_at": "2026-05-19T12:40:58.736117000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

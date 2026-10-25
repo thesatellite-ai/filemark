@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n```ts\n{\n  settings: {\n    formats:            { md, mdx, json, jsonc },     // per-format enable\n    json:               { theme, collapsedDepth, … }, // react-json-view opts\n    shortcuts:          Partial<Record<ShortcutId, boolean>>,\n    allShortcutsDisabled: boolean,\n  },\n  hydrated: boolean,\n}\n```\n\n`useSettings.hydrate()` also registers a `chrome.storage.onChanged`\nlistener for live cross-tab updates: change a setting on the options\npage and the viewer tab reacts without a reload.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.220343000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316fac7582938e9cfc05988a9e",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.220343000Z",
+  "updated_at": "2026-05-19T12:24:02.220343000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Package dependency DAG (no cycles): @filemark/core has zero @filemark deps; tasks is pure TS (no React/deps); csv/chart/kanban depend on core(+datagrid); mdx composes core+datagrid+chart+kanban+tasks; schema-viewer depends on core + mdx-viewer (reuses Mermaid to render db-schema-toolkit output) — schema's mdx dep is the only non-core intra-@filemark dep besides mdx's composite. Playground share: ?src=<base64> normal, ?srcz=<gzip+base64> for large docs (DecompressionStream on mount, srcz stripped after decode).",
+  "confidence": null,
+  "created_at": "2026-05-19T12:35:00.617949000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e403b7b897e8aa58962c5b64c9ffb",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:35:00.617950000Z",
+  "updated_at": "2026-05-19T12:35:00.617949000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

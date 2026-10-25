@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n```\napps/\n  chrome-ext/                MV3 host — Vite + React + Tailwind v4\n    public/manifest.json     MV3 manifest (action, service worker, content_scripts, web_accessible_resources)\n    src/app/                 Main viewer page (library shell, adapters, registry, intercept pickup)\n    src/background/          Service worker (dev reload + icon click → open tab)\n    src/content/             file:// interception\n    src/styles/              Tailwind v4 + design tokens driven by [data-theme]\npackages/\n  viewer-core/               @file-viewer/core — types, ThemeProvider, adapter interfaces, memory defaults\n  mdx-viewer/                @file-viewer/mdx — the renderer (host-agnostic)\npnpm-workspace.yaml\ntsconfig.base.json\n```\n\nWorkspace root builds viewer packages first (tsup), then the host app (Vite). Each viewer package ships ESM + `.d.ts` and declares React as a peer.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.035241000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317aab73e8907a7193ece0c07e",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.035241000Z",
+  "updated_at": "2026-05-19T12:24:05.035241000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

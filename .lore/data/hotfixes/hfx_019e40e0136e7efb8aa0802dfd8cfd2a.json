@@ -1,0 +1,20 @@
+{
+  "_table": "hotfixes",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Symptom: Electron window flashes open then hides/closes. Cause #1 (primary): createWindow() held the BrowserWindow only in a function-local 'const win' — after the function returns, no reference is retained, V8 GCs the object and Electron destroys the OS window (classic documented Electron bug). Fix: module-level 'let win: BrowserWindow|null' + win.on('closed',()=>win=null). Cause #2: backgroundColor '#00000000' + vibrancy 'under-window' + visualEffectState + body background:transparent rendered an invisible/transparent window. Fix: opaque backgroundColor #ffffff, body background var(--background), drop vibrancy/transparent (kept titleBarStyle hiddenInset — safe). Added 3s show-fallback if ready-to-show never fires. RULE: every Electron BrowserWindow MUST be held in a module/global reference for its lifetime; never rely on transparent+vibrancy for a primary window without an opaque fallback.",
+  "confidence": null,
+  "created_at": "2026-05-19T15:34:47.406980000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "hfx_019e40e0136e7efb8aa0802dfd8cfd2a",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "severity": "critical",
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "title": "apps/desktop window opens then disappears: BrowserWindow not retained (GC) + transparent config",
+  "trust_score": 0.5,
+  "updated_at": "2026-05-19T15:34:47.406980000Z"
+}

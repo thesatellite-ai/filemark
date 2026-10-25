@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nMV3 extension pages default to `script-src 'self'; object-src 'self';`\nand **cannot** add `'unsafe-eval'` via manifest (allowlist for MV3\nextension_pages is `'self' | 'none' | 'wasm-unsafe-eval' | localhost`).\nSo any runtime compilation path that calls `new Function()` is dead.\n\n- `@mdx-js/mdx`'s `evaluate` / `run` → blocked. So we use\n  `react-markdown`, which walks an AST to React elements — zero eval.\n- `<Datagrid>`, `<Callout>`, `<Tabs>` etc. are **lowercase HTML tags**\n  passed through by `rehype-raw` and mapped to React components via\n  `components` prop. HTML attribute values only (no JSX expressions).\n- A **sandbox iframe** path (manifest `content_security_policy.sandbox`\n  allows `'unsafe-eval'`) is reserved for v0.2+ if we ever want true\n  MDX JSX. postMessage bridge, no `chrome.*` inside.\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.156897000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316b847df28bd6bd010e618058",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.156897000Z",
+  "updated_at": "2026-05-19T12:24:01.156897000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

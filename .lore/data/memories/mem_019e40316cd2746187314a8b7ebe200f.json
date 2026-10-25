@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Kind | Source | Persistence |\n|---|---|---|\n| `fsa` | Open Folder button (`showDirectoryPicker`) | handle in IDB → re-granted silently on reload |\n| `fsa` via drop | **New:** drag-drop a folder; `DataTransferItem.getAsFileSystemHandle()` returns a persistent handle → treated like Open Folder | handle in IDB → re-granted on reload |\n| `drop` (fallback) | Drag-drop without handle API (old Chrome / loose files) | snapshot content stored in IDB, no live refresh |\n| `intercept` | `file://` URL opened in Chrome → content script rewrites → our tab loads it | sourceUrl fetched each view |\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.490275000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316cd2746187314a8b7ebe200f",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.490275000Z",
+  "updated_at": "2026-05-19T12:24:01.490275000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

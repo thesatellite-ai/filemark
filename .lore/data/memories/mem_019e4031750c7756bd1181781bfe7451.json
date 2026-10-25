@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- VS Code preview pane (heavy, context-switch)\n- Obsidian (markdown only, overkill, separate vault per topic)\n- `jq` / `cat` / `bat` in terminal (not sharable, no library)\n- GitHub gist (requires upload, not private by default)\n- Just reading raw text (tiring)\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.596453000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e4031750c7756bd1181781bfe7451",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.596453000Z",
+  "updated_at": "2026-05-19T12:24:03.596453000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

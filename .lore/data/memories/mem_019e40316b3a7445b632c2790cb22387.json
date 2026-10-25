@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Concern | Pick |\n|---|---|\n| Build system | pnpm workspaces · tsup (packages) · Vite 6 (app) · CRXJS |\n| Language | TypeScript 5.7 |\n| UI | React 19 · Tailwind CSS v4 · shadcn / basecn primitives |\n| Markdown | `react-markdown` (chosen over `@mdx-js/mdx` — see §5 CSP) + remark-gfm / remark-math / remark-breaks + rehype-raw / rehype-slug / rehype-katex |\n| Code highlight | Shiki (core + JS regex engine, lazy per-language) |\n| JSON tree | `@uiw/react-json-view` |\n| Table | `@tanstack/react-table` + `@tanstack/react-virtual` + `papaparse` |\n| Diagrams | Mermaid (lazy-loaded) |\n| Math | KaTeX |\n| Search | FlexSearch |\n| Storage | `idb-keyval` (IndexedDB) |\n| State | zustand |\n| Manifest | MV3 with `host_permissions: [\"<all_urls>\"]` (bypasses CORS for remote CSV) |\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.082266000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316b3a7445b632c2790cb22387",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.082266000Z",
+  "updated_at": "2026-05-19T12:24:01.082266000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

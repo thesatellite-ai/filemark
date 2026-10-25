@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Layer | Lives | Used for |\n| --- | --- | --- |\n| `chrome.storage.sync` | Chrome cloud, ~100 KB cap, cross-profile | User settings (`useSettings`) — via `settings.ts` helper with IDB fallback |\n| `chrome.storage.session` | Per-browser-session, in-memory | `file://` interception payload ferry (content script → viewer tab) |\n| IndexedDB (`file-viewer` db, `kv` store) | Per-origin, large | Library state: files, folders, tabs, theme, UI prefs, settings mirror, task-list state, FSA handles |\n| `sessionStorage` | Per-tab | Content-script re-entry guard (`fv-handled`) |\n| In-memory (`sessionHandles`) | Per tab | Live FSA handles (not serializable) |\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.007713000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316ed77b1797780291a52e7488",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.007713000Z",
+  "updated_at": "2026-05-19T12:24:02.007713000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

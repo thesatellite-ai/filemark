@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "The VS Code preview is a COMMAND-DRIVEN WebviewPanel, NOT a CustomTextEditor (no registerCustomEditorProvider). The raw file stays in the native editor; filemark.openPreview/openPreviewToSide create a webview panel (one per doc URI, tracked in panels: Map<string,WebviewPanel>). So adding a file type = NOT intercepting opens; just (a) offer the command on it + (b) pick the renderer in the webview.\nData flow: host posts MSG.update with text (document.getText(), live via debounced onDidChangeTextDocument) + fileExt (already in the protocol) + config: PreviewConfig. PreviewConfig (src/shared/messages.ts) + readConfig() (extension.ts) carry filemark.* settings; onDidChangeConfiguration -> repostAll() makes settings live with no extra wiring.\nRenderer choice = pure pickPreviewRenderer(ext, viewMode, enableCsv) in src/shared/constants.ts (unit-tested) -> discriminated PreviewRenderer (\"markdown\"|\"github\"|\"csv\"|\"csv-disabled\"); App.tsx switches on it exhaustively (never default). CSVViewer (@filemark/csv), MDXViewer/GithubMarkdown (@filemark/mdx) all take the same ViewerProps, drop-in.\nCSV/TSV support added 2026-08-09, gated by filemark.enableCsv (default true; off -> menus hide + a note shows). Needed: @filemark/csv dep, csv/tsv LANGUAGE contributions in package.json (so the extension activates + when-clauses fire; CSV has no built-in VS Code language), onLanguage:csv/tsv activation, and when clauses `editorLangId == markdown || (config.filemark.enableCsv && editorLangId =~ /^(csv|tsv)$/)` on menus/palette/keybindings (toggleGithubPreview stays markdown-only). Datagrid Tailwind classes already generated: the webview CSS @source glob scans all packages/*/src. To add json/schema later: same shape (dep + pickPreviewRenderer case + language contribution + enable<Format> setting + widen the when regex).",
+  "confidence": null,
+  "created_at": "2026-08-09T14:10:19.142767000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019fe6dc35867bb8a31ddefd302bb2c9",
+  "kind": "procedural",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "agent-proposal",
+  "source_ref": "session 2026-08-09 (release 0.1.13/0.1.2, PR #1)",
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-08-09T14:10:19.142767000Z",
+  "updated_at": "2026-08-09T14:10:19.142767000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

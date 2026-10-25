@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **No `chrome.*`, `vscode.*`, or Node built-ins inside `packages/**`.** Host-specific concerns arrive via `ViewerProps` (`storage`, `assets`, `onNavigate`). A future VS Code host should drop in the same package unchanged.\n- **Host theme via `useThemeOptional()`**, not `useTheme()`. Packages must not crash when rendered outside a `ThemeProvider`.\n- **Externalize peer + optional deps in `tsup.config.ts`.** Everything that pnpm's workspace provides (`react`, `react-dom`, `@filemark/core`, and any library packaged with the host) should be listed in `external`. Don't re-bundle `@uiw/react-json-view`, `shiki`, `yaml`, etc.\n- **MV3 CSP rules out `unsafe-eval`.** Do not pull in libraries that rely on `new Function()` / `eval` (ruled out `@mdx-js/mdx` `evaluate` and `gray-matter` for this reason). If you absolutely need eval, it lives in a sandboxed iframe — not the extension page.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:21:36.112728000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e402f34f07b52afb046b45b1db4d4",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:21:36.112729000Z",
+  "updated_at": "2026-05-19T12:21:36.112728000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

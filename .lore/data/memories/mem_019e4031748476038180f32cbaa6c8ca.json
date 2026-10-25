@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nNo Chrome extension offers a **good** in-browser viewing experience for the text files a developer / writer touches daily — markdown, MDX, JSON, JSONC, TS/TSX, YAML, CSV, logs, images. Existing options are either:\n\n- **Too basic** — drag a `.md` or `.json` file in, get rendered HTML or an unstyled tree. No persistence, no organization, no interactivity.\n- **Too dev-ish** — assume you're viewing raw GitHub files, not using these formats as a daily reading / reference surface.\n- **Format-siloed** — one extension for markdown, another for JSON, another for CSV. No shared library, no unified search, no shared theming.\n- **Abandoned** — most haven't been updated in 3+ years, broken on MV3, or bloated with ads.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.460377000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e4031748476038180f32cbaa6c8ca",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.460377000Z",
+  "updated_at": "2026-05-19T12:24:03.460377000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

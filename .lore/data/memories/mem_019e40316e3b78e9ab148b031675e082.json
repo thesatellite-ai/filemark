@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n```\nfile-viewer/\n├── apps/\n│   └── chrome-ext/                          MV3 extension — the host\n│       ├── public/\n│       │   ├── manifest.json                MV3 manifest\n│       │   └── icons/\n│       ├── src/\n│       │   ├── app/                         Main viewer tab (?file=…, ?intercept=…)\n│       │   │   ├── index.html               entry: app\n│       │   │   ├── main.tsx\n│       │   │   ├── App.tsx                  root + hydrate orchestration\n│       │   │   ├── shell/                   TopBar, Sidebar, TabStrip, Viewer, …\n│       │   │   ├── adapters/                Chrome-specific StorageAdapter + AssetResolver\n│       │   │   ├── store.ts                 zustand library store (files/folders/tabs/ui)\n│       │   │   ├── settings.ts              zustand settings store (formats/json/shortcuts)\n│       │   │   ├── urlSync.ts               ?file=<id> two-way URL sync\n│       │   │   ├── registry.ts              ext → Renderer component mapping\n│       │   │   ├── fs.ts                    FSA helpers (pickFolder, walkDirectory, …)\n│       │   │   ├── sessionHandles.ts        in-memory FSA handle registry (per tab)\n│       │   │   ├── intercept.ts              picks up the content-script payload\n│       │   │   └── welcomeDoc.ts             first-run markdown content\n│       │   ├── options/                      chrome_options_ui page\n│       │   │   ├── index.html                entry: options\n│       │   │   ├── main.tsx\n│       │   │   └── OptionsApp.tsx\n│       │   ├── content/\n│       │   │   └── handler.ts                content script (file:// URL interception)\n│       │   ├── background/\n│       │   │   └── service-worker.ts         dev WS reload + action.onClicked\n│       │   ├── components/ui/                shadcn / basecn primitives\n│       │   ├── lib/utils.ts                  cn() helper\n│       │   └── styles/index.css              design tokens + mdx body typography\n│       ├── vite.config.ts\n│       └── package.json\n├── packages/\n│   ├── viewer-core/                          @file-viewer/core — shared types + ThemeProvider\n│   ├── mdx-viewer/                           @file-viewer/mdx — Markdown / MDX renderer\n│   └── json-viewer/                          @file-viewer/json — JSON / JSONC renderer\n├── pnpm-workspace.yaml\n├── CLAUDE.md                                 session rules (extends global rules)\n├── TASKS.md                                  living task list\n└── ARCHITECTURE.md                           this doc\n```\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.851564000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316e3b78e9ab148b031675e082",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.851564000Z",
+  "updated_at": "2026-05-19T12:24:01.851564000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

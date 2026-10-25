@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Environment quirks that repeatedly broke tool calls this session: (1) The Bash tool + inline `for ... do ... done` fails with `(eval):N: parse error near 'done'` (a hook/zsh wrapper mangles multi-line loops). Fix: write the loop to a temp script and `sh /tmp/x.sh`. Single commands and && chains are fine. Multi-flag `sed -i ''` and some inline ${#VAR} loops also choked — same fix, or use `perl -pi -e`. (2) `perl -pi -e 's/../../g' f1 f2 ...` is the reliable multi-file find/replace here. (3) The claude-in-chrome browser `navigate` REFUSES file:// and data: URLs (\"Can't interact with browser-internal or unparseable URLs\") — can't load a local test page or data-URL shim; verify cross-origin behavior via `curl -I` header checks + loading the deployed https page directly. (4) Use dedicated Read/Edit/Write/Grep tools, not cat/sed/echo, for file work.",
+  "confidence": null,
+  "created_at": "2026-08-09T14:10:19.258936000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019fe6dc35fa7e508b1f4e15630da01d",
+  "kind": "procedural",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "agent-proposal",
+  "source_ref": "session 2026-08-09 (release 0.1.13/0.1.2, PR #1)",
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-08-09T14:10:19.258936000Z",
+  "updated_at": "2026-08-09T14:10:19.258936000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

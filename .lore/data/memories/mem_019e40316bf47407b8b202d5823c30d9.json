@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nShell-ish whitespace-split tokens, quotes respected, parens group\ninternal whitespace. Flags include:\n\n- Global: `filter`, `search`, `sort=<col>[:asc|desc]` (comma-separated\n  for multi), `hide=<col>,…`, `delimiter=<char>`, `header`, `src=<path>`,\n  `height=<px>`, `title=<text>`, `sticky-header`, `row-numbers`,\n  `id-column=<col>`, `agg:<col>=<fn>`, `freeze=<col>,…`,\n  `density=compact|comfy|relaxed`, `selection`, `group-by=<col>`,\n  `expandable`, `url-sync`, `width:<col>=<px>`.\n- Per-column: `type:<col>=<type-expr>`, `align:<col>=<left|right|center>`,\n  `width:<col>=<px>`.\n- Type expressions take optional parens with args, e.g.\n  `status(P0:danger,P1:warn)`, `currency(USD)`, `progress(0:100)`,\n  `rating(10)`, `tags(|)`, `sparkline(line|bar|area)`, `duration(s|ms|m|h)`,\n  `range(<sep>)`.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.268248000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316bf47407b8b202d5823c30d9",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.268249000Z",
+  "updated_at": "2026-05-19T12:24:01.268248000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

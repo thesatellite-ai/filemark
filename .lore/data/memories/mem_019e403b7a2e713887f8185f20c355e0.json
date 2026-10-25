@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "chrome-ext has 3 file-intake routes -> app picks up in apps/chrome-ext/src/app/intercept.ts (order: #fv-inline=<b64> hash, ?openFile=<url>, ?intercept=<sessionkey>). (1) content/handler.ts fetches file:// URL, stashes in chrome.storage.session key 'fv:intercept:<ts>:<rand>', redirects to app; base64-hash fallback if session storage unavailable. (2) service-worker.ts dynamic declarativeNetRequest rule (NOT static — redirect URL needs runtime chrome.runtime.getURL) for csv/tsv downloads, stable rule ids csv=1 tsv=2 for surgical removal on settings change. (3) FSA folder/loose-handle reads in Viewer.tsx.",
+  "confidence": null,
+  "created_at": "2026-05-19T12:35:00.270078000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e403b7a2e713887f8185f20c355e0",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:35:00.270078000Z",
+  "updated_at": "2026-05-19T12:35:00.270078000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

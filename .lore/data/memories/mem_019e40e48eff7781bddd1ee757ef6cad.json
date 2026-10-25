@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Self-test technique for the Electron desktop app without a display: apps/desktop/scripts/shot.cjs uses BrowserWindow webPreferences.offscreen:true + app.disableHardwareAcceleration() + a 'paint' listener + capturePage()→PNG. shot-preload.cjs stubs window.filemark so the renderer hydrates with empty state. Run via 'task shot' (apps/desktop) → /tmp/desk-shot-light.png + -dark.png; the agent Reads the PNGs to visually verify. 2026-05-19: confirmed UI renders correctly in BOTH themes (controls, Open Folder button, empty states, kbd chip) — the missing-token-CSS bug is visually resolved. Limitation: stub bridge shows empty states only; offscreen can't reproduce window-GC/lifecycle bugs (those are code-reasoned).",
+  "confidence": null,
+  "created_at": "2026-05-19T15:39:41.183491000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e40e48eff7781bddd1ee757ef6cad",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T15:39:41.183491000Z",
+  "updated_at": "2026-05-19T15:39:41.183491000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

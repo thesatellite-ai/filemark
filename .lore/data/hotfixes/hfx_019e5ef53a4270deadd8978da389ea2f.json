@@ -1,0 +1,20 @@
+{
+  "_table": "hotfixes",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Symptom: SidebarResizer drag was 'random / not working at all' — moved 1px then froze. Cause: pointermove/up handlers wrapped in useCallback against the setWidth prop, and useEffect cleanup tied to that callback identity. Parent App passed setWidth as inline arrow → new ref every render. Drag → setState → App re-renders → callback identity changes → useEffect cleanup fires → listeners removed MID-DRAG. chrome-ext's identical pattern worked only because its setSidebarWidth came from zustand (stable ref). Fix: install pointermove/up listeners ONCE on mount, read latest setter through a useRef refreshed each render, teardown only on real unmount. Apply this pattern to ANY React drag handler that calls setState during the drag (resizers, sliders, tab reorder, splitters). Build + tsc clean; runtime drag must be confirmed on a real display.",
+  "confidence": null,
+  "created_at": "2026-05-25T11:46:30.082054000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "hfx_019e5ef53a4270deadd8978da389ea2f",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "severity": "high",
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "title": "React drag handlers die mid-drag when parent passes inline callback + useCallback/useEffect cleanup loop",
+  "trust_score": 0.5,
+  "updated_at": "2026-05-25T11:46:30.082055000Z"
+}

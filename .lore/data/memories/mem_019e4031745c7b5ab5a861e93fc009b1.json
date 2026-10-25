@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "# Multi-Format File Viewer Chrome Extension\n\n> **Code location:** `/Volumes/D/www/projects/khanakia/chrome-extensions/filemark/` — this dir holds planning docs only. Project name is **filemark**; npm scope is **`@filemark/*`**. Monorepo already scaffolded (pnpm workspaces, tsup, React 19) with `apps/chrome-ext`, `packages/viewer-core` (`@filemark/core`), `packages/mdx-viewer` (`@filemark/mdx`), `packages/json-viewer`, `packages/schema-viewer`.\n\n> Private problem doc + quick plan. Lives outside the public repo on purpose. v0.1 ships markdown-only. Architecture is multi-format from day one (pluggable renderer registry + per-viewer packages) so JSON / code / CSV / images can land in v0.2+ without rework — and the markdown viewer itself is reusable as an npm package in a future VS Code extension or standalone React app.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.420730000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e4031745c7b5ab5a861e93fc009b1",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.420730000Z",
+  "updated_at": "2026-05-19T12:24:03.420730000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

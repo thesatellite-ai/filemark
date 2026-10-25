@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nThe golden path for \"I want this `.md` to render when I visit it in Chrome\":\n\n```\n1. User navigates to file:///path/to/foo.md\n2. Chrome loads the page with default text/plain handling\n3. Our content script (handler.ts) runs at document_end\n   - url matches /\\.(md|mdx|markdown|json|jsonc)(\\?.*)?(#.*)?$/i\n   - settings.formats[ext] enabled? (reads chrome.storage.sync)\n   - sessionStorage[\"fv-handled\"] === url? → bail (re-entry guard)\n4. fetch(url) → raw file text\n   - (fallback: document.querySelector(\"pre\")?.textContent)\n5. chrome.storage.session.set({ [key]: { url, content, name } })\n6. location.replace(chrome-extension://…/src/app/index.html?intercept=<key>)\n7. Viewer tab loads; App.tsx pickupIntercept() reads the key\n8. intercept.ts builds LibraryFile { id: \"intercept:<url>\", sourceUrl, content }\n9. addFiles + setActive → the file appears in the library + tab strip\n10. urlSync rewrites ?intercept=<key> → ?file=<id> (shareable)\n```\n\n**Requires** the user to have enabled \"Allow access to file URLs\" on the\nextension details page — Chrome gates that behind an explicit toggle per\nextension.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.371046000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403170437101ac99be84b09164ff",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.371046000Z",
+  "updated_at": "2026-05-19T12:24:02.371046000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

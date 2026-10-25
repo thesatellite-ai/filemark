@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nChrome MV3 allows content scripts on `file://*` when the user toggles \"Allow access to file URLs\" on the extension details page. This is a per-extension user toggle; we cannot script around it.\n\nFlow:\n1. Content script `content.js` (classic script, no imports, single-line IIFE after Vite's build) runs at `document_end` on every `file://` URL.\n2. URL-extension check: `/\\.(md|mdx|markdown)(\\?[^#]*)?(#.*)?$/i`. Bail early on non-markdown files to keep Chrome's native text-file rendering as the default.\n3. Chrome renders local markdown as `text/plain` inside a `<pre>`. Content script reads `document.querySelector(\"pre\").textContent` — that's the entire raw file. No `fetch` call needed (and would be blocked by origin anyway).\n4. Stash `{ url, content, name }` into `chrome.storage.session` under a fresh per-request key.\n5. Redirect the tab to `chrome.runtime.getURL(\"src/app/index.html\") + \"?intercept=\" + key`.\n6. On the app side, `pickupIntercept()` runs after `hydrate()`, pulls the entry, materializes a one-off file in the library store, sets it active, removes the session key, cleans the URL via `history.replaceState`.\n\nWhy `chrome.storage.session` instead of passing content through URL hash? Large markdown files hit URL length limits. Session storage is per-tab-session, auto-garbage-collected when the tab closes, and handles multi-MB payloads fine. Hash-fallback exists for very old Chrome, but modern Chrome always has session storage.\n\nWhy `document_end`, not `document_start`? Need Chrome to have already rendered the text into `<pre>`. `document_start` would race the native text-file renderer.\n\nRe-entry guard: `sessionStorage.setItem(\"fv-handled\", url)` before the redirect. Prevents a loop if Chrome for any reason navigates back.\n\n`web_accessible_resources` manifest entry declares `src/app/index.html` + `assets/*` as reachable from `file://`. Without this, Chrome blocks the redirect from file:// → chrome-extension:// as cross-origin.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.297674000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317bb17a8bb901954210d8b6d9",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.297675000Z",
+  "updated_at": "2026-05-19T12:24:05.297674000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

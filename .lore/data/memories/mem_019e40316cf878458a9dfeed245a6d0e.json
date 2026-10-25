@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n**Bug:** dropped folders used `webkitGetAsEntry()` → snapshot-only;\nreloading didn't reflect disk edits; user had to re-drop.\n\n**Fix:** `DropZone.tsx` now tries `DataTransferItem.getAsFileSystemHandle()`\nfirst. If it returns a `FileSystemDirectoryHandle`, we call a new\n`folderFromHandle()` helper in `fs.ts` (extracted from `pickFolder`):\npersists the handle to IDB, walks the directory, registers session\nhandles, treats exactly like an Open Folder-sourced folder. Disk edits\nflow back on every view.\n\n**Limit:** loose single-file drops still snapshot — the Web API\ndoesn't give us a parent directory handle from a file item, and\nfilemark's store only knows folder handles. Workaround: drop the\nparent folder.\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.528527000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316cf878458a9dfeed245a6d0e",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.528527000Z",
+  "updated_at": "2026-05-19T12:24:01.528527000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

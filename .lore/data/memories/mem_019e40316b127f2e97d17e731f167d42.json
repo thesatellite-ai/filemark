@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| What | Path |\n|---|---|\n| **Actual code** | `/Volumes/D/www/projects/khanakia/chrome-extensions/filemark/` |\n| Private docs + CLAUDE.md (source of truth) | `/Volumes/D/www/projects/khanakia/private-repo/markdown-viewer-chrome-ext/` |\n| Those private docs symlinked into code repo via `repolink` | `filemark/CLAUDE.md` and `filemark/docsi/` |\n\nThe docs cwd contains **no code** — only planning / rules / problem\ndocs. Code edits belong in `filemark/`. A repolink-managed block in\n`filemark/.gitignore` keeps the symlinks out of git history.\n\n**Heuristic for new sessions:** if the cwd has no `package.json`,\nyou're in the docs dir; the code is in `chrome-extensions/filemark/`.\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.042972000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316b127f2e97d17e731f167d42",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.042972000Z",
+  "updated_at": "2026-05-19T12:24:01.042972000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

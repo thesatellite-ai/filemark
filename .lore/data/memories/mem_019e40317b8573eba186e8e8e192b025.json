@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nTask checkboxes are identified by their position in the document (0-indexed among all `input[data-fv-task]` in the live DOM). Computed at click time via `document.querySelectorAll(...)` + `indexOf(this)` — not at mount, not via ref callback. Mount-time computation loses because ref callbacks run per-element during commit, and `querySelectorAll` at each call returns an in-progress (shorter) list. Click-time computation is cheap, stable, and correct regardless of which order refs happened to mount in.\n\nStorage key is `fv:task:<fileId>` with a `{ [index]: boolean }` shape. Restoration scans the same index after mount.\n\nEdge case: if the markdown file's task-list structure changes between writes, the indices can desync. Acceptable for v0.1 — a content-hash key would fix but isn't worth the complexity yet.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.253242000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317b8573eba186e8e8e192b025",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.253242000Z",
+  "updated_at": "2026-05-19T12:24:05.253242000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`url-sync` flag mirrors state into `location.hash#g=<base64-json>`.\nPreserves other hash fragments (heading anchors still work). URL wins\nover StorageAdapter on hydration so shared links reproduce reliably.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.415317000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316c87752489067fcb3da3fd08",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.415317000Z",
+  "updated_at": "2026-05-19T12:24:01.415317000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

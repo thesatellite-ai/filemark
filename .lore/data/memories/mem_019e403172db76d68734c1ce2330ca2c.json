@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n```\nApp.tsx on mount\n ├─ useLibrary.hydrate()         ← all lib:* IDB keys in parallel\n │    └─ filters orphan tabs\n │    └─ restores ui prefs\n ├─ useSettings.hydrate()        ← chrome.storage.sync first, IDB fallback\n │    └─ registers onChanged listener\n ├─ trySilentRestore(each folder) ← silent FSA permission check\n │    └─ sessionHandles.register on success\n │    └─ useLibrary.setState({ sessionRev: sessionRev + 1 })\n └─ pickupIntercept()\n      └─ if ?intercept=<key>: read from chrome.storage.session\n      └─ materialize intercept-file, addFiles, setActive\n      └─ history.replaceState strips ?intercept=\n```\n\nRuntime:\n\n- Every `setActive(id)` writes `lib:active` immediately; updates the\n  `files` map (`lastOpenedAt`); openTabs on first add; recent on first\n  add. Guard: same-id calls early-return without mutation.\n- Every `toggleSidebar/Toc/Fullscreen/AutoRefresh` writes\n  `lib:ui` after the state flip.\n- Every `setTheme` patch writes `lib:theme`.\n- Every task-checkbox change writes `fv:task:<fileId>`.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.035432000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403172db76d68734c1ce2330ca2c",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.035433000Z",
+  "updated_at": "2026-05-19T12:24:03.035432000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

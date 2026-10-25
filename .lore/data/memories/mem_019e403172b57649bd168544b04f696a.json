@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nThe manifest grants broad host access so `fetch()` from extension pages\n(the viewer tab and options page) can bypass CORS — required for\n`<Datagrid src=\"https://…\" />` and ` ```csv src=https://… ` to load\narbitrary remote CSVs. Without this, browsers block responses that\nlack `Access-Control-Allow-Origin`.\n\n- **Trade-off accepted for v0.1.** The Chrome Web Store install prompt\n  now reads \"Read and change your data on all websites\". For a doc\n  viewer this is broad. Justified by the feature's usefulness (load any\n  public CSV), the fact that the extension only *fetches* data (it\n  never exfiltrates, injects scripts, or writes to external hosts), and\n  the lack of a less-scary mechanism in MV3 that still bypasses CORS.\n- **Planned follow-up (Option B).** Move to `optional_host_permissions`\n  + an in-UI \"Grant access to {origin}\" button surfaced inside the\n  datagrid error card when a fetch fails. Requires:\n  1. Swap `host_permissions` → `optional_host_permissions` in manifest.\n  2. Add a `PermissionAdapter { hasHostAccess, requestHostAccess }`\n     interface in `@filemark/core`.\n  3. Implement it in `apps/chrome-ext/src/app/adapters/` using\n     `chrome.permissions.{contains,request}`.\n  4. Thread it through `ViewerProps` alongside `storage` + `assets`.\n  5. `DataBlock` catches CORS errors, shows a Grant button, retries on\n     success.\n  - Net effect: the install prompt goes back to just `\"storage\"`; users\n    hit a prompt only when they actually load an external URL, and only\n    for that origin. Tracked in `TASKS.md` as the follow-up to M7.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.997398000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403172b57649bd168544b04f696a",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.997398000Z",
+  "updated_at": "2026-05-19T12:24:02.997398000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

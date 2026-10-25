@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **This `CLAUDE.md` and `docsi/` both live in the private-repo** at `/Volumes/D/www/projects/khanakia/private-repo/markdown-viewer-chrome-ext/`. They are **symlinked into `filemark/`** via the [`repolink`](https://github.com/thesatellite-ai/repolink-go) CLI — so the source of truth is the private-repo, and filemark imports both.\n- `docsi/` holds planning / problem docs: `ARCHITECTURE.md`, `PROBLEM.md`, `TASKS.md`, `TECH.md`, `PUBLISHING.md`, `README-GUIDELINES.md`. Name is literally `docsi` (short for \"docs internal\"), *not* `docs` — it's a private space, not public project docs.\n- Both `CLAUDE.md` and `docsi/` are in `filemark/.gitignore` (repolink-managed block) and never enter filemark's git history. Public docs for filemark live in filemark's own `README.md` + (future) `/docs` in the repo.\n- **Edit from either path** — both resolve to the same inode. In filemark, `cat docsi/PROBLEM.md` and `cat /Volumes/D/.../private-repo/markdown-viewer-chrome-ext/docsi/PROBLEM.md` are the same file.\n- **Adding more shared files from private-repo → filemark:** `cd filemark && repolink link markdown-viewer-chrome-ext/<src> <dst>` (source path is relative to private-repo root). The auto-gitignore block keeps them out of commits.\n- **Breaking a symlink**: `repolink unlink <name> --yes && repolink cleanup --yes` from inside filemark. Sources in private-repo are never touched — repolink only manipulates the link files.\n- **Fresh clone of filemark on a new machine:** requires installing `repolink` + `repolink setup` on the private-repo, then `repolink` (bare) inside filemark restores the symlinks. Without this, both `CLAUDE.md` and `docsi/` will be missing.\n- Memory for Claude about this layout lives in `~/.claude/projects/-Volumes-D-www-projects-khanakia-private-repo-markdown-viewer-chrome-ext/memory/code_location.md`.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:21:36.010949000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e402f348a7eb9aa1f75d52cb1a64a",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:21:36.010949000Z",
+  "updated_at": "2026-05-19T12:21:36.010949000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nBoth forms work. SKILL.md documents the fenced form as preferred and explains *why* (the block-edge gotcha) so authors and AI agents understand the tradeoff and don't try to \"fix\" the wrapper-form fallback by yet more nesting tricks.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.307978000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403173eb7f2abddc1867040f40e7",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.307978000Z",
+  "updated_at": "2026-05-19T12:24:03.307978000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

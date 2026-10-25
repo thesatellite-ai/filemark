@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`remark-gfm` hard-codes `disabled` on the `<input>` it emits for task-list checkboxes. DOM-level change events **don't fire on disabled inputs**, so our controlled `TaskCheckbox` never received `onChange` → state never flipped → storage write never happened, even though the input appeared interactive because I'd styled it.\n\nFix: destructure `disabled` off the props spread in `TaskCheckbox` and drop it on the floor. One line, massive behavioral difference.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.210759000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317b5a7bdfa9aa0082df3561bc",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.210759000Z",
+  "updated_at": "2026-05-19T12:24:05.210759000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

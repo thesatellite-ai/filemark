@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| To understand… | Read |\n|---|---|\n| Markdown pipeline | `packages/mdx-viewer/src/MDXViewer.tsx` |\n| Datagrid (author surface) | `packages/mdx-viewer/src/DataBlock.tsx` |\n| Datagrid (core) | `packages/datagrid/src/DataGrid.tsx`, `cells.tsx`, `parseInfoString.ts`, `parseColumnType.ts` |\n| File ingest | `apps/chrome-ext/src/app/shell/DropZone.tsx` + `apps/chrome-ext/src/app/fs.ts` |\n| Store | `apps/chrome-ext/src/app/store.ts` |\n| Viewer | `apps/chrome-ext/src/app/shell/Viewer.tsx` |\n| Manifest / CSP / permissions | `apps/chrome-ext/public/manifest.json` |\n| All planning docs | `docsi/ROADMAP.md`, `DATAGRID.md`, `ARCHITECTURE.md`, `TASKS.md` |\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.734487000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316dc677b49eda764a83820c63",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.734488000Z",
+  "updated_at": "2026-05-19T12:24:01.734487000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

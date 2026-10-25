@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`apps/chrome-ext/public/manifest.json` exposes:\n\n| Key | Value | Purpose |\n| --- | --- | --- |\n| `manifest_version` | 3 | MV3 is mandatory for new Web Store submissions |\n| `action` | `{ default_title }` | Toolbar icon → service worker opens the viewer tab |\n| `background.service_worker` | `service-worker.js` (module) | Dev WS reload + icon click |\n| `content_scripts` | `content.js` on `file:///*` | `file://` URL interception |\n| `options_ui` | `src/options/index.html`, `open_in_tab: true` | Settings page |\n| `permissions` | `[\"storage\"]` | chrome.storage.sync + session |\n| `web_accessible_resources` | `src/app/index.html`, `assets/*` matched on `file:///*` + `<all_urls>` | Lets the content script redirect `file://` → extension tab |\n\nFour bundle entries go through Vite (`vite.config.ts`):\n\n| Entry | Output | Consumer |\n| --- | --- | --- |\n| `app` | `src/app/index.html` + hashed assets | viewer tab |\n| `options` | `src/options/index.html` + hashed assets | options page |\n| `service-worker` | `service-worker.js` (fixed name) | background worker |\n| `content` | `content.js` (fixed name, IIFE) | content script |\n\nThe fixed filenames for `service-worker.js` and `content.js` are pinned in\n`vite.config.ts:entryFileNames` because `manifest.json` references them\nby name. **If you rename one you must rename the other.**\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.930521000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316e8a7835a166753dee7be25c",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.930522000Z",
+  "updated_at": "2026-05-19T12:24:01.930522000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}
