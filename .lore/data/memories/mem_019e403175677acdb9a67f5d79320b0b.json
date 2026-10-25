@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n> \"The universal file browser for Chrome.\" Drop files or point at a folder. Renders markdown beautifully, JSON as a tree, code with syntax highlight, CSV as a filterable table — all in one app. It remembers them. Bookmark, organize, search across every format. No account, no cloud, all local.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.687690000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403175677acdb9a67f5d79320b0b",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.687690000Z",
+  "updated_at": "2026-05-19T12:24:03.687690000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

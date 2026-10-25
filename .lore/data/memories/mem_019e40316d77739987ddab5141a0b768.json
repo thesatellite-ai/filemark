@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n7 thematic pillars:\n1. **Data** ✓ datagrid v1/v1.1/v1.2/v2 shipped; queued: streaming\n   parse, xlsx export, image via AssetResolver, markdown-block,\n   reference, geopoint.\n2. **Form / capture** — `<Form>` MVP (field dispatch + persist), then\n   stepper, quiz, poll.\n3. **Tasks & organization** ✓ `TaskCheckbox` persistence; queued:\n   cross-file task dashboard, kanban/timeline built on datagrid data\n   layer.\n4. **Reading UX** ✓ TOC; queued: presentation mode, outline, reading\n   progress, split view.\n5. **Knowledge graph** — backlinks, tag index, graph view, ⌘K\n   command palette.\n6. **Embeds & media** ✓ `SmartImage`; queued: gallery, safe-embed,\n   Excalidraw.\n7. **Tools & meta** ✓ full-text search; queued: ⌘K command palette,\n   diff two .md, AI chat w/ doc context, writing stats.\n\nNext proposed slice (from `ROADMAP.md` §9): task dashboard or form\nMVP, then ⌘K. Waiting for user go-ahead.\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.655210000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316d77739987ddab5141a0b768",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.655210000Z",
+  "updated_at": "2026-05-19T12:24:01.655210000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

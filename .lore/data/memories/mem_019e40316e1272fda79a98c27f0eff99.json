@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "# File Viewer — Architecture\n\nHow the pieces fit together. Read this before adding a feature.\n\n- [1. Repo layout](#1-repo-layout)\n- [2. Package topology](#2-package-topology)\n- [3. Manifest + entry points](#3-manifest--entry-points)\n- [4. Build pipeline](#4-build-pipeline)\n- [5. Storage layers](#5-storage-layers)\n- [6. State stores](#6-state-stores)\n- [7. File ingest flows](#7-file-ingest-flows)\n- [8. `file://` interception flow](#8-file-interception-flow)\n- [9. FSA (File System Access) lifecycle](#9-fsa-file-system-access-lifecycle)\n- [10. Tabs + URL sync + hash nav](#10-tabs--url-sync--hash-nav)\n- [11. Rendering pipelines](#11-rendering-pipelines)\n- [12. Theme system](#12-theme-system)\n- [13. Shortcut system](#13-shortcut-system)\n- [14. Auto-refresh](#14-auto-refresh)\n- [15. Raw view](#15-raw-view)\n- [16. Options page](#16-options-page)\n- [17. Security / CSP](#17-security--csp)\n- [18. Data lifecycle (hydrate → runtime → persist)](#18-data-lifecycle-hydrate--runtime--persist)\n- [19. Known constraints](#19-known-constraints)\n- [20. Adding a new feature — checklist](#20-adding-a-new-feature--checklist)\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:01.810181000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316e1272fda79a98c27f0eff99",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:01.810181000Z",
+  "updated_at": "2026-05-19T12:24:01.810181000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

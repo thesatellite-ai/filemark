@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Lazy-loaded heavy deps in mdx-viewer and their first-render triggers: mermaid -> Mermaid component (```mermaid fence); db-schema-toolkit -> SchemaBlock (```sql/prisma/dbml); markmap-lib/markmap-view -> MindMap (```mindmap fence); shiki core+grammars -> CodeBlock. All gated behind code-fence interception in MDXViewer's custom 'code' component (~lines 276-372) which routes special langs away from Shiki to interactive renderers.",
+  "confidence": null,
+  "created_at": "2026-05-19T12:40:58.667384000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e4040f22b75e380c5b6ae1704f71d",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:40:58.667385000Z",
+  "updated_at": "2026-05-19T12:40:58.667384000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

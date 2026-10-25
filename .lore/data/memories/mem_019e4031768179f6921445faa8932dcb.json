@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Concern | Pick | Why |\n|---|---|---|\n| Monorepo | pnpm workspaces | Lightweight, good peer-dep handling |\n| Package build | tsup (or vite lib mode) | Fast ESM/CJS + types for publishable packages |\n| Manifest | MV3 | Required for Chrome Web Store |\n| Host app | React + TypeScript + Vite + CRXJS | Fast HMR, small bundle |\n| Markdown / MDX | `@mdx-js/mdx` + `remark-gfm` + `rehype-katex` + Mermaid | JSX components in docs, powerful |\n| Code highlight | Shiki | Shared across MD code blocks and (v0.2+) code viewer |\n| JSON tree (v0.2+) | `react-json-view-lite` or custom virtualized tree | Handles big files |\n| CSV (v0.2+) | Papaparse + TanStack Table | |\n| Storage | IndexedDB via `idb-keyval` (Chrome host) | FS handles + metadata |\n| Search | FlexSearch | Small, fast, local |\n| Styling | Tailwind v4 + CSS vars | Theming cheap; CSS vars let packages be theme-agnostic |\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.969633000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e4031768179f6921445faa8932dcb",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.969634000Z",
+  "updated_at": "2026-05-19T12:24:03.969633000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

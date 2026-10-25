@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n| Attr | Default | Notes |\n|---|---|---|\n| `status` | `proposed` | `proposed` / `accepted` / `rejected` / `deprecated` / `superseded`. |\n| `id` | — | Short identifier — rendered as a mono code chip (e.g. `ADR-007`). |\n| `date` | — | ISO date string. Displayed as tabular-nums. No parsing — just shown as-is. |\n| `title` | — | Decision title — rendered as H3 below the header. |\n| `supersedes` | — | ADR id this replaces — shown on the right side of the header. |\n| `superseded-by` / `supersededBy` | — | ADR id that replaces this one. |\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:04.585357000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403178e975c49d1af0f1d29a0afc",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:04.585357000Z",
+  "updated_at": "2026-05-19T12:24:04.585357000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nOne context, three surfaces:\n\n```\nuseLibrary.theme ─▶ ThemeProvider (controlled)\n                    ─▶ writes data-theme on <html>\n                    ─▶ writes --fv-font-family / --fv-font-size /\n                       --fv-line-height / --fv-content-width to <html>\n                    ─▶ ALSO sets html.style.fontFamily + body.style.fontFamily\n                       directly (survives Tailwind v4 preflight under\n                       MV3 CSP where @layer resolution can differ)\n```\n\n- Three modes: `light` (default), `dark`, `sepia`. Each defines the\n  shadcn token palette (`--background`, `--foreground`, `--primary`, …)\n  in `apps/chrome-ext/src/styles/index.css`.\n- shadcn's `.dark` variant is remapped to `[data-theme=\"dark\"]` via\n  `@custom-variant dark (&:is([data-theme=\"dark\"], …))` so every\n  `dark:` utility in the shadcn component files works without an extra\n  class on `<html>`.\n- Theme popover lives in `shell/ThemePopover.tsx`. Sliders +\n  segmented controls + reset-to-defaults button. Settings persist via\n  `useLibrary.setTheme` → IDB.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.758941000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403171c67e92ac66d5433a92edc6",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.758941000Z",
+  "updated_at": "2026-05-19T12:24:02.758941000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

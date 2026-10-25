@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n1. **No library / bookmarking** — every file is a one-off drop. Can't star, favorite, or come back to it.\n2. **No folder organization** — can't group files into projects, topics, tags regardless of type.\n3. **No interactive components** — markdown checkboxes don't toggle, JSON trees don't fold, CSV has no filter, code has no jump-to-symbol.\n4. **No persistence** — refresh = lose the view. Re-drag the file every time.\n5. **No local folder watching** — `mydocs/` or `myrepo/` full of mixed files. Want to browse it like a mini-Obsidian / VS Code preview in the browser without installing another desktop app.\n6. **No cross-format search** — full-text over md, JSON values, code, logs, all at once.\n7. **No TOC / outline** — long docs and deep JSON are a wall of text.\n8. **No theming** — stuck on white, light grey, or black. No typography control. Code blocks don't match the rest of the UI.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.501850000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403174ad7d3aad1392c8e5c90fc8",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.501851000Z",
+  "updated_at": "2026-05-19T12:24:03.501850000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

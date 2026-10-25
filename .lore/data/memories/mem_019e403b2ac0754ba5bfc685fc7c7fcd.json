@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Single version source of truth = apps/chrome-ext/public/manifest.json (line 4). 'task version:bump -- x.y.z' syncs manifest + root package.json + every packages/*/package.json + chrome-ext/package.json. Ship via Taskfile: 'task release -- x.y.z' = version:bump->clean->zip->zip:verify->cws:publish (Chrome Web Store API; needs .env CWS_* creds). No npm publish.",
+  "confidence": null,
+  "created_at": "2026-05-19T12:34:39.936346000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e403b2ac0754ba5bfc685fc7c7fcd",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:34:39.936346000Z",
+  "updated_at": "2026-05-19T12:34:39.936346000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

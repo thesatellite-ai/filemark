@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "apps/desktop now has full theme-popover parity with chrome-ext (renderer/src/ThemePopover.tsx): theme mode dropdown (light/dark/sepia), font-family segmented (sans/serif/mono), size/line-height/width sliders w/ per-slider reset + 'Reset to defaults'. Built with native HTML (select/range) + Tailwind tokens — no basecn dependency. Wired into App header via Type 'Aa' icon trigger. Critical companion fix: App's content wrapper changed from max-w-3xl clamp to style.maxWidth=calc(var(--fv-content-width)+4rem) so the Width slider actually affects rendered prose (the @filemark/mdx body styles already read --fv-content-width). Verified visually via offscreen capture: popover renders correctly with all controls + reset state.",
+  "confidence": null,
+  "created_at": "2026-05-25T11:23:41.193381000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e5ee0570975d8b381bea6fe317124",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-25T11:23:41.193381000Z",
+  "updated_at": "2026-05-25T11:23:41.193381000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **Every actionable request from the user becomes a task before any code changes.** Bug, feature, refactor, polish, doc edit, infra change, dependency bump — anything that produces a diff or a deploy. Capture it first in `docsi/TASKS.md` (or the relevant `docsi/*_PLAN.md` if one exists for that feature area) under the appropriate milestone or backlog section, with full filemark sigils: `(milestone-or-project)`, `!priority`, `^task-…` ID, `after:` deps if known.\n- **Order of operations:** (1) write the task line in the right `docsi/*.md` file, (2) only then implement, (3) flip to `[/]` while in progress, (4) `[x]` =YYYY-MM-DD on completion. The TASKS file is the running log of what was done and why.\n- If the request is exploratory (\"what could we…?\", \"should we…?\") it stays a discussion until the user gives an imperative. Only then capture-as-task and implement.\n- Tiny one-line edits the user clearly wants done in the same breath (`fix typo`, `bump version`) can skip the task-first step. Use judgement — if it's worth a commit, it's probably worth a task.\n- Mirror also into the in-conversation `TaskCreate` tool when the work needs multi-step tracking (e.g. multiple files, multiple builds), so progress is visible inside the session too.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:21:36.240886000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e402f35707dbf94fc470f8e1a3705",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:21:36.240886000Z",
+  "updated_at": "2026-05-19T12:21:36.240886000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

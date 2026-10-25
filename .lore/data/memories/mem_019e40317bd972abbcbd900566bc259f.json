@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`ViewerProps` from `@file-viewer/core`:\n\n```ts\ninterface ViewerProps {\n  content: string;\n  file: FileRef;\n  storage?: StorageAdapter;\n  assets?: AssetResolver;\n  onNavigate?: (href: string) => void;\n  trust?: \"full\" | \"safe\";\n}\n```\n\nStorage and asset resolution are host responsibilities. The viewer does not import `chrome.*`, `vscode.*`, `fs`, `path`, or any host-specific module. Chrome host wires `IndexedDBStorageAdapter` (via `idb-keyval`) and `FSAAssetResolver` (resolves relative image paths against a `FileSystemDirectoryHandle`, creating blob URLs on demand and caching them). A future VS Code extension will wire `workspace.fs.readFile`-backed adapters. A standalone demo would use `localStorage` + `fetch`.\n\nEnforcement is by convention today. v0.2+ should add either a lint rule (`no-restricted-imports` banning `chrome`, `vscode`, `node:*` inside `packages/**`) or a CI check that rejects PRs touching the packages with those imports. Convention-only contracts fail silently.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:05.337155000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317bd972abbcbd900566bc259f",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:05.337155000Z",
+  "updated_at": "2026-05-19T12:24:05.337155000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

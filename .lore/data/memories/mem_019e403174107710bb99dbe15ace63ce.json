@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- The fenced form is documented as the canonical pattern for `<MindMap>`.\n- Future components that need to parse structured markdown from their body should ship as fenced `` ```X `` lang handlers instead of JSX wrappers.\n- Wrapper components that just render `{children}` (PRFAQ / RFC / Pitch / etc.) are unaffected and stay JSX — they don't need programmatic extraction.\n- The MindMap fallback in `packages/mdx-viewer/src/components/MindMap.tsx` surfaces children inline + tells the author to switch — no more silent empty card.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:03.344447000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403174107710bb99dbe15ace63ce",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:03.344447000Z",
+  "updated_at": "2026-05-19T12:24:03.344447000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

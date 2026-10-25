@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **Tailwind utilities first.** Every shell component in `apps/chrome-ext/` and every viewer package should default to Tailwind classes on JSX. Raw CSS classes (`.fv-*`) are reserved for *rendered content* where an external library (react-markdown, react-json-view) owns the DOM and Tailwind utilities can't be injected inline. MDX body typography is the only accepted `fv-*` in `apps/chrome-ext/src/styles/index.css`.\n- **Package-local styles stay in the package.** If a viewer package (`packages/json-viewer`, `packages/mdx-viewer`, future) needs styles, use Tailwind utilities on its JSX or a co-located `.css` the package imports. Do **not** hoist per-package CSS into `apps/chrome-ext/src/styles/index.css`. The host stylesheet only carries app-wide tokens + MDX body typography.\n- **shadcn tokens are the palette.** Always style with `bg-muted`, `text-foreground`, `border`, `text-destructive`, etc. Never write `bg-gray-900` or `#0f1115` inline — those break theme switching.\n- **Dark mode via `@custom-variant dark (&:is([data-theme=\"dark\"], …))`.** shadcn's `.dark` selector maps to our `[data-theme=\"dark\"]` attribute. Don't add a `.dark` class manually anywhere.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:21:36.079123000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e402f34cf7222ab69f93b35e75316",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:21:36.079123000Z",
+  "updated_at": "2026-05-19T12:21:36.079123000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

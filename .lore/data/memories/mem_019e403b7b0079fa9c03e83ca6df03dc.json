@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "MDXViewer code-fence routing (~lines 276-372) is the bridge from fenced blocks to interactive renderers via className='language-X' + meta string: language-csv->DataBlock, chart->ChartBlock, kanban->KanbanBlock, mermaid->lazy mermaid, sql/prisma/dbml->lazy db-schema-toolkit rendered through Mermaid. HTML custom elements (<callout>/<tabs>/<stats>/<adr>) are lowercased + dispatched via rehype-raw; props arrive as HTML attrs parsed by str/bool/num/list helpers.",
+  "confidence": null,
+  "created_at": "2026-05-19T12:35:00.480652000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019e403b7b0079fa9c03e83ca6df03dc",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:35:00.480652000Z",
+  "updated_at": "2026-05-19T12:35:00.480652000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

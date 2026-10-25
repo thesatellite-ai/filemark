@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "Filemark ships two extensions on INDEPENDENT version tracks: Chrome extension + workspace packages share one version; the VS Code extension has its own. Bump: `task version:bump -- X.Y.Z` sets chrome manifest (apps/chrome-ext/public/manifest.json) + root + apps/chrome-ext/package.json + every packages/*/package.json, but NOT apps/vscode/package.json (bump that with jq separately).\nTags/releases convention (started 2026-08-09; repo had none before): product-prefixed annotated tags `chrome-ext-vX.Y.Z` and `vscode-vX.Y.Z` on the release commit + a `gh release create` per tag (attach the .vsix to the vscode one). Never a bare vX.Y.Z (ambiguous across the two tracks).\nPublish commands: Chrome Web Store = root `task cws:publish` (build->zip->upload->submit; CWS_* creds in root .env). Open VSX = `cd apps/vscode && task publish-ovsx` (OVSX_PAT in apps/vscode/.env); published name `khanakia.filemark`. VS Code Marketplace = `cd apps/vscode && task publish` (needs VSCE_PAT); Marketplace name is `khanakia-filemark` (Taskfile temporarily overrides package.json name via a trap) so its id is `khanakia.khanakia-filemark` — DIFFERENT from Open VSX's `khanakia.filemark`. `task package:vsce` builds the .vsix for manual upload (no-PAT fallback). Website = `pnpm --filter @filemark/website-new deploy`; update changelog at apps/website/src/routes/changelog.tsx (RELEASES array) + apps/vscode/CHANGELOG.md each release.\nChrome Web Store GOTCHA: a new upload fails with `ITEM_NOT_UPDATABLE` (\"pending review, ready to publish, or deleted status\") whenever a prior submission is still in review or an unpublished draft exists. No API override exists — resolve only in the CWS dashboard (publish/discard the pending item or wait), then re-run `task cws:publish`. Not a build problem.",
+  "confidence": null,
+  "created_at": "2026-08-09T14:10:18.967648000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "mem_019fe6dc34d779eba4e548fa1b58219c",
+  "kind": "procedural",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "agent-proposal",
+  "source_ref": "session 2026-08-09 (release 0.1.13/0.1.2, PR #1)",
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-08-09T14:10:18.967648000Z",
+  "updated_at": "2026-08-09T14:10:18.967648000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

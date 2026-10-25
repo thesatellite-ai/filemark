@@ -1,0 +1,22 @@
+{
+  "_table": "rules",
+  "_v": 1,
+  "activation": "always",
+  "applies_to_description": null,
+  "archived_at": null,
+  "body": "filemark markdown has NO sanitizer (no DOMPurify) — rehype-raw is the only HTML gate and does not sanitize. Trust model = the .md file is author-controlled content; MV3 CSP (no eval, no inline script execution) is the safety boundary. Frontmatter is parsed by a regex (/^---\\r?\\n([\\s\\S]*?)\\r?\\n---\\r?\\n?/) + the pure-JS 'yaml' package, NOT gray-matter (eval). extractFrontmatter always returns {frontData,body} even on YAML error — never assume frontData non-empty.",
+  "confidence": null,
+  "created_at": "2026-05-19T12:39:46.752215000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "globs": null,
+  "id": "rul_019e403fd940735bbd87e96d2850622a",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "severity": "must",
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "updated_at": "2026-05-19T12:39:46.752215000Z"
+}

@@ -1,0 +1,20 @@
+{
+  "_table": "decisions",
+  "_v": 1,
+  "archived_at": null,
+  "body": "packages/viewer-core/src/theme.tsx exposes useTheme() (throws without ThemeProvider) and useThemeOptional() (returns null). Viewers MUST use the optional variant so they render standalone (playground, future hosts) without crashing. Host writes html[data-theme=mode] + --fv-font-size/line-height/content-width/font-family CSS vars; DEFAULT_THEME = {mode:light, fontSize:16, lineHeight:1.65, contentWidth:760, fontFamily:sans}. Chrome-ext = uncontrolled ThemeProvider; playground = controlled (value+onChange).",
+  "confidence": null,
+  "created_at": "2026-05-19T12:35:00.546682000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "dec_019e403b7b427a7b92aaf652bc0920e2",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "manual",
+  "source_ref": null,
+  "status": "accepted",
+  "superseded_by_id": null,
+  "title": "Viewers read theme via useThemeOptional(), never useTheme()",
+  "trust_score": 0.5,
+  "updated_at": "2026-05-19T12:35:00.546682000Z"
+}

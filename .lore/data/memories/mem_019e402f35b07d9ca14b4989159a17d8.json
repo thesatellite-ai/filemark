@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nFavor small, reversible changes. Build after every structural edit (`pnpm --filter chrome-ext build`), verify in the extension (`chrome://extensions` → reload on the Filemark card), and only commit when a feature is demonstrably working.\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:21:36.304873000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e402f35b07d9ca14b4989159a17d8",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:21:36.304874000Z",
+  "updated_at": "2026-05-19T12:21:36.304873000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

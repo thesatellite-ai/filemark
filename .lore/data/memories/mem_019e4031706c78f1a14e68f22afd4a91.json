@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\nChrome's FSA permission model:\n\n- **Handle**: serializable via IDB (idb-keyval round-trips it). Survives\n  browser restarts.\n- **Permission**: NOT serializable. After a browser restart,\n  `queryPermission` returns `\"prompt\"` and the user must re-grant via a\n  user-gesture-driven `requestPermission` call.\n- **Absolute path**: intentionally hidden. No API exposes\n  `/Users/…/folder`. This is why \"Open in editor\" / \"Reveal in Finder\"\n  need a user-pasted `rootPath` on FSA folders.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.412569000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e4031706c78f1a14e68f22afd4a91",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.412569000Z",
+  "updated_at": "2026-05-19T12:24:02.412569000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

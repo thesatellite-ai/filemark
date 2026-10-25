@@ -2,6 +2,13 @@
 
 All notable changes to the Filemark VS Code extension are documented here. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- **CSV / TSV grid: column filters stay visible while scrolling** — the per-column filter inputs scrolled away with the rows while the column titles stayed pinned, so filtering a long file meant scrolling back to the top. The title row and filter row now stick together at the top of the grid. (Shared `@filemark/datagrid` fix — also affects the Chrome extension + website.)
+- **Chrome extension: remote and local CSV/TSV links open in the viewer again** — opening a `.csv` / `.tsv` URL (e.g. a file on a website, or a `file://` CSV) redirected to an empty Filemark page instead of showing the file, because the app cleared the file link from the address before reading it. The same fix covers local markdown opened through the extension and the toolbar's "Open in Filemark" action. (Chrome extension only — listed here until its release notes are published.)
+
 ## 0.1.3 — 2026-08-25
 
 ### Fixed

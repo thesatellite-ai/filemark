@@ -1,5 +1,13 @@
 import type { LibraryFile } from "./store";
 
+// Snapshot the intake params at module load, before React mounts. The boot
+// sequence awaits hydrate + FSA restore before calling pickupIntercept, and
+// by then useUrlSync's store→URL effect (which fires as soon as `hydrated`
+// flips) has already stripped `?openFile` / `?intercept` from location —
+// reading location.search late made every redirect land on a blank viewer.
+const initialSearch = location.search;
+const initialHash = location.hash;
+
 /**
  * Pick up an intercepted file and materialize it as a one-off drop-file.
  * Three intake paths:
@@ -19,9 +27,9 @@ import type { LibraryFile } from "./store";
  */
 export async function pickupIntercept(): Promise<LibraryFile | null> {
   // Hash fallback first — doesn't require chrome APIs
-  if (location.hash.startsWith("#fv-inline=")) {
+  if (initialHash.startsWith("#fv-inline=")) {
     try {
-      const encoded = location.hash.slice("#fv-inline=".length);
+      const encoded = initialHash.slice("#fv-inline=".length);
       const json = decodeURIComponent(escape(atob(encoded)));
       const { url, content } = JSON.parse(json) as { url: string; content: string };
       history.replaceState(null, "", location.pathname);
@@ -31,7 +39,7 @@ export async function pickupIntercept(): Promise<LibraryFile | null> {
     }
   }
 
-  const params = new URLSearchParams(location.search);
+  const params = new URLSearchParams(initialSearch);
 
   // openFile intake — DNR redirected a file:// URL here. We own the fetch.
   const openFile = params.get("openFile");

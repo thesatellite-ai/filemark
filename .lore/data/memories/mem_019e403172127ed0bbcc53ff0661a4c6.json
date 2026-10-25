@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`Viewer.tsx` polling loop — active only when:\n\n1. `useLibrary.autoRefresh === true`, **and**\n2. The active file is refreshable — `fileIsRefreshable(file, handles)`\n   is true when:\n   - folder file with a live session handle, OR\n   - file with a `sourceUrl` starting with `file://` (fetchable from\n     the extension page if \"Allow access to file URLs\" is on)\n\nOn each tick (`autoRefreshMs`, default 2000 ms):\n- Read latest via handle or `fetch(sourceUrl)`\n- Compare to `contentRef.current` — only `setContent(next)` if changed\n  (no re-render for no-op)\n- Silent failure on a single tick; next tick retries\n\nViewer effect is keyed by `file?.id` + `sessionRev`, not the `file`\nobject, so mutating `lastOpenedAt` on the files map doesn't trigger a\nreload flash.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.834959000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403172127ed0bbcc53ff0661a4c6",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.834959000Z",
+  "updated_at": "2026-05-19T12:24:02.834959000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

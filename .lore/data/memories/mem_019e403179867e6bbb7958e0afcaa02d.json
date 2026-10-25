@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **Tailwind utilities first** — per `CLAUDE.md` §Styling. No `fv-*`\n  classes except one (`fv-adr-body`) reserved for future MDX body\n  typography hooks if needed.\n- **shadcn tokens** for neutral color (`bg-card`, `text-muted-foreground`,\n  `border`).\n- **Semantic colors via `TONE_CLASS`** imported from `@filemark/datagrid`\n  — same idiom as status pills / tag chips / filter badges across the\n  rest of the project. This is the reason semantic greens/reds/ambers\n  are centralized: one edit updates every tone-using component.\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:04.742924000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403179867e6bbb7958e0afcaa02d",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:04.742924000Z",
+  "updated_at": "2026-05-19T12:24:04.742924000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

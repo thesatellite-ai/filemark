@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`DropZone.onDrop`:\n\n1. Reads `dataTransfer.items[].webkitGetAsEntry()` to detect directories\n   (files show up via `dataTransfer.files`).\n2. For loose files: matches each to an entry in\n   `dataTransfer.getData(\"text/uri-list\")` (Finder / Explorer populate\n   this with `file://` URLs). If matched → `sourceUrl` auto-set.\n3. For dirs: recursive `walkDirEntry()` reads every supported file into\n   memory; `rootPath` auto-set from text/uri-list. Registers as\n   `LibraryFolder.kind = \"drop\"` (no FSA handle, no reconnect dance).\n4. Each file's `ext` is run through `isFormatEnabled(settings, ext)`;\n   disabled formats are skipped.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.295091000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40316ff771a184438c104bdc0a32",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.295091000Z",
+  "updated_at": "2026-05-19T12:24:02.295091000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

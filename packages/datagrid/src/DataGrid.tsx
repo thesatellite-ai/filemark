@@ -873,13 +873,13 @@ export function DataGrid({
         onKeyDown={onKeyDown}
       >
         <div style={{ width: Math.max(totalWidth, 0) || "100%" }}>
+          {/* header + filter row share ONE sticky wrapper so the filters stay
+              pinned with the column titles while the body scrolls. z-20 keeps
+              it above the body's frozen cells (z-10). */}
+          <div className={stickyHeader ? "sticky top-0 z-20" : undefined}>
           {/* header */}
           <div
-            className={
-              stickyHeader
-                ? "bg-muted/80 supports-[backdrop-filter]:backdrop-blur sticky top-0 z-10 grid"
-                : "bg-muted/80 grid"
-            }
+            className="bg-muted/80 supports-[backdrop-filter]:backdrop-blur grid"
             style={{ gridTemplateColumns: gridTemplate }}
           >
             {visibleLeafHeaders.map((h) => {
@@ -965,7 +965,7 @@ export function DataGrid({
           {/* filter row */}
           {filter && (
             <div
-              className="grid border-b border-border/50 bg-background/30"
+              className="grid border-b border-border/50 bg-background/90 supports-[backdrop-filter]:backdrop-blur"
               style={{ gridTemplateColumns: gridTemplate }}
             >
               {visibleLeafHeaders.map((h) => {
@@ -1004,6 +1004,7 @@ export function DataGrid({
               })}
             </div>
           )}
+          </div>
 
           {/* body */}
           <div style={{ height: contentHeight, position: "relative" }}>

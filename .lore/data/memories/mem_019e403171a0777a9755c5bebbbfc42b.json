@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`AssetResolver` is the host-injected interface viewers use whenever a\nmarkdown body references a sibling file — `![alt](./diagram.png)`,\n` ```csv src=./data.csv `, and future patterns (linked `.md`, embedded\n`.svg`). Viewers never know whether they're in Chrome, VS Code, or a\nweb demo; they just call `assets.resolve(relPath)` and get back a URL\nthey can assign to `<img src>` or pass to `fetch()`.\n\n**Interface** (defined in `@filemark/core`):\n\n```ts\nexport interface AssetResolver {\n  resolve(relativePath: string, baseUrl?: string): Promise<string>;\n}\n```\n\nReturns a URL string — either a `blob:` (for locally-read bytes) or a\nremote `https:` / `file:` URL. Callers must not assume either form.\n\n**Four implementations — picked by file ingest kind:**\n\n| Host context | Implementation | `resolve()` does |\n|---|---|---|\n| FSA folder (`kind: \"fsa\"`) | `FSAAssetResolver` | walks the `FileSystemDirectoryHandle` by path segments (`./img/foo.png` → `img/` sub-handle → `foo.png` file-handle → `File` → `URL.createObjectURL`). Caches blob URLs per (dir-handle, path). |\n| Drop-folder (`kind: \"drop\"`) | `DropAssetResolver` | looks up an in-memory `Map<relativePath, File>` populated at drop time from `items[].webkitGetAsEntry()` recursion. Returns `URL.createObjectURL(file)`. |\n| `file://` intercept | `PassthroughResolver` | returns `new URL(relativePath, sourceUrl).toString()` — the browser fetches via `file://`, which **works for images but not for CSV reads** (same-origin rules on file://). Datagrid `src=` refuses to fetch and renders a warning. |\n| Remote (`raw.github*`, etc.) | `PassthroughResolver` | same — `new URL(relativePath, sourceUrl)`. Works for CSV fetch if the host permission covers the origin. |\n\n**Lifecycle of a blob URL:**\n\n- Created on first `resolve()` call; cached per viewer-instance until tab close.\n- Revoked when the owning tab unmounts (tab close or viewer swap). Avoids leaking object URLs across long sessions.\n- `FSAAssetResolver` re-reads on handle-permission change (FSA handles can go stale if the folder is ejected and re-granted).\n\n**Datagrid-specific handling of `src=`:**\n\n1. `opts.src` present → call `assets.resolve(opts.src, sourceUrl)`.\n2. If resolver throws `ENOENT`-ish (file missing or handle gone) → render an inline error card, not an empty grid. Rule 3 — skeletons must warn.\n3. If resolver is `undefined` (single-file ingest has no siblings) → same error card with \"open as folder to use `src=`\" hint.\n4. On success → `fetch(url).then(r => r.text())` → Papaparse → DataGrid.\n5. No retry, no auto-reload. Re-render on file change is a stretch-goal tied to auto-refresh (§14).\n\n**Security note:** the resolver is same-origin by convention. It MUST\nrefuse paths that escape the root (e.g. `../../..`). `FSAAssetResolver`\ngets this for free (relative segments are walked against the directory\nhandle; `..` either fails or stays within the granted root). Passthrough\nresolvers must `new URL()`-normalize and reject protocols other than\nthe one of `baseUrl`.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.720464000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e403171a0777a9755c5bebbbfc42b",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.720464000Z",
+  "updated_at": "2026-05-19T12:24:02.720464000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

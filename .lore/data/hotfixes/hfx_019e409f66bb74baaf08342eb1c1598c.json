@@ -1,0 +1,20 @@
+{
+  "_table": "hotfixes",
+  "_v": 1,
+  "archived_at": null,
+  "body": "apps/desktop bug found at runtime: BrowserWindow showed 'Unable to load preload script: out/preload/index.js (ENOENT)' then renderer threw 'Cannot read properties of undefined (reading projects/storage/onFilesChanged)' — window.filemark never defined. Two causes: (1) package.json type:module makes electron-vite emit preload as index.MJS, but main referenced index.js; (2) a sandbox:true preload MUST be CommonJS (ESM .mjs preload won't load sandboxed). Fix: in electron.vite.config.ts force preload output { format:'cjs', entryFileNames:'[name].cjs' } and reference '../preload/index.cjs' in main. Verified: headless boot now clean (no console errors). Main itself stays ESM (.js) — Electron 33 supports ESM main.",
+  "confidence": null,
+  "created_at": "2026-05-19T14:24:08.891305000Z",
+  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "id": "hfx_019e409f66bb74baaf08342eb1c1598c",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "severity": "high",
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "title": "electron-vite preload must be .cjs when package type=module + sandbox:true",
+  "trust_score": 0.5,
+  "updated_at": "2026-05-19T14:24:08.891305000Z"
+}

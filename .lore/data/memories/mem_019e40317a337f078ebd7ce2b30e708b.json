@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n- **Per-cell comparison** — `<Stat compare=\"$100,000\">` shows delta\n  automatically from current vs compare value.\n- **Collapsible ADR** — `collapsed` attr; clicking header toggles.\n- **ADR export** — \"Copy ADR\" button → MD string with the full block\n  re-serialized.\n\n---\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:04.915968000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e40317a337f078ebd7ce2b30e708b",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:04.915969000Z",
+  "updated_at": "2026-05-19T12:24:04.915968000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}

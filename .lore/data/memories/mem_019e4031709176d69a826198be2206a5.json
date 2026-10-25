@@ -1,0 +1,23 @@
+{
+  "_table": "memories",
+  "_v": 1,
+  "archived_at": null,
+  "body": "\n`App.tsx` on mount: for every `LibraryFolder` in the store, try\n`trySilentRestore(folder)`:\n\n```\nloadDirHandle(folder.handleId)  ← pulls from IDB\nqueryPermissionState(handle)    ← no gesture needed\n  \"granted\"  → walkDirectory, register session handles → sessionRev bumps\n  anything else → leave \"Reconnect folder\" button visible\n```\n\nWhen the user clicks **Reconnect folder**, `restoreFolder()` calls\n`requestPermission` (user gesture OK), walks the dir, and registers\nsession handles.\n\n",
+  "confidence": null,
+  "created_at": "2026-05-19T12:24:02.449435000Z",
+  "created_by_actor_id": null,
+  "id": "mem_019e4031709176d69a826198be2206a5",
+  "kind": "retrieved",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "source_kind": "learn-from",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "trust_score": 0.5,
+  "tx_at": "2026-05-19T12:24:02.449435000Z",
+  "updated_at": "2026-05-19T12:24:02.449435000Z",
+  "valid_at": null,
+  "valid_until": null,
+  "validated_by_actor_id": null
+}
