@@ -1,0 +1,20 @@
+{
+  "_table": "hotfixes",
+  "_v": 1,
+  "archived_at": null,
+  "body": "task cws:publish / cws:upload fail at the token step with invalid_grant when CWS_REFRESH_TOKEN is expired or revoked (hit 2026-11-05 releasing 0.1.15). Fix: run node scripts/cws-oauth.mjs from the repo root (the owner logs in to Google in the browser; it writes a fresh CWS_REFRESH_TOKEN to .env) and back the new value up wherever the other release secrets are kept. If the OAuth consent screen is in Testing mode, Google expires the token after 7 days; set it to In production to stop this recurring.",
+  "confidence": null,
+  "created_at": "2026-11-05T10:34:12.429382000Z",
+  "created_by_actor_id": "act_596bcaa243e17d28b4dbc5c959064ac5",
+  "id": "hfx_01a1ab45fa4d76039d1562dd6b19f100",
+  "last_validated_at": null,
+  "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
+  "repo_id": null,
+  "severity": "high",
+  "source_kind": "manual",
+  "source_ref": null,
+  "superseded_by_id": null,
+  "title": "CWS publish fails invalid_grant: refresh token expired",
+  "trust_score": 0.5,
+  "updated_at": "2026-11-05T10:34:12.429382000Z"
+}
