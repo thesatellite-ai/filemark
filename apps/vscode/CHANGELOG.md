@@ -2,7 +2,7 @@
 
 All notable changes to the Filemark VS Code extension are documented here. This project adheres to [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 0.1.4 — 2026-11-05
 
 ### Fixed
 
