@@ -1,6 +1,6 @@
 ---
 name: filemark
-description: Author beautiful interactive markdown docs that filemark renders — every component, every sigil, every gotcha. Fires when the user is writing or editing a `.md` / `.mdx` file meant to be viewed in filemark (the Chrome extension + playground) and wants callouts, tabs, stats, ADRs, datagrids, kanban boards, charts, timelines, or markdown-native tasks.
+description: Use when writing a plan, brainstorm, ADR, spec, roadmap or task list under .ai/, docsi/, or any PLAN.md / ROADMAP.md / *_ADR.md / *_SPEC.md, or when the user says "filemark". Not for README, CLAUDE.md, CHANGELOG or chat replies (plain markdown).
 ---
 
 # filemark — skill
@@ -20,6 +20,8 @@ Filemark renders `.md` / `.mdx` / `.json` / `.csv` / `.tsv` / `.sql` / `.prisma`
 - Generic markdown help (use base markdown knowledge)
 - Extending filemark itself — the source is at `chrome-extensions/filemark/packages/**`, use repo conventions
 - VS Code / GitHub rendering — filemark-specific syntax (Callout, Tabs, TaskList, `::` fence) does not render there
+
+**Which files are filemark docs.** Load this skill BEFORE writing or editing any internal doc that is read through filemark: brainstorms, plans, problem docs, roadmaps, ADRs, architecture notes, task lists and component specs, i.e. `.ai/**/*.md`, `docsi/**/*.md`, and any `PLAN.md`, `ROADMAP.md`, `*_ADR.md` or `*_SPEC.md`. Do not freehand components from memory. Keep plain markdown (no filemark components) in files that GitHub or a public site renders: `README.md`, `CLAUDE.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, a public `docs/` folder, and per-module READMEs. Chat replies are never filemark. Components to prefer: `<Callout type="info|warn|danger|tip">` for rules and gotchas, `<Tabs>`, `<Details>`, `<ADR>`, `<Stats>`, `<Datagrid>`, `<Chart>`, `<Kanban>`, `<TaskList>` / `<TaskStats>` / `<TaskTimeline>` with sigil task bullets (`- [ ]`, `- [>]`, `- [x]`) and the filter DSL. Always obey the two rules below (blank lines inside block components, explicit closing tags), and never put a raw `<` inside prose: write it as `&lt;` or inside backticks.
 
 ## File formats Filemark opens
 
