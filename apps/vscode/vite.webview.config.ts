@@ -41,7 +41,14 @@ export default defineConfig({
         // Lazy chunks sit alongside main.js so relative imports resolve under
         // dist/webview (in localResourceRoots).
         chunkFileNames: "[name]-[hash].js",
-        assetFileNames: "main.[ext]",
+        // main.css is linked by fixed name from the host. Script assets (the
+        // @filemark/mdx highlight worker, emitted via `new URL(…,
+        // import.meta.url)`) keep a hashed name — `main.[ext]` would make the
+        // worker overwrite the entry main.js.
+        assetFileNames: (info) =>
+          (info.names ?? []).some((n) => n.endsWith(".js"))
+            ? "[name]-[hash][extname]"
+            : "main.[ext]",
       },
     },
   },
