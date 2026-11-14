@@ -13,6 +13,7 @@ import {
   Globe,
   HelpCircle,
   Keyboard,
+  LifeBuoy,
   PanelLeft,
   Plus,
   RotateCcw,
@@ -69,6 +70,7 @@ type SectionId =
   | "json"
   | "shortcuts"
   | "help"
+  | "recovery"
   | "reset";
 
 const NAV: { id: SectionId; label: string; icon: typeof FileText }[] = [
@@ -79,6 +81,7 @@ const NAV: { id: SectionId; label: string; icon: typeof FileText }[] = [
   { id: "json", label: "JSON viewer", icon: FileJson },
   { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
   { id: "help", label: "Help & support", icon: HelpCircle },
+  { id: "recovery", label: "Recovery", icon: LifeBuoy },
   { id: "reset", label: "Reset", icon: RotateCcw },
 ];
 
@@ -165,6 +168,7 @@ export function OptionsApp() {
             {active === "json" && <JsonSection />}
             {active === "shortcuts" && <ShortcutsSection />}
             {active === "help" && <HelpSection />}
+            {active === "recovery" && <RecoverySection />}
             {active === "reset" && <DangerZone />}
           </main>
         </div>
@@ -972,6 +976,209 @@ function HelpSection() {
           );
         })}
       </div>
+    </section>
+  );
+}
+
+/* ─── Recovery ─────────────────────────────────────────────────────────── */
+
+// The viewer tab reopens the last active document on load, so a document that
+// hangs the renderer hangs it again on every reload. Options runs in its own
+// renderer and stays usable, so recovery lives here: each action rewrites the
+// library in IndexedDB (shared with the viewer — same extension origin) and
+// then swaps every open viewer tab for a fresh one. A plain reload is not
+// enough, because a hung renderer may never unload; closing the tab lets the
+// browser kill it.
+const VIEWER_PATH = "src/app/index.html";
+
+async function restartViewerTabs(): Promise<number> {
+  const viewerUrl = chrome.runtime.getURL(VIEWER_PATH);
+  const tabs = (await chrome.tabs.query({})).filter((t) =>
+    t.url?.startsWith(viewerUrl),
+  );
+  for (const t of tabs) {
+    await chrome.tabs.create({
+      url: viewerUrl,
+      windowId: t.windowId,
+      index: t.index,
+      active: t.active,
+    });
+    if (t.id !== undefined) await chrome.tabs.remove(t.id);
+  }
+  return tabs.length;
+}
+
+// A tab Filemark is (probably) rendering: its own viewer page, or a file:// /
+// http(s) URL whose extension is a supported format (the inject viewer takes
+// those over in place). Extensionless JSON APIs are not listed — there is no
+// way to tell them apart from ordinary pages by URL alone. https tabs only
+// expose their URL when the optional "all sites" permission is granted.
+function isFilemarkTab(url: string | undefined, viewerUrl: string): boolean {
+  if (!url) return false;
+  if (url.startsWith(viewerUrl)) return true;
+  try {
+    const u = new URL(url);
+    if (!["file:", "http:", "https:"].includes(u.protocol)) return false;
+    const m = /\.([a-z0-9]+)$/i.exec(u.pathname);
+    const ext = m?.[1].toLowerCase();
+    return !!ext && (ALL_FORMATS as readonly string[]).includes(ext === "markdown" ? "md" : ext);
+  } catch {
+    return false;
+  }
+}
+
+function useFilemarkTabs() {
+  const [tabs, setTabs] = useState<chrome.tabs.Tab[]>([]);
+  useEffect(() => {
+    const viewerUrl = chrome.runtime.getURL(VIEWER_PATH);
+    const refresh = () =>
+      chrome.tabs
+        .query({})
+        .then((all) => setTabs(all.filter((t) => isFilemarkTab(t.url, viewerUrl))))
+        .catch(() => setTabs([]));
+    void refresh();
+    chrome.tabs.onUpdated.addListener(refresh);
+    chrome.tabs.onRemoved.addListener(refresh);
+    chrome.tabs.onCreated.addListener(refresh);
+    return () => {
+      chrome.tabs.onUpdated.removeListener(refresh);
+      chrome.tabs.onRemoved.removeListener(refresh);
+      chrome.tabs.onCreated.removeListener(refresh);
+    };
+  }, []);
+  return tabs;
+}
+
+function tabLabel(t: chrome.tabs.Tab): string {
+  if (t.title) return t.title;
+  try {
+    return decodeURIComponent(new URL(t.url ?? "").pathname.split("/").pop() ?? "");
+  } catch {
+    return t.url ?? "";
+  }
+}
+
+function RecoverySection() {
+  const browserTabs = useFilemarkTabs();
+  const openTabs = useLibrary((s) => s.openTabs.length);
+  const recent = useLibrary((s) => s.recentIds.length);
+  const files = useLibrary((s) => s.files);
+  const closeAllTabs = useLibrary((s) => s.closeAllTabs);
+  const clearRecent = useLibrary((s) => s.clearRecent);
+  const clearDropped = useLibrary((s) => s.clearDropped);
+  const clearAll = useLibrary((s) => s.clearAll);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const dropped = Object.values(files).filter((f) => !f.folderId).length;
+  const total = Object.keys(files).length;
+
+  const run = async (label: string, action: () => Promise<void>) => {
+    await action();
+    const n = await restartViewerTabs();
+    setStatus(
+      n > 0
+        ? `${label} — reopened ${n} Filemark tab${n === 1 ? "" : "s"}.`
+        : `${label}.`,
+    );
+  };
+
+  return (
+    <section>
+      <SectionHeading
+        icon={LifeBuoy}
+        title="Recovery"
+        subtitle="If a document freezes Filemark, close its tab or clear it from the library here. After a library action, open Filemark viewer tabs are closed and reopened fresh."
+      />
+      <h3 className="text-foreground mb-1 px-3 text-sm font-medium">
+        Browser tabs showing a Filemark document ({browserTabs.length})
+      </h3>
+      <p className="text-muted-foreground mb-2 px-3 text-xs">
+        Close a frozen tab here — the browser stops it even when the tab itself
+        doesn't respond. A file that froze its tab opens as plain text next time.
+      </p>
+      {browserTabs.length > 0 ? (
+        <div className="mb-4 divide-y divide-border/60 rounded-md border">
+          {browserTabs.map((t) => (
+            <div key={t.id} className="flex items-center gap-2 px-3 py-1">
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px]">{tabLabel(t)}</div>
+                <div className="text-muted-foreground truncate text-[11px]">{t.url}</div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6"
+                onClick={() => t.id !== undefined && void chrome.tabs.remove(t.id)}
+              >
+                Close
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-muted-foreground mb-4 px-3 text-xs italic">None open.</p>
+      )}
+
+      <h3 className="text-foreground mb-1 px-3 text-sm font-medium">Library</h3>
+      <div className="space-y-1">
+        <Row
+          label={`Close the viewer's document tabs (${openTabs})`}
+          hint="Closes every open document tab. Your library and recent list are kept."
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => run("Closed all open tabs", closeAllTabs)}
+          >
+            Close tabs
+          </Button>
+        </Row>
+        <Row
+          label={`Clear recent list (${recent})`}
+          hint="Empties the Recent section of the sidebar. Files stay in the library."
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => run("Cleared the recent list", clearRecent)}
+          >
+            Clear recent
+          </Button>
+        </Row>
+        <Row
+          label={`Remove dropped files (${dropped})`}
+          hint="Removes files that were dropped in or opened from a link (not part of a folder)."
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => run("Removed dropped files", clearDropped)}
+          >
+            Remove dropped
+          </Button>
+        </Row>
+        <Row
+          label={`Clear entire library (${total} file${total === 1 ? "" : "s"})`}
+          hint="Removes every folder, file, tab and recent entry from the sidebar. Files on disk are not touched."
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (confirm("Remove every folder and file from the Filemark sidebar?"))
+                void run("Cleared the library", clearAll);
+            }}
+          >
+            <Trash2 className="size-3.5" />
+            Clear library
+          </Button>
+        </Row>
+      </div>
+      {status && (
+        <p className="text-muted-foreground mt-3 px-3 text-xs" role="status">
+          {status}
+        </p>
+      )}
     </section>
   );
 }

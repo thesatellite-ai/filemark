@@ -8,6 +8,7 @@ import { createFSAAssetResolver } from "../adapters/fsaAssets";
 import { sessionHandles } from "../sessionHandles";
 import { isInjectMode } from "../urlSync";
 import { readFileAsText } from "../fs";
+import { settle, settleLater } from "../renderGuard";
 import {
   MDXViewer,
   GithubMarkdown,
@@ -57,6 +58,17 @@ export function Viewer() {
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
+
+  // Render guard: the file was armed before it became active (store.setActive /
+  // guarded hydrate / inject bootstrap). Once its content has committed and
+  // had SETTLE_MS to finish post-mount work, it counts as loaded. A load error
+  // also counts — the tab is clearly not frozen. See renderGuard.ts.
+  useEffect(() => {
+    if (contentFileId) return settleLater(contentFileId);
+  }, [contentFileId]);
+  useEffect(() => {
+    if (error && activeId) void settle(activeId);
+  }, [error, activeId]);
 
   // Publish the live rendered content to the store so revision mode captures
   // the CURRENT text (the store's files[id].content is only the initially-

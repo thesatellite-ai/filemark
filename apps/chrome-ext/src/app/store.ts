@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { idbStorage } from "./adapters/idbStorage";
 import { FSA_CACHE_MAX_BYTES } from "./fsaCache";
+import * as renderGuard from "./renderGuard";
 import type { ThemeSettings } from "@filemark/core";
 import { DEFAULT_THEME } from "@filemark/core";
 
@@ -68,6 +69,10 @@ export interface LibraryState {
   sidebarWidth: number;
   tocOpen: boolean;
   hydrated: boolean;
+  /** Set by a guarded hydrate when the last active file froze the tab on its
+   *  previous load: it stays a tab but is NOT made active, and the shell shows
+   *  a "didn't reopen X" banner. Null otherwise. See renderGuard.ts. */
+  skippedFile: { id: string; name: string } | null;
   /** Incremented whenever live FSA handles come online or go away.
    *  Subscribers (Viewer, Sidebar) include this in their deps to retry. */
   sessionRev: number;
@@ -197,9 +202,18 @@ export interface LibraryState {
   removeFolder(folderId: string): Promise<void>;
   removeFile(fileId: string): Promise<void>;
   clearAll(): Promise<void>;
+  /** Close every open tab and clear the active file, keeping the library.
+   *  Used by Options → Recovery when a document hangs the viewer on reopen. */
+  closeAllTabs(): Promise<void>;
   clearRecent(): Promise<void>;
   clearDropped(): Promise<void>;
-  hydrate(): Promise<void>;
+  /** `guardRestore` (viewer app only): consult the render guard before
+   *  restoring the active file, and arm it for the file being restored.
+   *  Options and other hydrate callers leave it off so they never consume or
+   *  create guard entries. */
+  hydrate(opts?: { guardRestore?: boolean }): Promise<void>;
+  /** Hide the "didn't reopen X" banner. */
+  dismissSkipped(): void;
 }
 
 const KEYS = {
@@ -323,6 +337,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
   sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
   tocOpen: true,
   hydrated: false,
+  skippedFile: null,
   sessionRev: 0,
   viewMode: "rendered",
   fullscreen: false,
@@ -348,7 +363,11 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     }));
   },
 
-  async hydrate() {
+  dismissSkipped() {
+    set({ skippedFile: null });
+  },
+
+  async hydrate(opts) {
     const [files, folders, recent, theme, active, tabs, ui] = await Promise.all([
       idbStorage.get<Record<string, LibraryFile>>(KEYS.files),
       idbStorage.get<Record<string, LibraryFolder>>(KEYS.folders),
@@ -361,8 +380,20 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     // Filter saved tabs to those whose file still exists.
     const allFiles = files ?? {};
     const savedTabs = (tabs ?? []).filter((id) => allFiles[id]);
-    const savedActive =
+    let savedActive: string | null =
       active && allFiles[active] ? active : savedTabs[0] ?? null;
+    let skippedFile: { id: string; name: string } | null = null;
+    if (opts?.guardRestore && savedActive) {
+      const frozen = await renderGuard.takeFrozen(savedActive);
+      if (frozen) {
+        skippedFile = { id: savedActive, name: allFiles[savedActive].name };
+        if (!savedTabs.includes(savedActive)) savedTabs.unshift(savedActive);
+        savedActive = null;
+        await idbStorage.set(KEYS.active, null);
+      } else {
+        await renderGuard.arm(savedActive, allFiles[savedActive].name);
+      }
+    }
     // If the active file isn't in the tab list, inject it so we never have
     // an "active file with no tab" discrepancy.
     const openTabs =
@@ -376,6 +407,7 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       theme: { ...DEFAULT_THEME, ...(theme ?? {}) },
       activeFileId: savedActive,
       openTabs,
+      skippedFile,
       sidebarOpen: ui?.sidebarOpen ?? true,
       sidebarWidth: clampSidebarWidth(
         ui?.sidebarWidth ?? SIDEBAR_DEFAULT_WIDTH,
@@ -402,6 +434,10 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     // that avoids recreating the `files` map and re-firing every
     // file-subscribed selector for a no-op activation.
     if (id === prev) return;
+    // Arm the render guard before the Viewer renders this file, so a file that
+    // freezes the tab is skipped on the next load (see renderGuard.ts).
+    const target = id ? get().files[id] : undefined;
+    if (id && target) await renderGuard.arm(id, target.name);
     await idbStorage.set(KEYS.active, id);
     if (!id) return;
     const state = get();
@@ -978,6 +1014,12 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       idbStorage.set(KEYS.tabs, []),
       idbStorage.set(KEYS.active, null),
     ]);
+  },
+
+  async closeAllTabs() {
+    set({ openTabs: [], activeFileId: null });
+    await idbStorage.set(KEYS.tabs, []);
+    await idbStorage.set(KEYS.active, null);
   },
 
   async clearRecent() {

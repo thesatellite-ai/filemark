@@ -1,23 +1,20 @@
 {
+  "_hlc": "2026-11-12T17:04:00.046Z/0000/act_7b6e2727126b7bbb9f3a5a9cefc0022f",
   "_table": "memories",
-  "_v": 1,
-  "archived_at": null,
+  "_v": 2,
+  "_w": {
+    "v": "0.1.18-dev+plain.ed8edc44"
+  },
   "body": "apps/desktop Settings panel 2026-05-25 (renderer/src/SettingsPanel.tsx): modal with three sections — File formats (per-ext render toggle, gates registry via formats[ext]), JSON viewer (9 themes/depth/indent/displayDataTypes/displayObjectSize/enableClipboard, applied by routing JSONViewer directly w/ options prop in App), Keyboard shortcuts catalog (read-only, 14 chords). Persisted to lib:settings (matches chrome-ext key); deep-merged with DEFAULT_SETTINGS on hydrate for forward-compat. Opens from Settings cog icon (last in header). Also: TOC trigger icon changed from PanelRight→List to remove visual duplicate-sidebar collision with PanelLeft. Build + tsc + offscreen render verified visually. NOT built (out of scope per user): TaskPanel cross-file aggregator, per-shortcut rebind UI.",
-  "confidence": null,
   "created_at": "2026-05-25T11:39:58.185888000Z",
-  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by_actor_id": "act_afbe7ed1d969752697eebecaac20e9dc",
   "id": "mem_019e5eef3f697d9484d06cc526d4c6be",
   "kind": "retrieved",
-  "last_validated_at": null,
   "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
-  "repo_id": null,
   "source_kind": "manual",
-  "source_ref": null,
-  "superseded_by_id": null,
   "trust_score": 0.5,
   "tx_at": "2026-05-25T11:39:58.185888000Z",
-  "updated_at": "2026-05-25T11:39:58.185888000Z",
-  "valid_at": null,
-  "valid_until": null,
-  "validated_by_actor_id": null
+  "updated_at": "2026-11-12T17:04:00.046000000Z",
+  "updated_by": "act_7b6e2727126b7bbb9f3a5a9cefc0022f"
 }

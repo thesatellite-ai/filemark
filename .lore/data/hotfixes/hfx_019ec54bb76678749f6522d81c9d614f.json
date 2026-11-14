@@ -1,20 +1,20 @@
 {
+  "_hlc": "2026-11-12T17:03:59.479Z/0000/act_7b6e2727126b7bbb9f3a5a9cefc0022f",
   "_table": "hotfixes",
-  "_v": 1,
-  "archived_at": null,
+  "_v": 2,
+  "_w": {
+    "v": "0.1.18-dev+plain.ed8edc44"
+  },
   "body": "Symptom: building apps/website failed with 'Could not resolve ../../../../examples/chart-full.md?raw'. Cause: when playground/examples/index.ts was copied from apps/playground/src/examples/ → apps/website/src/playground/examples/, the nesting got one level deeper (apps/website/src/playground/examples vs apps/playground/src/examples), so all 17 ?raw imports needed an extra ../. Fix: sed 's|../../../../examples/|../../../../../examples/|g' index.ts. RULE: any file move involving Vite ?raw/?url imports must adjust depth of the relative path; tsc won't catch it (raw imports aren't part of TS module resolution) — only the bundler errors out. Add a quick post-move grep for ?raw to catch this next time.",
-  "confidence": null,
   "created_at": "2026-06-14T08:42:14.246522000Z",
-  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by_actor_id": "act_afbe7ed1d969752697eebecaac20e9dc",
   "id": "hfx_019ec54bb76678749f6522d81c9d614f",
-  "last_validated_at": null,
   "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
-  "repo_id": null,
   "severity": "medium",
   "source_kind": "manual",
-  "source_ref": null,
-  "superseded_by_id": null,
   "title": "Vite ?raw imports break when files are relocated — paths are relative-to-source, not workspace",
   "trust_score": 0.5,
-  "updated_at": "2026-06-14T08:42:14.246522000Z"
+  "updated_at": "2026-11-12T17:03:59.479000000Z",
+  "updated_by": "act_7b6e2727126b7bbb9f3a5a9cefc0022f"
 }

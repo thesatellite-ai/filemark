@@ -1,20 +1,20 @@
 {
+  "_hlc": "2026-11-12T17:03:59.309Z/0000/act_7b6e2727126b7bbb9f3a5a9cefc0022f",
   "_table": "hotfixes",
-  "_v": 1,
-  "archived_at": null,
+  "_v": 2,
+  "_w": {
+    "v": "0.1.18-dev+plain.ed8edc44"
+  },
   "body": "Packaging apps/desktop with electron-builder fails: 'packages/chart/ARCHITECTURE.md must be under apps/desktop/'. Cause: pnpm symlinks workspace deps (@filemark/*) into node_modules; electron-builder's asar packer follows the symlinks out of appDir into the monorepo. Tightening asarUnpack/files globs is NOT enough. Real fixes (pick one, do in task-desk-package): (a) pnpm deploy --filter=@filemark/desktop to a flat dir then electron-builder there; (b) node-linker=hoisted for the app; (c) bundle deps so node_modules isn't needed at runtime. electron-vite build itself is fine; libsql native install under electron-builder DID complete (arch=arm64) so the ABI is de-risked — this is purely a pnpm↔electron-builder file-collection issue.",
-  "confidence": null,
   "created_at": "2026-05-19T13:55:59.624855000Z",
-  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by_actor_id": "act_afbe7ed1d969752697eebecaac20e9dc",
   "id": "hfx_019e4085a0087d1b8f496c790464886e",
-  "last_validated_at": null,
   "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
-  "repo_id": null,
   "severity": "high",
   "source_kind": "manual",
-  "source_ref": null,
-  "superseded_by_id": null,
   "title": "electron-builder + pnpm symlinked workspace: asar traversal escapes appDir",
   "trust_score": 0.5,
-  "updated_at": "2026-05-19T13:55:59.624856000Z"
+  "updated_at": "2026-11-12T17:03:59.309000000Z",
+  "updated_by": "act_7b6e2727126b7bbb9f3a5a9cefc0022f"
 }
