@@ -38,6 +38,12 @@ Schema-only (drop these directly without a markdown wrapper — filemark renders
 | [`schema.dbml`](./schema.dbml) | DBML (dbdiagram.io DSL) | Sketching a schema before you've picked a DB |
 | [`sales.csv`](./sales.csv) | Plain CSV | Pair with `<Datagrid src=…>` to demo external CSV loading |
 
+Regression samples (open before/after a fix to re-verify; tests and smoke checks read them directly):
+
+| Example | What | Verify with |
+|---|---|---|
+| [`regressions/code-highlight-freeze.md`](./regressions/code-highlight-freeze.md) | Go fences that made Shiki's Go grammar backtrack for minutes and froze the tab (fixed in `e477dfe`) + a control block that must stay coloured | `pnpm --filter @filemark/mdx test` (`shiki.test.ts`), `task smoke:highlight-freeze` |
+
 ---
 
 ## Browse by component

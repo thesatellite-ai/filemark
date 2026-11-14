@@ -72,6 +72,24 @@ tasks:
     cmds:
       - pnpm -r typecheck
 
+  # ── smoke checks ────────────────────────────────────────────────────────
+
+  smoke:highlight-freeze:
+    desc: 'Headless smoke — the unpacked extension renders examples/regressions/code-highlight-freeze.md without freezing (needs rootless Docker + the mcr.microsoft.com/playwright:v1.64.0-noble image; EXT=<unpacked dir>, default apps/chrome-ext/dist)'
+    vars:
+      EXT: '{{.EXT | default .DIST}}'
+      SMOKE_DIR: scripts/smoke/highlight-freeze
+      IMAGE: mcr.microsoft.com/playwright:v1.64.0-noble
+    cmds:
+      - '[ -d "{{.SMOKE_DIR}}/node_modules/playwright-core" ] || (cd {{.SMOKE_DIR}} && npm ci --no-audit --no-fund)'
+      - |
+        EXT_ABS=$(cd "{{.EXT}}" && pwd)
+        [ -f "$EXT_ABS/manifest.json" ] || { echo "ERR: no manifest.json in $EXT_ABS — run 'task build' first"; exit 1; }
+        timeout 120 docker run --rm --network none \
+          -v "{{.TASKFILE_DIR}}:/repo:ro" -v "$EXT_ABS:/ext:ro" \
+          {{.IMAGE}} \
+          node /repo/{{.SMOKE_DIR}}/smoke.mjs /ext /repo/examples/regressions/code-highlight-freeze.md
+
   # ── versioning ──────────────────────────────────────────────────────────
 
   version:
