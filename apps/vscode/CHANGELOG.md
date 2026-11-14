@@ -2,6 +2,12 @@
 
 All notable changes to the Filemark VS Code extension are documented here. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- **A code block can no longer freeze the preview** — certain one-line Go code blocks made the syntax highlighter's Go grammar backtrack for minutes, freezing the whole preview. Highlighting now runs in background workers with a time limit per block; a block that runs over shows as plain text and the rest of the document is unaffected. (Shared `@filemark/mdx` fix — also affects the Chrome extension + website.)
+
 ## 0.1.4 — 2026-11-05
 
 ### Fixed
