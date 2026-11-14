@@ -1,140 +1,104 @@
 /**
- * Lazy Shiki setup using the core API so Vite/Rollup only bundles the languages
- * + themes we care about, EACH AS ITS OWN dynamic-import chunk. This keeps the
- * viewer's initial chunk small (fast first paint, no big "Loading…" gate) — the
- * synchronous alternative (statically bundling the engine + all grammars) pulled
- * ~2.4 MB into the main chunk and produced a visible full-page loader on every
- * reload, which is worse than a brief highlight delay.
+ * Code-block highlighting API used by CodeBlock / RawView.
  *
- * To avoid the "uncoloured → coloured" flash despite loading lazily we combine:
- *   • warm(langs)     — kick the engine + a document's grammars loading on mount,
- *   • highlightSync()  — once warm, colour a block on its FIRST render (no swap),
- *   • highlight()      — async fallback for the brief cold window before warm.
+ * All tokenizing happens OFF the main thread in a pool of Web Workers
+ * (shikiPool.ts + shiki.worker.ts), each block under a deadline. On timeout the
+ * worker is terminated and the block renders as plain escaped text; the rest of
+ * the page is never blocked.
  *
- * Engine: the JavaScript regex engine (not WASM Oniguruma) — keeps us off
- * `wasm-unsafe-eval` in the MV3 extension CSP. It translates Oniguruma patterns
- * to native `RegExp`, which can catastrophically BACKTRACK on some grammars.
+ * Why: Shiki's JS regex engine translates grammar patterns to native `RegExp`,
+ * and some patterns backtrack exponentially on ordinary code. Incident
+ * 2026-11-14: Shiki 4.3's Go grammar rule
+ * `struct_variables_types_fields` (`(?<=\{)((?:\s*(?:(?:\w+,\s*)+{0,1}\w+\s+)?…)+)\s*(?=})`)
+ * never reaches `}` when a `/*`, quote or `/` sits before it, e.g.
+ *     type EnvSetting struct{ Name string; Value EnvValue; From SettingsScope /* or "process" *\/ }
+ * and one exec runs for minutes to hours. Previously `codeToHtml` ran on the main
+ * thread, so the whole tab froze forever. A try/catch or shiki's
+ * `tokenizeTimeLimit` cannot help — the time is spent inside ONE regex exec.
+ * (Earlier, shiki <= 2.5 did the same on far more Go code — docsi/INCIDENTS.md
+ * 2026-06-29 — so keep shiki >= 4.3.)
  *
- * ⚠️ shiki MUST stay >= 4.3.0 — DO NOT DOWNGRADE. shiki <= 2.5's JS engine
- * backtracked *infinitely* on ordinary Go code (struct-tag raw strings + aligned
- * trailing comments, e.g. `type AnyNode struct { Base }   // …`). `codeToHtml`
- * tokenizes SYNCHRONOUSLY (only the lang/engine *loading* is async), so one such
- * block froze the whole tab. 4.x fixed the backtracking; the `try/catch` around
- * `codeToHtml` only rescues grammars that THROW, not a backtracking hang — the
- * engine/version is the real guard. Full write-up: docsi/INCIDENTS.md (2026-06-29).
+ * Trade-off: a block not yet in the cache first paints as plain text and gains
+ * colour a moment later when its worker answers (the old warm main-thread path
+ * coloured on first paint, at the cost of being able to freeze the page).
+ * Results are cached, so re-renders, theme flips back and tab switches are
+ * instant.
  */
 
-import type { HighlighterCore } from "shiki/core";
+import { HighlightPool, defaultDeadlineMs, type WorkerFactory, type WorkerLike } from "./shikiPool";
+import type { ShikiTheme } from "./shikiProtocol";
 
-let highlighterPromise: Promise<HighlighterCore> | null = null;
-// The resolved highlighter, captured once the promise settles, so `highlightSync`
-// can tokenize on the main thread WITHOUT awaiting — the sync path is what colours
-// a block on its very first paint once the engine + its grammar are already warm.
-let highlighterInstance: HighlighterCore | null = null;
-const loaded = new Set<string>();
-
-type LangLoader = () => Promise<{ default: unknown }>;
-
-const LANGS: Record<string, LangLoader> = {
-  typescript: () => import("shiki/langs/typescript.mjs"),
-  ts: () => import("shiki/langs/typescript.mjs"),
-  tsx: () => import("shiki/langs/tsx.mjs"),
-  javascript: () => import("shiki/langs/javascript.mjs"),
-  js: () => import("shiki/langs/javascript.mjs"),
-  jsx: () => import("shiki/langs/jsx.mjs"),
-  json: () => import("shiki/langs/json.mjs"),
-  jsonc: () => import("shiki/langs/jsonc.mjs"),
-  html: () => import("shiki/langs/html.mjs"),
-  css: () => import("shiki/langs/css.mjs"),
-  scss: () => import("shiki/langs/scss.mjs"),
-  bash: () => import("shiki/langs/bash.mjs"),
-  shell: () => import("shiki/langs/shellscript.mjs"),
-  sh: () => import("shiki/langs/shellscript.mjs"),
-  yaml: () => import("shiki/langs/yaml.mjs"),
-  yml: () => import("shiki/langs/yaml.mjs"),
-  toml: () => import("shiki/langs/toml.mjs"),
-  markdown: () => import("shiki/langs/markdown.mjs"),
-  md: () => import("shiki/langs/markdown.mjs"),
-  python: () => import("shiki/langs/python.mjs"),
-  py: () => import("shiki/langs/python.mjs"),
-  go: () => import("shiki/langs/go.mjs"),
-  rust: () => import("shiki/langs/rust.mjs"),
-  rs: () => import("shiki/langs/rust.mjs"),
-  sql: () => import("shiki/langs/sql.mjs"),
-  diff: () => import("shiki/langs/diff.mjs"),
-  java: () => import("shiki/langs/java.mjs"),
-  c: () => import("shiki/langs/c.mjs"),
-  cpp: () => import("shiki/langs/cpp.mjs"),
-  php: () => import("shiki/langs/php.mjs"),
-  ruby: () => import("shiki/langs/ruby.mjs"),
-  rb: () => import("shiki/langs/ruby.mjs"),
-  swift: () => import("shiki/langs/swift.mjs"),
-  kotlin: () => import("shiki/langs/kotlin.mjs"),
-};
-
-const THEME_DARK = "github-dark";
-const THEME_LIGHT = "github-light";
+const THEME_DARK: ShikiTheme = "github-dark";
+const THEME_LIGHT: ShikiTheme = "github-light";
 const PLAINTEXT = "text";
 
-async function getHighlighter(): Promise<HighlighterCore> {
-  if (!highlighterPromise) {
-    highlighterPromise = (async () => {
-      const [{ createHighlighterCore }, { createJavaScriptRegexEngine }] =
-        await Promise.all([
-          import("shiki/core"),
-          import("shiki/engine/javascript"),
-        ]);
-      const [light, dark] = await Promise.all([
-        import("shiki/themes/github-light.mjs"),
-        import("shiki/themes/github-dark.mjs"),
-      ]);
-      const core = await createHighlighterCore({
-        themes: [light.default, dark.default],
-        langs: [],
-        engine: createJavaScriptRegexEngine(),
+/**
+ * Spawn a highlight worker. `new URL(…, import.meta.url)` is rewritten by the
+ * consumer's bundler (Vite) to the emitted worker asset. Chrome extension pages
+ * share the asset's origin, so a URL worker works. The VS Code webview serves
+ * assets from a different origin than the page, so `new Worker(url)` throws a
+ * SecurityError there; we then fetch the (self-contained) script and start it
+ * from a Blob URL instead (webview CSP allows `connect-src` + `worker-src blob:`).
+ */
+function defaultWorkerFactory(): WorkerLike | Promise<WorkerLike> {
+  const url = new URL("./shiki.worker.js", import.meta.url);
+  try {
+    return new Worker(url) as unknown as WorkerLike;
+  } catch {
+    return fetch(url)
+      .then((r) => {
+        if (!r.ok) throw new Error(`worker fetch ${r.status}`);
+        return r.text();
+      })
+      .then((src) => {
+        const blobUrl = URL.createObjectURL(
+          new Blob([src], { type: "text/javascript" }),
+        );
+        return new Worker(blobUrl) as unknown as WorkerLike;
       });
-      highlighterInstance = core;
-      return core;
-    })();
   }
-  return highlighterPromise;
 }
 
-async function ensureLang(lang: string): Promise<string> {
-  const hl = await getHighlighter();
-  const normalized = lang.toLowerCase();
-  if (loaded.has(normalized)) return normalized;
-  const loader = LANGS[normalized];
-  if (!loader) return PLAINTEXT;
-  try {
-    const mod = await loader();
-    await hl.loadLanguage(
-      mod.default as Parameters<HighlighterCore["loadLanguage"]>[0],
-    );
-    loaded.add(normalized);
-    return normalized;
-  } catch {
-    return PLAINTEXT;
-  }
+let factory: WorkerFactory = defaultWorkerFactory;
+let pool: HighlightPool | null = null;
+
+function getPool(): HighlightPool {
+  pool ??= new HighlightPool(factory, {
+    size: 2,
+    deadlineMs: defaultDeadlineMs,
+    startTimeoutMs: 20_000,
+  });
+  return pool;
 }
 
 /**
- * Pre-load the engine + the given languages WITHOUT tokenizing, so by the time
- * (or shortly after) a document's code blocks render, `highlightSync` can colour
- * them on first paint instead of flashing the plain fallback. Fire-and-forget;
- * failures fall back to the async `highlight()` path.
+ * Swap how highlight workers are created (tests run them on node
+ * `worker_threads`; a host with its own bundling can point at its worker URL).
+ * Disposes the current pool and clears the cache.
+ */
+export function setHighlightWorkerFactory(f: WorkerFactory | null): void {
+  pool?.dispose();
+  pool = null;
+  HL_CACHE.clear();
+  factory = f ?? defaultWorkerFactory;
+}
+
+/**
+ * Pre-load a document's grammars in the worker so its blocks tokenize as soon
+ * as they are submitted. Fire-and-forget.
  */
 export async function warm(langs: Iterable<string>): Promise<void> {
-  await getHighlighter();
   const unique = [
     ...new Set([...langs].map((l) => (l || PLAINTEXT).toLowerCase())),
   ];
-  await Promise.all(unique.map((l) => ensureLang(l)));
+  getPool().warm(unique);
 }
 
 // LRU cache of highlighted HTML keyed by `<lang>:<theme>:<codeHash>`. Bounded so
 // giant docs with hundreds of fences don't balloon memory. Re-highlighting the
 // same block (theme unchanged, re-render, tab switch back) hits this cache.
+// Plain fallbacks for blocks that blew their deadline are cached too, so a
+// runaway block is attempted once, not on every render.
 const HL_CACHE = new Map<string, string>();
 const HL_CACHE_MAX = 500;
 
@@ -166,6 +130,27 @@ function store(key: string, html: string): string {
   return html;
 }
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/**
+ * Uncoloured fallback in the same shape shiki emits (`pre.shiki > code >
+ * span.line`), so the code-block CSS applies unchanged. Marked
+ * `fv-shiki-plain` so it is identifiable (and testable).
+ */
+export function plainHtml(code: string): string {
+  const lines = code
+    .split("\n")
+    .map((l) => `<span class="line">${escapeHtml(l)}</span>`)
+    .join("\n");
+  return `<pre class="shiki fv-shiki-plain" tabindex="0"><code>${lines}</code></pre>`;
+}
+
 /**
  * Return already-highlighted HTML for this exact (code, lang, theme) if cached,
  * else null. Pure cache read — cheapest first-render probe.
@@ -175,51 +160,27 @@ export function getCachedHighlight(
   lang: string,
   isDark: boolean,
 ): string | null {
-  const hit = HL_CACHE.get(cacheKey(code, lang, isDark));
-  return hit === undefined ? null : touch(cacheKey(code, lang, isDark), hit);
+  const key = cacheKey(code, lang, isDark);
+  const hit = HL_CACHE.get(key);
+  return hit === undefined ? null : touch(key, hit);
 }
 
 /**
- * Synchronous highlight — returns HTML immediately IF the engine and this
- * language's grammar are already loaded (e.g. after `warm()`); otherwise null.
- *
- * Used to seed a block's first render so it paints already coloured. Returning
- * null (never throwing, never blocking on a load) is the contract — a null means
- * "not warm yet, use the async path". A known-but-unloaded grammar returns null
- * so we don't render it as unstyled `text` then re-render; an unknown language
- * resolves to `text` (needs no grammar) and highlights synchronously.
+ * Synchronous probe kept for callers: returns cached HTML or null. It never
+ * tokenizes on the main thread any more (that is what could freeze the page);
+ * a null means "use the async path".
  */
 export function highlightSync(
   code: string,
   lang: string,
   isDark: boolean,
 ): string | null {
-  if (!highlighterInstance) return null;
-  const normalized = (lang || PLAINTEXT).toLowerCase();
-  if (normalized !== PLAINTEXT && LANGS[normalized] && !loaded.has(normalized)) {
-    return null;
-  }
-  const key = cacheKey(code, lang, isDark);
-  const cached = HL_CACHE.get(key);
-  if (cached !== undefined) return touch(key, cached);
-
-  const resolved = loaded.has(normalized) ? normalized : PLAINTEXT;
-  try {
-    return store(
-      key,
-      highlighterInstance.codeToHtml(code, {
-        lang: resolved,
-        theme: isDark ? THEME_DARK : THEME_LIGHT,
-      }),
-    );
-  } catch {
-    return null;
-  }
+  return getCachedHighlight(code, lang, isDark);
 }
 
 /**
- * Async highlight — the cold-path fallback. Loads the engine + grammar if needed,
- * then tokenizes. Result is cached so later renders (and highlightSync) hit it.
+ * Highlight in a worker under a deadline. Always resolves: coloured HTML, or
+ * `plainHtml(code)` if the block was too slow or highlighting is unavailable.
  */
 export async function highlight(
   code: string,
@@ -230,14 +191,10 @@ export async function highlight(
   const cached = HL_CACHE.get(key);
   if (cached !== undefined) return touch(key, cached);
 
-  const hl = await getHighlighter();
-  const resolved = await ensureLang(lang || PLAINTEXT);
-  const theme = isDark ? THEME_DARK : THEME_LIGHT;
-  let html: string;
-  try {
-    html = hl.codeToHtml(code, { lang: resolved, theme });
-  } catch {
-    html = hl.codeToHtml(code, { lang: PLAINTEXT, theme });
-  }
-  return store(key, html);
+  const html = await getPool().highlight(
+    code,
+    (lang || PLAINTEXT).toLowerCase(),
+    isDark ? THEME_DARK : THEME_LIGHT,
+  );
+  return store(key, html ?? plainHtml(code));
 }

@@ -6,12 +6,21 @@ import { defineConfig } from "tsup";
 // src/styles.css → dist/styles.css via onSuccess. Consumers import it
 // explicitly: `import "@filemark/mdx/styles.css"`. Same for the GitHub-preview
 // sheet (github.css → @filemark/mdx/github.css), loaded only in GitHub mode.
-export default defineConfig({
+//
+// Second build: the highlight Web Worker (src/shiki.worker.ts) as ONE
+// self-contained classic script, dist/shiki.worker.js — shiki core, JS regex
+// engine, themes and every grammar bundled in, no imports — so it starts the
+// same way in every host: by URL in the Chrome extension, from a fetched Blob in
+// the VS Code webview. index.js references it with
+// `new URL("./shiki.worker.js", import.meta.url)`, which the consumer's Vite
+// build emits as an asset. `clean` is off for both builds (they run in parallel
+// and would wipe each other); the package `build` script clears dist first.
+export default defineConfig([{
   entry: ["src/index.ts"],
   format: ["esm"],
   dts: true,
   sourcemap: true,
-  clean: true,
+  clean: false,
   external: [
     "react",
     "react-dom",
@@ -37,4 +46,16 @@ export default defineConfig({
   splitting: false,
   onSuccess:
     "cp src/styles.css dist/styles.css && cp src/github.css dist/github.css",
-});
+}, {
+  entry: { "shiki.worker": "src/shiki.worker.ts" },
+  format: ["iife"],
+  platform: "browser",
+  target: "es2022",
+  noExternal: [/.*/],
+  dts: false,
+  sourcemap: false,
+  minify: true,
+  clean: false,
+  splitting: false,
+  outExtension: () => ({ js: ".js" }),
+}]);

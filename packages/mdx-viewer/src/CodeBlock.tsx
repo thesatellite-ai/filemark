@@ -40,14 +40,11 @@ export function CodeBlock({
   const lang = /language-(\w+)/.exec(className ?? "")?.[1] ?? "";
   const trimmed = raw.replace(/\n$/, "");
   const [wrap, setWrap] = useState(true);
-  // Seed the first render synchronously so the block paints ALREADY highlighted
-  // whenever possible — cheapest-first: the LRU cache (re-render / tab-switch),
-  // then highlightSync (engine + grammar already warm, e.g. after MDXViewer's
-  // warm() preloaded this doc's languages). Both return null on a genuinely cold
-  // block → we render the readable plain fallback and the async effect below
-  // fills in colours a moment later. Shiki is lazy-loaded to keep the initial
-  // chunk small (no full-page loader), so this warm-vs-cold split is what keeps
-  // the cold flash rare and brief instead of gating the whole page.
+  // Seed the first render from the highlight cache so a re-render / tab switch
+  // paints ALREADY highlighted. A cache miss returns null → we render the
+  // readable plain fallback and the async effect below fills in colours once the
+  // highlight worker answers. Tokenizing never runs on the main thread (one
+  // pathological grammar regex used to freeze the whole tab — see shiki.ts).
   const [html, setHtml] = useState<string | null>(() =>
     inline || !trimmed.trim()
       ? null
@@ -56,9 +53,8 @@ export function CodeBlock({
   );
 
   // Re-highlight when the code, language, or theme changes (the useState seed
-  // above only runs on mount). Try the sync path first — after warm, a theme
-  // toggle recolours instantly with no flash; only a genuinely cold block falls
-  // through to the async load, showing the readable plain fallback meanwhile.
+  // above only runs on mount). Cache first — a theme toggle back recolours
+  // instantly; otherwise ask the worker, showing the plain fallback meanwhile.
   useEffect(() => {
     if (inline || !trimmed.trim()) return;
     const sync =
@@ -119,9 +115,9 @@ export function CodeBlock({
       {html ? (
         <div className="fv-code-shiki" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
-        // Only reached if the synchronous highlighter failed to build (see
-        // shiki.ts getHighlighter) — render the raw code plainly so it's always
-        // readable. Not a transient loading state: highlightSync is synchronous.
+        // Shown until the highlight worker answers (a block not yet in the
+        // cache) — the raw code, plainly, so the page is readable at once. A
+        // block too slow to highlight comes back as shiki-shaped plain HTML.
         <pre className="fv-code-plain">
           <code className={className}>{raw}</code>
         </pre>

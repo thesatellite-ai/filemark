@@ -782,6 +782,12 @@ function buildHtml(
     // code-split chunks (mermaid, shiki langs, katex, markmap) which aren't
     // themselves nonce-tagged. Without it a strict script-src blocks them.
     `script-src 'nonce-${nonce}' 'strict-dynamic'`,
+    // Code highlighting runs in a Web Worker (@filemark/mdx shiki.worker.js) so
+    // a pathological grammar regex can be killed instead of freezing the page.
+    // Webview assets live on a different origin than the page, so the viewer
+    // fetches the self-contained worker script and starts it from a Blob URL.
+    `connect-src ${webview.cspSource}`,
+    `worker-src blob:`,
     // Allow ONLY the embed origins the <VideoEmbed> component actually emits.
     // With default-src 'none' an omitted frame-src blocks every iframe, so the
     // VS Code webview rendered VideoEmbed as an empty black box (Chrome's
