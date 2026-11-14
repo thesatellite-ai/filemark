@@ -11,7 +11,7 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Worker as NodeWorker } from "node:worker_threads";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -44,20 +44,24 @@ function nodeWorker(file: string): WorkerLike {
   return like;
 }
 
-const BAD_GO =
-  'type EnvSetting struct{ Name string; Value EnvValue; From SettingsScope /* or "process" */ }';
-const BAD_GO_16A = "type E struct{ aaaaaaaaaaaaaaaa b; c d; e f /* x */ }";
-const GOOD_GO = `package main
+// The trigger and control fences live in the regression doc so the sample a
+// human opens in the extension and the sample this test runs cannot drift.
+// Fences are keyed by their info string: ```go freeze / ```go colour.
+const REGRESSION_MD = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../examples/regressions/code-highlight-freeze.md",
+);
 
-import "fmt"
-
-type Point struct {
-\tX, Y int
+function fences(kind: "freeze" | "colour"): string[] {
+  const md = readFileSync(REGRESSION_MD, "utf8");
+  const re = new RegExp("^```go " + kind + "\\n([\\s\\S]*?)\\n```$", "gm");
+  return [...md.matchAll(re)].map((m) => m[1]);
 }
 
-func main() {
-\tfmt.Println(Point{1, 2})
-}`;
+const FREEZE = fences("freeze");
+const COLOUR = fences("colour");
+const [BAD_GO, BAD_GO_16A] = FREEZE;
+const [GOOD_GO] = COLOUR;
 
 let outDir = "";
 
@@ -89,12 +93,19 @@ const isColoured = (html: string) =>
   !html.includes("fv-shiki-plain") && /style="color:#/i.test(html);
 
 describe("shiki highlighting off the main thread", () => {
-  it("colours a normal Go block", async () => {
+  it("reads the regression fences from examples/regressions", () => {
+    expect(FREEZE.length).toBeGreaterThanOrEqual(5);
+    expect(COLOUR.length).toBeGreaterThanOrEqual(1);
+    expect(BAD_GO).toContain('From SettingsScope /* or "process" */ }');
+    expect(BAD_GO_16A).toContain("aaaaaaaaaaaaaaaa b; c d; e f /* x */");
+  });
+
+  it("colours the control Go block", async () => {
     const html = await highlight(GOOD_GO, "go", true);
     expect(isColoured(html)).toBe(true);
   }, 30_000);
 
-  it("falls back to plain text for pathological Go blocks in under 2s", async () => {
+  it("falls back to plain text for the two core triggers in under 2s", async () => {
     const t0 = performance.now();
     const [a, b] = await Promise.all([
       highlight(BAD_GO, "go", true),
@@ -108,7 +119,18 @@ describe("shiki highlighting off the main thread", () => {
     expect(b).toContain("aaaaaaaaaaaaaaaa b; c d; e f /* x */");
   }, 30_000);
 
-  it("keeps colouring after a worker was recycled", async () => {
+  it("bounds every trigger fence in the regression doc", async () => {
+    // Fresh theme so nothing comes from the cache filled above.
+    const t0 = performance.now();
+    const out = await Promise.all(FREEZE.map((code) => highlight(code, "go", false)));
+    const elapsed = performance.now() - t0;
+    // 2 workers, ~0.75 s deadline each: a handful of runaway blocks settle in
+    // a few seconds instead of minutes-to-hours.
+    expect(elapsed).toBeLessThan(5000);
+    for (const html of out) expect(html).toContain("fv-shiki-plain");
+  }, 30_000);
+
+  it("keeps colouring after workers were recycled", async () => {
     const html = await highlight(GOOD_GO + "\n// again", "go", false);
     expect(isColoured(html)).toBe(true);
   }, 30_000);

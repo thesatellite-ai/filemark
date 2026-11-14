@@ -1,0 +1,9 @@
+{
+  "name": "filemark-smoke-highlight-freeze",
+  "private": true,
+  "type": "module",
+  "description": "Headless-Chromium smoke check: the unpacked extension renders examples/regressions/code-highlight-freeze.md without freezing. Run via `task smoke:highlight-freeze`.",
+  "dependencies": {
+    "playwright-core": "1.64.0"
+  }
+}
