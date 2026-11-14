@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.182Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n```ts\n{\n  files, folders,                 // IDB-persisted\n  openTabs[], activeFileId,       // IDB-persisted\n  recentIds[],                    // IDB-persisted\n  theme,                          // IDB-persisted\n  sidebarOpen, tocOpen,\n  fullscreen,\n  autoRefresh, autoRefreshMs,     // UI prefs bucket in IDB\n  viewMode: \"rendered\" | \"raw\",   // session-only\n  sessionRev: number,             // bump to force re-check of sessionHandles\n  hydrated: boolean,\n}\n```\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.182400000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316f86765c8052fbbaed33bf03",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.182401000Z",
   "updated_at": "2026-05-19T12:24:02.182400000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

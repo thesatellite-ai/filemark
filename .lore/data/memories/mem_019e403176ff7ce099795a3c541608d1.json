@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.095Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **v0.1:** I personally replace VS Code preview + Obsidian (for markdown reading) within 2 weeks of shipping\n- Can open a `.md`-heavy folder and browse without re-dragging\n- Task-list checkboxes persist across reloads\n- Sub-100ms search on 500+ markdown files\n- **Portability proof:** `@viewers/mdx` imports and renders correctly in a bare `create-vite` React app with zero code changes (run as a local sanity check before v0.1 ship)\n- **v0.3:** same package boots inside a VS Code webview\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.095822000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403176ff7ce099795a3c541608d1",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.095823000Z",
   "updated_at": "2026-05-19T12:24:04.095822000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:01.569Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **Tailwind utilities first.** `.fv-*` classes reserved for\n  rendered content that external libs own (react-markdown body, json\n  viewer).\n- **shadcn tokens only** — `bg-muted`, `text-foreground`, `border`,\n  etc. No raw `bg-gray-900`.\n- **Dark mode via `[data-theme=\"dark\"]` attribute** on `<html>` using\n  `@custom-variant dark (&:is([data-theme=\"dark\"], [data-theme=\"dark\"] *))`\n  — not a `.dark` class.\n- **Package-local styles** stay in the package (Tailwind classes on\n  JSX). Don't hoist into the host stylesheet.\n- **Tailwind v4 needs explicit `@source`** to scan workspace pkgs.\n  `apps/chrome-ext/src/styles/index.css` has:\n  `@source \"../../../../packages/*/src/**/*.{ts,tsx,js,jsx}\"`. Without\n  this, pkg-local utility classes silently vanish from the final CSS.\n\n---\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:01.569839000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316d217d1fa81ccbbc9bad548c",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:01.569840000Z",
   "updated_at": "2026-05-19T12:24:01.569839000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

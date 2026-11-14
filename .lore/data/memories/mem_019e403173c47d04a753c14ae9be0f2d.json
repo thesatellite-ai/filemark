@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.268Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n| Option | Tradeoff |\n|---|---|\n| Keep JSX wrapper, debug deeper into rehype-raw stitching | Fragile — each release of remark / rehype could re-break it; the fundamental block-edge issue is in the spec, not the libraries. |\n| Take outline as a `data=\"...\"` attribute on `<MindMap>` | HTML attribute parsing struggles with multi-line content (Rule 3 — single-line opening tags). Authors would either escape newlines or write everything on one line. Awful UX. |\n| **Add a fenced ` ```mindmap ` lang handler** | Code fences are first-class CommonMark blocks. The lang handler receives the raw text body untouched. Same pattern as `chart`, `kanban`, `mermaid`, `csv`, `schema` — already familiar to authors. |\n| Replace `<MindMap>` entirely with the fenced form | Breaking change. Cheap to keep both forms working — the wrapper is the alternative path with a clear fallback message that points to the preferred form. |\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.268833000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403173c47d04a753c14ae9be0f2d",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.268833000Z",
   "updated_at": "2026-05-19T12:24:03.268833000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

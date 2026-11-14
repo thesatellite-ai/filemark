@@ -1,4 +1,8 @@
 {
   "_v": 1,
+  "features": [
+    "hlc"
+  ],
+  "min_lore_version": "0.1.18",
   "project_id": "prj_019e402e2ce87e82b3747da4e5597b66"
 }

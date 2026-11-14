@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.332Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n`fs.ts:pickFolder()`:\n\n1. `window.showDirectoryPicker({mode: \"read\"})` → directory handle.\n2. Persist handle to IDB under `fsa:handle:<id>`.\n3. `walkDirectory(handle)` → list of supported file entries.\n4. Register session handles via `sessionHandles.register(…)`.\n5. `useLibrary.addFolder(folder, files)` with `kind: \"fsa\"`.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.332531000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031701c7858a446f4d2a280e0ab",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.332531000Z",
   "updated_at": "2026-05-19T12:24:02.332531000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

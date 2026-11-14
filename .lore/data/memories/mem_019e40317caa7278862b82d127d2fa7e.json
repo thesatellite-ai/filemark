@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:05.546Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- `apps/chrome-ext/vite.config.ts` — the `entryFileNames` function pinning `service-worker.js` and `content.js` to fixed names. Manifest references those by name.\n- `apps/chrome-ext/public/manifest.json` `content_scripts.js` and `web_accessible_resources.resources` — changing a filename here without changing the vite config breaks the extension silently.\n- `packages/mdx-viewer/src/shiki.ts` — any `import(\"shiki\")` (instead of `shiki/core` + explicit langs) will re-bloat the bundle to 3+ MB.\n- `packages/mdx-viewer/src/TaskCheckbox.tsx` — the `disabled` destructure is load-bearing; if reintroduced, task lists silently stop working.\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:05.546146000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40317caa7278862b82d127d2fa7e",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:05.546146000Z",
   "updated_at": "2026-05-19T12:24:05.546146000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.555Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nEvery time I drop a local `.md`, `.json`, or `.tsx` into Chrome to read it. Multiple times a day. Each re-load is a small paper cut, and the lack of org means I rebuild context every single time.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.555058000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403174e371198232770d76368891",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.555058000Z",
   "updated_at": "2026-05-19T12:24:03.555058000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

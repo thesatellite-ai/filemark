@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.012Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- [ ] **Name** — old name (`markdown-viewer-chrome-ext`) is wrong once v0.2 adds more formats. Candidates: `fileview`, `viewly`, `lumen`, `snip`, `readly`. Pick before scaffolding. Repo name, Chrome Web Store name, and npm scope (e.g. `@viewly/mdx`) should align.\n- [ ] **npm scope** — `@viewers/*`, `@<chosen-name>/*`, or unscoped? Affects package imports forever.\n- [ ] Sidepanel API vs full tab UI vs both? (Sidepanel = always-on reading pane, tab = spacious library)\n- [ ] Local folder reads on every Chrome start — user has to re-grant? Verify MV3 persistence of FSA handles.\n- [ ] How to handle images referenced as relative paths in local `.md` files? (blob URL mapping via the injected `AssetResolver`)\n- [ ] **MDX security** — MDX executes JSX. Local / folder-granted files = trusted. Remote `.mdx` fetched via URL interception = risky. Options: (a) sandbox remote MDX in iframe w/ strict CSP; (b) refuse to evaluate JSX for non-local sources, degrade to plain md; (c) allow-list origins. This decision lives inside `@viewers/mdx` (via a `trust: \"full\" | \"safe\"` prop) so every host picks its own policy.\n- [ ] **URL interception scope** — file:// only, or also raw.githubusercontent, gist raw, *.md served as text/plain? More coverage = more perms.\n- [ ] Monetization? Free + optional paid sync? Or purely free / open-source?\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.012932000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403176ac7e8291d28d60c0f54fed",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.012932000Z",
   "updated_at": "2026-05-19T12:24:04.012932000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

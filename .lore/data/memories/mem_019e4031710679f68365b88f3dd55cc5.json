@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.566Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- `rehype-slug` adds `id` to every heading.\n- `MDXViewer` on mount/body-change: if `location.hash` is set, queue a\n  microtask to `getElementById(slug)?.scrollIntoView`.\n- TOC entry click: `e.preventDefault()` + `scrollIntoView` + `history.\n  replaceState(\"\", \"\", \"#slug\")` so copy-pasteable URLs round-trip.\n\nCombined: `chrome-extension://…/index.html?file=X#heading` opens file X\nand scrolls to `#heading`.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.566631000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031710679f68365b88f3dd55cc5",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.566632000Z",
   "updated_at": "2026-05-19T12:24:02.566631000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

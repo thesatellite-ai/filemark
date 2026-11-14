@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:05.505Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- Every `pnpm build` requires a **reload on the `chrome://extensions` card** — Chrome caches extension code between reloads.\n- After adding new permissions / matches to the manifest, Chrome forces a reload automatically on next click, but file-URL access toggle **resets** on some Chrome versions. Check it after manifest-permission changes.\n- Content scripts can't be loaded as ES modules in MV3 without jumping through hoops — keep `content.js` as classic script with no imports.\n- Service worker is a module (`\"type\": \"module\"` in manifest). The reload WS plugin relies on that for `import.meta.env.MODE`.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:05.505478000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40317c81779da23c8ba0a1450a81",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:05.505478000Z",
   "updated_at": "2026-05-19T12:24:05.505478000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

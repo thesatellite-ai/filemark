@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:21:36.144Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **Tooltip, Popover, DropdownMenu `…Content` must wrap Portal + Positioner internally.** The registry ships bare `Popup`s; using them without Positioner throws `Base UI error #71`. Every basecn Content wrapper in this repo is patched to include Portal + Positioner — preserve that when re-adding or re-generating a component.\n- **Prefer `children` over `render={<Component/>}` for triggers.** Passing a nested provider tree (e.g. `<Tooltip>` inside a `PopoverTrigger render={...}`) confuses `useRender` and throws `#31`. Keep triggers as direct elements or plain buttons with `title=` attributes.\n- **Menu primitives are fussy.** For simple action lists, use Popover + plain `<button>` rows instead of DropdownMenu. `FileActions` does this.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:21:36.144529000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e402f3510786cb553da54624e70b9",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:21:36.144529000Z",
   "updated_at": "2026-05-19T12:21:36.144529000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

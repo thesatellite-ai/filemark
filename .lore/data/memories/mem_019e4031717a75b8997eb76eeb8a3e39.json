@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.682Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nInteractive table rendering — consumed by `@filemark/mdx` (for fenced\ndata blocks + opted-in GFM tables) and (v0.2+) `@filemark/csv` for\nstandalone `.csv` / `.tsv` files. Headless core = TanStack Table +\nTanStack Virtual; input shape `{columns, rows}`; zero host / platform\nimports.\n\n**Authoring inside markdown — one syntax, three sources of data:**\n\n````md\n# (a) inline data — the default. csv/tsv parsed from block body.\n```csv filter=false sort=age:desc\nname,age,role\nAda,30,eng\nGrace,45,admiral\n```\n\n# (b) external file — empty body, `src=` resolves via AssetResolver.\n```csv src=./sales.csv hide=internal_id\n```\n\n# (c) GFM table upgrade — HTML comment hint before a plain table.\n<!-- datagrid sort=qty:desc -->\n| item | qty |\n|------|-----|\n| pens | 12  |\n````\n\nNo MDX JSX components: `@filemark/mdx` is built on `react-markdown`\n(CSP bans `unsafe-eval` → `@mdx-js/mdx` off the table). Interception\nhappens in `components.code` for ` ```csv `, ` ```tsv `, ` ```datagrid `\nlangs, and in `components.table` for the GFM-comment-hint path.\n\n**Info-string grammar** (` ```csv <flag> <flag=value> ... `):\n\n| Flag | Default | Notes |\n|---|---|---|\n| `filter` | on | `filter=false` to disable per-column filter row |\n| `sort` | on | `sort=<col>[:asc|desc]` sets initial sort; `sort=false` disables |\n| `search` | on | global search box; `search=false` hides |\n| `hide` | — | comma-list of columns to omit (`hide=id,internal`) |\n| `type:<col>` | inferred | `type:age=number` / `type:joined=date` forces a parse |\n| `align:<col>` | inferred | `align:price=right` |\n| `delimiter` | `,` (csv) / `\\t` (tsv) | per-block override (`delimiter=;`) |\n| `header` | on | `header=false` → synthesize `col_0`, `col_1`, … |\n| `src` | — | relative path; resolved via `AssetResolver` (see below) |\n| `height` | auto | px height for virtualized body |\n\nUnknown flags → console warn + render (Rule 3 — no silent fallback).\n\n**Pipeline:**\n\n```\nreact-markdown\n  components.code (lang ∈ {csv, tsv, datagrid})\n    ├─ parseInfoString(meta)           →  DataGridOptions\n    ├─ opts.src ? assets.resolve(src)  →  blob: / https: URL → fetch\n    │            : codeBlockChildren   →  inline text\n    ├─ papaparse(text, delimiter)      →  { columns, rows }\n    ├─ inferTypes(sample rows)         →  per-col num | date | bool | str\n    └─ <DataGrid columns rows options/>\n```\n\n`@filemark/datagrid` ships only the last step (headless table UI +\ninline-md cell renderer). Parse + type inference + MDX wiring lives in\n`@filemark/mdx`. This keeps the datagrid pkg reusable by\n`@filemark/csv`, `@filemark/json` (array-of-objects), and any future\nVS Code / web-demo host.\n\n**Cell renderer:** each cell runs through an inline-markdown pass\n(bold, code, link, strikethrough, task-list checkbox) via a minimal\nremark subset — not full block md (no nested lists / code blocks —\nbreaks row-height virtualization).\n\n**Persisted grid state:** sort / filter / hidden columns key off\n`StorageAdapter` under `filemark:datagrid:<fileId>:<blockIndex>`.\nReuses the same adapter that drives task-list checkbox persistence.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.682354000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031717a75b8997eb76eeb8a3e39",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.682354000Z",
   "updated_at": "2026-05-19T12:24:02.682354000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null
