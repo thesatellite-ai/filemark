@@ -1,23 +1,21 @@
 {
+  "_hlc": "2026-11-12T17:04:00.245Z/0000/act_7b6e2727126b7bbb9f3a5a9cefc0022f",
   "_table": "memories",
-  "_v": 1,
-  "archived_at": null,
+  "_v": 2,
+  "_w": {
+    "v": "0.1.18-dev+plain.ed8edc44"
+  },
   "body": "Release 2026-08-09 shipped chrome-ext 0.1.13 + VS Code 0.1.2 as PR #1 (5 grouped commits on main; branch release/filemark-0.1.13 merged via rebase + deleted). Tags chrome-ext-v0.1.13 + vscode-v0.1.2 + GitHub Releases created (.vsix attached to the vscode one).\nContents (all in git): chrome-ext boot crash from a stale/moved folder handle -> guarded by buildFolderHandleMap + boot .catch (fs.ts, App.tsx); browser tab title now tracks the active file; modulePreload:false. mdx/chart: ChartErrorCard hugs content (dropped minHeight); native <details> renders children verbatim (empty-arrow fix). YouTube embeds via https helper. VS Code CSV/TSV preview + filemark.enableCsv. satl pass: extracted pickPreviewRenderer + named constants (CSV_EXTENSIONS, GITHUB_VIEW_MODE). Gates: 5 typechecks clean, 119 tests (60 chrome-ext + 28 vscode + 31 mdx).\nPublish status: DONE = website deployed, Open VSX khanakia.filemark 0.1.2, VS Code Marketplace khanakia.khanakia-filemark 0.1.2 (manual upload; auto now enabled). OPEN ITEM = Chrome Web Store 0.1.13 NOT published — blocked by ITEM_NOT_UPDATABLE (prior submission stuck in review/ready-to-publish); the 0.1.13 zip is built (filemark.zip); resolve in CWS dashboard then `task cws:publish`. Offered-not-done: a combined `task release:vscode` (publish + publish-ovsx).",
-  "confidence": null,
   "created_at": "2026-08-09T14:10:19.320080000Z",
-  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by_actor_id": "act_afbe7ed1d969752697eebecaac20e9dc",
   "id": "mem_019fe6dc3638714084143e88fb59334f",
   "kind": "episodic",
-  "last_validated_at": null,
   "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
-  "repo_id": null,
   "source_kind": "agent-proposal",
   "source_ref": "session 2026-08-09 (release 0.1.13/0.1.2, PR #1)",
-  "superseded_by_id": null,
   "trust_score": 0.5,
   "tx_at": "2026-08-09T14:10:19.320081000Z",
-  "updated_at": "2026-08-09T14:10:19.320081000Z",
-  "valid_at": null,
-  "valid_until": null,
-  "validated_by_actor_id": null
+  "updated_at": "2026-11-12T17:04:00.245000000Z",
+  "updated_by": "act_7b6e2727126b7bbb9f3a5a9cefc0022f"
 }

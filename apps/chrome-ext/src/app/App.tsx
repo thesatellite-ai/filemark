@@ -39,7 +39,9 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      await Promise.all([hydrate(), hydrateSettings()]);
+      // guardRestore: skip reopening the last active file if it froze the tab
+      // on its previous load (renderGuard.ts) — the shell shows a banner.
+      await Promise.all([hydrate({ guardRestore: true }), hydrateSettings()]);
 
       // Silent FSA permission recovery: if Chrome still considers the
       // previously granted dir handles as "granted" (common for chrome-extension

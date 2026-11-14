@@ -19,6 +19,7 @@ import { Viewer } from "./Viewer";
 import { DropZone } from "./DropZone";
 import { SearchPalette } from "./SearchPalette";
 import { TabStrip } from "./TabStrip";
+import { SkippedFileBanner } from "./SkippedFileBanner";
 import { TaskPanel } from "./TaskPanel";
 import { NotesProvider, NotesLayer, NotesPanel } from "../notes";
 import {
@@ -345,6 +346,7 @@ export function Shell() {
         )}
         <main className="relative flex min-w-0 flex-1 flex-col">
           {!hideChrome && <TabStrip />}
+          <SkippedFileBanner />
           {!hideChrome && <RevisionBar />}
           <RevisionMainArea>
             <ViewerScroll activeId={activeId}>

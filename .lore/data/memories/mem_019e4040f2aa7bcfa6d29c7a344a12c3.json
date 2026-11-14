@@ -1,23 +1,20 @@
 {
+  "_hlc": "2026-11-12T17:03:59.780Z/0000/act_7b6e2727126b7bbb9f3a5a9cefc0022f",
   "_table": "memories",
-  "_v": 1,
-  "archived_at": null,
+  "_v": 2,
+  "_w": {
+    "v": "0.1.18-dev+plain.ed8edc44"
+  },
   "body": "chrome-ext store (apps/chrome-ext/src/app/store.ts, zustand) persisted IDB keys (KEYS ~165): lib:files, lib:folders (handles STRIPPED before persist), lib:recent (max 20), lib:active, lib:tabs, lib:theme, lib:ui (UIPrefs incl sidebar/toc/fullscreen/readingMode/autoRefresh). Memory-only (reset on reload): sessionRev, activeFileId, openTabs, scrollTarget{fileId,line,rev}, revealRequest, scopedSearchRequest. Live FSA handles live in sessionHandles.ts; persistent handles in IDB keys fsa:handle:<id> / fsa:loose:<fileId>.",
-  "confidence": null,
   "created_at": "2026-05-19T12:40:58.794773000Z",
-  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by_actor_id": "act_afbe7ed1d969752697eebecaac20e9dc",
   "id": "mem_019e4040f2aa7bcfa6d29c7a344a12c3",
   "kind": "retrieved",
-  "last_validated_at": null,
   "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
-  "repo_id": null,
   "source_kind": "manual",
-  "source_ref": null,
-  "superseded_by_id": null,
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:40:58.794773000Z",
-  "updated_at": "2026-05-19T12:40:58.794773000Z",
-  "valid_at": null,
-  "valid_until": null,
-  "validated_by_actor_id": null
+  "updated_at": "2026-11-12T17:03:59.780000000Z",
+  "updated_by": "act_7b6e2727126b7bbb9f3a5a9cefc0022f"
 }

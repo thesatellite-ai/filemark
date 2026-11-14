@@ -40,6 +40,9 @@ export function useUrlSync() {
       const params = new URLSearchParams(location.search);
       const want = params.get("file");
       if (!want) return;
+      // A file the render guard skipped (it froze the tab last load) must not
+      // be re-activated just because its id is still in the URL.
+      if (useLibrary.getState().skippedFile?.id === want) return;
       if (files[want] && want !== useLibrary.getState().activeFileId) {
         setActive(want);
       }

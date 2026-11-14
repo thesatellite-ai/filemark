@@ -1,22 +1,20 @@
 {
+  "_hlc": "2026-11-12T17:04:00.483Z/0000/act_7b6e2727126b7bbb9f3a5a9cefc0022f",
   "_table": "rules",
-  "_v": 1,
+  "_v": 2,
+  "_w": {
+    "v": "0.1.18-dev+plain.ed8edc44"
+  },
   "activation": "always",
-  "applies_to_description": null,
-  "archived_at": null,
   "body": "NEVER git push unless the user explicitly asks in that same turn. Committing also requires per-turn confirmation. 'continue' / 'proceed' means keep building, NOT commit or push. Earlier commit/push approval never carries forward. Reaffirmed by user 2026-05-19 during the desktop build.",
-  "confidence": null,
   "created_at": "2026-05-19T13:09:03.333408000Z",
-  "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
-  "globs": null,
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
+  "created_by_actor_id": "act_afbe7ed1d969752697eebecaac20e9dc",
   "id": "rul_019e405aa6e57641bd84af9d41c9f5b8",
-  "last_validated_at": null,
   "project_id": "prj_019e402e2ce87e82b3747da4e5597b66",
-  "repo_id": null,
   "severity": "must",
   "source_kind": "manual",
-  "source_ref": null,
-  "superseded_by_id": null,
   "trust_score": 0.5,
-  "updated_at": "2026-05-19T13:09:03.333409000Z"
+  "updated_at": "2026-11-12T17:04:00.483000000Z",
+  "updated_by": "act_7b6e2727126b7bbb9f3a5a9cefc0022f"
 }

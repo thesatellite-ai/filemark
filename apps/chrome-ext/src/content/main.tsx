@@ -22,6 +22,7 @@ import { useSettings } from "../app/settings";
 import { Shell } from "../app/shell/Shell";
 import { setInjectMode } from "../app/urlSync";
 import { recordWebRecent } from "../app/webRecents";
+import { arm, takeFrozen } from "../app/renderGuard";
 import { shouldRun, type SiteRule } from "@/lib/siteRules";
 import type { LibraryFile } from "../app/store";
 
@@ -138,6 +139,30 @@ function revealCurtain() {
   document.getElementById("fv-curtain-overlay")?.remove();
 }
 
+// Plain-DOM notice for a document the render guard skipped (it froze this tab
+// on its previous load — renderGuard.ts). Inline styles on purpose: we bail out
+// BEFORE injecting Filemark's CSS, so the raw page stays readable and usable.
+function showSkippedNotice(name: string) {
+  const bar = document.createElement("div");
+  bar.setAttribute("data-filemark", "skipped");
+  bar.style.cssText =
+    "position:sticky;top:0;z-index:2147483647;display:flex;gap:8px;align-items:center;" +
+    "padding:6px 12px;font:13px system-ui,sans-serif;color:#713f12;" +
+    "background:#fef3c7;border-bottom:1px solid #f59e0b;";
+  const text = document.createElement("span");
+  text.style.flex = "1";
+  text.textContent = `Filemark didn't render ${name} — it froze this tab last time. Showing the raw file.`;
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.textContent = "Render anyway";
+  retry.style.cssText =
+    "font:inherit;padding:2px 8px;border:1px solid #d97706;border-radius:4px;background:#fff;cursor:pointer;";
+  // takeFrozen already cleared the entry, so a reload renders normally.
+  retry.onclick = () => location.reload();
+  bar.append(text, retry);
+  (document.body ?? document.documentElement).prepend(bar);
+}
+
 (async () => {
   const url = location.href;
 
@@ -209,6 +234,17 @@ function revealCurtain() {
     sourceUrl: url,
     lastOpenedAt: Date.now(),
   };
+
+  // Render guard: if this document froze the tab on its last load (the browser
+  // restores such tabs on restart, freezing it again), leave the raw page and
+  // offer a retry instead. Otherwise arm the guard; Viewer settles it once the
+  // render has committed.
+  if (await takeFrozen(fileId)) {
+    revealCurtain();
+    showSkippedNotice(name);
+    return;
+  }
+  await arm(fileId, name);
 
   // Persist this URL in the shared "Web Docs" recents so it shows up in
   // every Filemark sidebar (standalone + injected) for quick re-open.
