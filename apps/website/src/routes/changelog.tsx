@@ -46,6 +46,35 @@ interface Release {
 // from the repo's RELEASES.md (or GitHub API) at build time.
 const RELEASES: Release[] = [
   {
+    version: "0.1.16",
+    date: "2026-11-14",
+    tag: "Never stuck on a frozen file",
+    notes: [
+      "Fixed: a markdown file with certain one-line Go code blocks could freeze the whole tab — code highlighting now runs in the background, and a block that takes too long simply shows as plain text",
+      "If a file ever freezes Filemark, it is not reopened on the next start: a banner offers to open it anyway or close its tab",
+      "A file that froze its own tab (a local or web .md / .json) opens as the raw file next time, with a 'Render anyway' button, so a restored browser session can't get stuck",
+      "New Options → Recovery page: see every tab showing a Filemark document and close a frozen one, close the viewer's open tabs, clear the recent list, remove dropped files, or clear the whole library",
+    ],
+  },
+  {
+    version: "0.1.15",
+    date: "2026-11-05",
+    tag: "CSV fixes",
+    notes: [
+      "CSV / TSV links (on a website or a local file) open in the viewer again instead of a blank Filemark page",
+      "Data grid column filters now stay pinned under the column titles while you scroll",
+    ],
+  },
+  {
+    version: "0.1.14",
+    date: "2026-08-25",
+    tag: "Diagrams & TOC",
+    notes: [
+      "Mermaid diagrams are readable in dark mode — light custom fills are deepened to a matching dark colour with readable labels",
+      "The 'On this page' table of contents indents relative to the document's top-level heading, so docs that start with # nest correctly",
+    ],
+  },
+  {
     version: "0.1.13",
     date: "2026-08-09",
     tag: "Reliability & embeds",
