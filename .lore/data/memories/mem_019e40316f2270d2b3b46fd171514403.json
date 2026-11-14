@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.082Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n`chrome.storage.sync` first; on write, both stores are updated; on read,\nsync wins and IDB is only used when sync is unavailable.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.082036000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316f2270d2b3b46fd171514403",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.082036000Z",
   "updated_at": "2026-05-19T12:24:02.082036000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

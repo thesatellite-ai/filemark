@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:21:36.178Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **MV3 CSP rules out `unsafe-eval`.** See above.\n- **Content script is a classic script, no imports.** Entry `content.js` is pinned by filename in `vite.config.ts` and referenced by name in `manifest.json` — if you rename one, rename the other.\n- **`sessionStorage[\"fv-handled\"]` guards re-entry** in the content script, preventing the redirect bounce-back loop. Don't remove.\n- **FSA API hides absolute paths.** Folder-picked files must either have a user-pasted `rootPath` (FSA path) or `sourceUrl` from `file://` interception for \"Open in editor\" / \"Reveal in Finder\" to work. Chrome security — there is no workaround.\n- **`dataTransfer.files` + `items[].webkitGetAsEntry()` are complementary, not interchangeable.** Directories show up only via `items/webkitGetAsEntry`; files show up in both but `webkitGetAsEntry` returns null in synthetic DataTransfer. Read files from `.files`, use entries only for directory detection.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:21:36.178038000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e402f353270cfbbbd16220c97f16e",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:21:36.178038000Z",
   "updated_at": "2026-05-19T12:21:36.178038000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

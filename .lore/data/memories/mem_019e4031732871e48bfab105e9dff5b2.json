@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.112Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nUse this as a pre-flight before you commit:\n\n1. **Where does it live?**\n   - Pure / host-agnostic content rendering → viewer package\n     (`packages/<name>-viewer`)\n   - App chrome (topbar / sidebar / tab strip / shortcuts) → host\n     (`apps/chrome-ext/src/app`)\n   - Options / settings → `settings.ts` + `OptionsApp.tsx`\n\n2. **Does it touch storage?**\n   - Library state → new key in `KEYS` in `store.ts`, added to\n     `hydrate()` + relevant persist paths\n   - User settings → new field in `DEFAULT_SETTINGS` + patch / setter in\n     `settings.ts` + option control in `OptionsApp.tsx`\n\n3. **Does it introduce a new format?**\n   - Add to `ALL_FORMATS` in `settings.ts`\n   - Add to `FORMAT_META` in `OptionsApp.tsx`\n   - Add to `EXT_MAP` in `registry.ts`\n   - Extend `SUPPORTED` regex in `content/handler.ts`\n   - Extend `extToLang` in `RawView.tsx`\n   - Pass per-format options down through `Viewer.tsx` if the viewer\n     exposes options\n\n4. **Does it add a shortcut?**\n   - Add a `ShortcutId` + entry to `ALL_SHORTCUTS` in `settings.ts`\n   - Wire handler in `Shell.tsx:onKey`, gated by `isShortcutEnabled`\n     and (for bare keys) `!isInInput(e)`\n   - Remember: Chrome claims every Ctrl/⌘/Alt combo — bare keys only\n\n5. **Does it render custom DOM content?**\n   - For MDX viewer additions: keep it package-local and Tailwind-only\n     (don't add CSS to the host stylesheet). For runtime-exported\n     components, wrap in the MDX `components` map.\n   - For shell additions: Tailwind utilities + shadcn tokens\n     (`bg-muted`, `text-foreground`, …). Never raw color literals.\n\n6. **Does it add a new basecn / shadcn primitive?**\n   - Run `pnpm --filter chrome-ext dlx shadcn@latest add\n     https://basecn.dev/r/<name>.json`\n   - If the shipped `<Name>Content` is a bare `Popup`, wrap it with\n     `Portal + Positioner` locally (Base UI error #71). Our existing\n     Tooltip / Popover / DropdownMenu components are already patched.\n   - Prefer `children` over `render={<…/>}` on triggers — nesting\n     providers inside `render` is error #31 territory.\n\n7. **Build + reload.** Every structural edit:\n   ```bash\n   pnpm --filter '@file-viewer/*' build   # viewer packages\n   pnpm --filter chrome-ext build\n   ```\n   Then reload the card at `chrome://extensions`.\n\n8. **Commit.** Short subject, grouped bullet body, no\n   Claude/AI/Anthropic references. Never push without asking.\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.112108000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031732871e48bfab105e9dff5b2",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.112109000Z",
   "updated_at": "2026-05-19T12:24:03.112109000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

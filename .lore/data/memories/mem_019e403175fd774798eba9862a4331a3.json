@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.837Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nv0.1 ships **only `.md` and `.mdx`**. The monorepo and renderer registry exist from day one so v0.2+ formats slot in without re-architecting, but no other viewer packages are built yet.\n\n1. **File ingest (`.md` / `.mdx` only)**\n   - Drag & drop one or many files\n   - File System Access API → pick a local folder, read all `.md` / `.mdx` recursively\n   - Persist file handles via IndexedDB (permission auto-restored in MV3)\n2. **Library view**\n   - Sidebar with folder tree + flat list\n   - Star / pin files\n   - Last-opened list\n3. **Render view — `@viewers/mdx`**\n   - `@mdx-js/mdx` + `remark-gfm` + `rehype-katex` + Mermaid\n   - Shiki syntax highlighting for fenced code blocks\n   - Built-in components: `<Callout>`, `<Tabs>`, `<Details>`\n   - Task-list checkboxes that **toggle & persist** (via injected `StorageAdapter`)\n   - Auto TOC + collapsible headings\n4. **Organization**\n   - Tags on files (stored locally, not in the file)\n   - Virtual folders / collections\n5. **Search**\n   - Full-text over all loaded `.md` / `.mdx` files (FlexSearch or MiniSearch)\n   - Filter by tag\n6. **Theming**\n   - Light / dark / sepia\n   - Font, width, line-height controls\n   - Shiki theme shared between Markdown code blocks and (later) the code viewer\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.837450000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403175fd774798eba9862a4331a3",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.837450000Z",
   "updated_at": "2026-05-19T12:24:03.837450000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.189Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nThe canonical authoring form for `<MindMap>` is the fenced `` ```mindmap `` block. The `<MindMap>` JSX wrapper still works as a fallback but is documented as the alternative form. Future components that need to **programmatically extract structured content** from their body should follow the same pattern.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.189016000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031737570ab8aac8d2b2df6c175",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.189016000Z",
   "updated_at": "2026-05-19T12:24:03.189016000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

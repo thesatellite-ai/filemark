@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:01.692Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **Default to answering, not acting.** Questions / observations /\n  \"what if\" ideations are discussion — not imperatives. Wait for an\n  explicit verb (\"add\", \"ship\", \"fix\") before mutating files. Each\n  new topic in a session needs its own green light; earlier\n  \"yes, go\" doesn't carry over. (See `~/.claude/CLAUDE.md` global rule\n  and `memory/feedback_ask_before_acting.md`.)\n- **Don't include Claude/AI/Anthropic in commit messages**, no\n  Co-Authored-By lines.\n- **Never commit / push without explicit \"commit\" / \"push\"**, each\n  time.\n- **Tailwind pkg sources must be `@source`'d** from the host — was a\n  real footgun earlier this session (all hover/resize/border\n  utilities silently missing from CSS until diagnosed).\n- **MV3 CSP is load-bearing** for many architectural choices — don't\n  reach for eval, don't suggest MDX JSX, don't suggest inline script\n  tags in dev.\n\n---\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:01.692407000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316d9c766c8b278b8d40998efc",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:01.692408000Z",
   "updated_at": "2026-05-19T12:24:01.692407000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

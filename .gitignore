@@ -28,3 +28,13 @@ filemark.zip
 
 # transient backup from the Marketplace name-override build task
 .package.json.bak
+
+# lore
+.lore/lore.db.broken.*
+.lore/lore-cache.db
+.lore/lore-cache.db-shm
+.lore/lore-cache.db-wal
+.lore/lock
+
+# lore
+.lore/data/**/.tmp-*

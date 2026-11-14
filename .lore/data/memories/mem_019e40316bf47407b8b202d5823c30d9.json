@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:01.268Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nShell-ish whitespace-split tokens, quotes respected, parens group\ninternal whitespace. Flags include:\n\n- Global: `filter`, `search`, `sort=<col>[:asc|desc]` (comma-separated\n  for multi), `hide=<col>,…`, `delimiter=<char>`, `header`, `src=<path>`,\n  `height=<px>`, `title=<text>`, `sticky-header`, `row-numbers`,\n  `id-column=<col>`, `agg:<col>=<fn>`, `freeze=<col>,…`,\n  `density=compact|comfy|relaxed`, `selection`, `group-by=<col>`,\n  `expandable`, `url-sync`, `width:<col>=<px>`.\n- Per-column: `type:<col>=<type-expr>`, `align:<col>=<left|right|center>`,\n  `width:<col>=<px>`.\n- Type expressions take optional parens with args, e.g.\n  `status(P0:danger,P1:warn)`, `currency(USD)`, `progress(0:100)`,\n  `rating(10)`, `tags(|)`, `sparkline(line|bar|area)`, `duration(s|ms|m|h)`,\n  `range(<sep>)`.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:01.268248000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316bf47407b8b202d5823c30d9",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:01.268249000Z",
   "updated_at": "2026-05-19T12:24:01.268248000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

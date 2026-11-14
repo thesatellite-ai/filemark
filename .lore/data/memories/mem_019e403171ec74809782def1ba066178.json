@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.796Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nChrome extensions running on `chrome-extension://` pages can only\nreliably intercept **bare keys with no modifiers**. Every `⌘`, `Ctrl`,\nand `Alt` combo we tried is claimed by Chrome at the browser level:\n\n- `⌘1–9` / `Alt+1–9` / `Ctrl+Tab` / `Ctrl+Shift+Tab` / `⌘⇧]` / `⌘⇧[` /\n  `⌘W` all switch Chrome's own tabs, not ours.\n- `preventDefault()` in page JS cannot override browser-level chords.\n\nCurrent scheme (all gated on `!isInInput(e)` so typing is safe):\n\n| Chord | Action |\n| --- | --- |\n| `]` | next tab |\n| `[` | prev tab |\n| `x` | close active tab |\n| `1`–`9` | jump to tab N |\n| `f` | fullscreen |\n| `r` | rendered ↔ raw |\n| `\\` | toggle TOC |\n| `/` | focus folder filter |\n| `⌘K` | search (Chrome leaves `⌘K` alone) |\n| `⌘B` | toggle sidebar (Chrome leaves this too) |\n| `Esc` | close overlays / exit fullscreen |\n\nEvery chord maps to a `ShortcutId` in `settings.ts` → togglable per-\nshortcut on the options page. Master \"Disable all shortcuts\" flag in\nthe same store.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.796279000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403171ec74809782def1ba066178",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.796279000Z",
   "updated_at": "2026-05-19T12:24:02.796279000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

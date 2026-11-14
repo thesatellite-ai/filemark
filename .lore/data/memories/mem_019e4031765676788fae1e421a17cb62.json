@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.926Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- VS Code extension consuming `@viewers/mdx` in a webview (first external consumer → validates portability)\n- Standalone web demo at e.g. `viewer.dev` consuming the same packages\n- Live reload when underlying file changes\n- Edit mode (Monaco or CodeMirror) — gated per-format\n- Export loaded folder → single HTML bundle\n- Sync bookmarks/tags across Chrome profiles via `chrome.storage.sync`\n- Link graph (backlinks between `.md` files + JSON `$ref` graph)\n- `.ipynb` renderer\n- Diff two files of the same type\n- Search inside JSON values, code symbols, CSV cells — not just raw text\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.926406000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031765676788fae1e421a17cb62",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.926406000Z",
   "updated_at": "2026-05-19T12:24:03.926406000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:01.195Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nSingle biggest recent investment. Full spec in `docsi/DATAGRID.md`;\nquick map here.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:01.195554000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316bab78c6b9405e718097c3bc",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:01.195554000Z",
   "updated_at": "2026-05-19T12:24:01.195554000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

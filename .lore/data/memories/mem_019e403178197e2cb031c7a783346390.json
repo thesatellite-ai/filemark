@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.377Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nIf `intent=` isn't set:\n\n- `delta` starts with `+` → `success` + up arrow\n- `delta` starts with `-` (or Unicode minus) → `danger` + down arrow\n- `delta` is `0` / blank / zero-valued → `muted` + flat arrow\n- Otherwise — parse as number, fallback to muted\n\n---\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.377910000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403178197e2cb031c7a783346390",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.377910000Z",
   "updated_at": "2026-05-19T12:24:04.377910000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

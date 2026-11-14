@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.960Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **MV3 default extension-page CSP**: `script-src 'self'; object-src\n  'self';`. No `unsafe-eval` allowed, no remote scripts, no inline\n  scripts. This drove:\n  - Markdown via `react-markdown` (no eval path) instead of\n    `@mdx-js/mdx`'s `evaluate()`\n  - `yaml` (pure JS) instead of `gray-matter` (Node-dep bloat)\n  - Shiki via `shiki/core` + JS regex engine (no WASM eval)\n- **Content scripts** are classic scripts — no `import` statements. The\n  build outputs `content.js` as a single-line IIFE.\n- **Service worker** is a module (`\"type\": \"module\"`). Uses\n  `import.meta.env.MODE` for dev/prod branch.\n- **Sandboxed iframe** is available but not used yet; reserved for\n  `@mdx-js/mdx`'s `evaluate()` (true MDX JSX expressions) and\n  Monaco / CodeMirror edit mode.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.960158000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031729072a39961aec89e473750",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.960159000Z",
   "updated_at": "2026-05-19T12:24:02.960159000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

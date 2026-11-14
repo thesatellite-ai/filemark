@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:01.452Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- Relative `src=./foo.csv` → goes through `AssetResolver.resolve()`.\n  Works when opened via FSA folder or dropped folder (with persistent\n  handles).\n- Absolute `src=https://host/foo.csv` → fetched directly. Manifest\n  `host_permissions: [\"<all_urls>\"]` bypasses CORS (chose Option A\n  over `optional_host_permissions` for v0.1 UX; migration plan in\n  `docsi/DATAGRID.md` §CORS).\n\n---\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:01.452275000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316cac747891cc019985ff6ac5",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:01.452275000Z",
   "updated_at": "2026-05-19T12:24:01.452275000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

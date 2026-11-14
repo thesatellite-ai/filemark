@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.487Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- `openTabs: string[]` in `useLibrary`. Stable order: a file keeps its\n  slot once added. `setActive(id)` appends the id if new; never\n  reorders.\n- `closeTab(id)`: removes id, activates the tab to its right (then\n  left, then null). Matches VS Code.\n- `TabStrip.tsx` scrolls the active tab into view on change via\n  `data-tab-id=\"<id>\"` attribute matching + `CSS.escape`.\n- On hydrate, any tab id that no longer has a backing file is filtered\n  out (defense against stale IDB state).\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.487198000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403170b7734bab35c8ec2e4ceeda",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.487198000Z",
   "updated_at": "2026-05-19T12:24:02.487198000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

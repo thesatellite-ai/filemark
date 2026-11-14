@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:21:35.979Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "# Filemark — project rules\n\nPortable instructions that extend the global rules. Keep short; prune when a rule stops firing on real work.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:21:35.979265000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e402f346b7470ba8a40c026aa8eeb",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:21:35.979265000Z",
   "updated_at": "2026-05-19T12:21:35.979265000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

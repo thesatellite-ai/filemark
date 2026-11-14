@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.882Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nEach lands as its own package under `packages/`, registered in `apps/chrome-ext/` via the renderer registry. Order TBD by demand:\n\n- `@viewers/json` — `.json`, `.jsonc` → virtualized tree + raw tab + jq-lite filter box\n- `@viewers/code` — `.ts`, `.tsx`, `.js`, `.jsx`, `.yaml`, `.toml`, `.css`, `.html` → Shiki highlight, copy, fold, line anchors, wrap toggle, `.diff` / `.patch` support\n- `@viewers/csv` — `.csv`, `.tsv` → table, filter, sort, column toggle\n- `@viewers/image` — `.svg`, `.png`, `.jpg`, `.webp` → zoom, pan\n- `@viewers/log` — `.log`, `.txt` → monospace + grep / highlight box\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.882557000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031762a78cd8977b1e1ed3f6ba8",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.882557000Z",
   "updated_at": "2026-05-19T12:24:03.882557000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

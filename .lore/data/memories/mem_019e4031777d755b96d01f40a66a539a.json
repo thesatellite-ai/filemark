@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.221Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n```mdx\n<Stats cols=\"4\">\n  <Stat title=\"MRR\" value=\"$128,400\" delta=\"+12.4%\" description=\"vs last month\" />\n  <Stat title=\"Active users\" value=\"3,210\" delta=\"-2.1%\" />\n  <Stat title=\"NPS\" value=\"42\" delta=\"+5\" />\n  <Stat title=\"Churn\" value=\"1.8%\" delta=\"-0.3%\" intent=\"success\" />\n</Stats>\n```\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.221329000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031777d755b96d01f40a66a539a",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.221330000Z",
   "updated_at": "2026-05-19T12:24:04.221329000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

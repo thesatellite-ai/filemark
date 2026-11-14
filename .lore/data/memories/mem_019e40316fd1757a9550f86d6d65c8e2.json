@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.257Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nThree entry points, converging on the same `useLibrary` store shape:\n\n```\n┌──────────────┐  ┌─────────────────┐  ┌────────────────────────┐\n│ drag / drop  │  │ Open Folder btn │  │ file:// URL navigation │\n│  (DropZone)  │  │  (TopBar)       │  │ (content script)       │\n└──────┬───────┘  └────────┬────────┘  └───────────┬────────────┘\n       │                   │                       │\n       ▼                   ▼                       ▼\n  readDroppedFile     pickFolder             chrome.storage.session\n  + text/uri-list     + FSA handle +         + redirect to\n  match               walkDirectory          ?intercept=<key>\n       │                   │                       │\n       └───────────────────┴───────────────────────┘\n                           │\n                           ▼\n                  useLibrary.addFiles()\n                  useLibrary.addFolder()\n                           │\n                           ▼\n                      setActive(id)\n                           │\n                           ▼\n            openTabs updated, URL synced,\n            Viewer re-renders with new file\n```\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.257345000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316fd1757a9550f86d6d65c8e2",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.257345000Z",
   "updated_at": "2026-05-19T12:24:02.257345000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.833Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **`count=` on `<Stat>`** — auto-formats numbers (thousands separator,\n  currency, percent) based on a hint. Today authors format the string\n  themselves.\n- **Inline sparkline** — `<Stat trend-data=\"1,3,2,4,5,6\">` renders a\n  tiny inline sparkline (reuse datagrid's sparkline renderer).\n- **Default `<ADR>` title = H1 child** — if `title=` isn't set, use the\n  first H1 in children. Saves duplicating the title.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.833246000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403179e1741288607a0d4387031e",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.833246000Z",
   "updated_at": "2026-05-19T12:24:04.833246000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null
