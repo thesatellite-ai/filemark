@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.118Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nTwo zustand stores, each with `hydrate()` called once in `App.tsx`:\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.118953000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316f467ef094148d4029ae06c8",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.118953000Z",
   "updated_at": "2026-05-19T12:24:02.118953000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

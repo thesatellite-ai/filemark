@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.955Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- `docsi/PLANNING_COMPONENTS.md` §1–4 — source of the design thesis.\n- `docsi/ROADMAP.md` pillar 4 (writing / reading UX) + pillar 1 (data).\n  Stats + ADR finish the first-slice quartet alongside chart + kanban.\n- `docsi/DATAGRID.md` — where `TONE_CLASS` + `StatusTone` originate.\n- `docsi/ARCHITECTURE.md` §11 — MDX component-dispatch pattern.\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.955557000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40317a5b78c6862f3a6a73ad434d",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.955557000Z",
   "updated_at": "2026-05-19T12:24:04.955557000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

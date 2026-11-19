@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:40:58.914Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "chrome-ext settings (apps/chrome-ext/src/app/settings.ts) use dual-layer persistence: chrome.storage.sync FIRST (cross-profile, survives reinstall), IDB key fv:settings fallback; cross-tab live update via chrome.storage.onChanged listener; merge() back-fills missing fields for old shapes. Shape: formats (per-ext render toggle), json{theme,collapsedDepth,...}, shortcuts (per-id enable), shortcutBindings (per-id key override e.g. Mod+KeyK), allShortcutsDisabled. Separate store from the zustand library store.",
   "confidence": null,
   "created_at": "2026-05-19T12:40:58.914736000Z",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
   "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
   "id": "mem_019e4040f3227b42944a94f30df1290f",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:40:58.914736000Z",
   "updated_at": "2026-05-19T12:40:58.914736000Z",
+  "updated_by": "act_019e402e2ce77af4ace526a9fec42002",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

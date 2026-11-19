@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.176Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "# Stats & ADR — Technical Reference\n\nTwo small layout-only MDX components shipped together to complete the\nplanning-doc first-slice pitch (see `PLANNING_COMPONENTS.md` §First-slice).\nNeither has a data layer — they're pure JSX wrappers styled with\nTailwind + shadcn tokens + datagrid's `TONE_CLASS`.\n\n- Package: `@filemark/mdx` (`packages/mdx-viewer/src/components/`)\n- Files: `Stats.tsx`, `ADR.tsx`\n- Showcase: `examples/stats-adr-full.md` (10 sections)\n- Deps: zero new — reuses `@filemark/datagrid`'s `TONE_CLASS` + `StatusTone`.\n\n---\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.176241000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031775073f3a25e1b11564dc9f1",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.176241000Z",
   "updated_at": "2026-05-19T12:24:04.176241000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

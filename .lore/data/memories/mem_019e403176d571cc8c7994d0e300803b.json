@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:04.053Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n1. **Week 1** — rename repo; scaffold pnpm monorepo (`apps/chrome-ext`, `packages/viewer-core`, `packages/mdx-viewer`); scaffold MV3 host (Vite + CRXJS + React + TS); renderer registry stub; drag-drop single file → empty viewer.\n2. **Week 2** — build `@viewers/mdx`: MDX pipeline + Shiki + KaTeX + Mermaid + built-in components; render one `.md` file end-to-end.\n3. **Week 3** — File System Access API, persist handles, folder tree sidebar, last-opened list, file-type icons.\n4. **Week 4** — search + tags + bookmarking; theming (light/dark/sepia + typography); TOC; task-list persistence via injected `StorageAdapter` → v0.1 private test.\n5. **Week 5+** — polish, MDX security posture, Chrome Web Store listing.\n6. **v0.2+** — add `@viewers/json`, `@viewers/code`, etc. one package at a time; publish `@viewers/mdx` to npm once API is stable.\n7. **v0.3+** — VS Code extension webview consuming `@viewers/mdx` (first external consumer → validates the portability claim).\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:04.053103000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403176d571cc8c7994d0e300803b",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:04.053103000Z",
   "updated_at": "2026-05-19T12:24:04.053103000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

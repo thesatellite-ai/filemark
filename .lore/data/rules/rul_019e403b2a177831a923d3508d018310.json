@@ -1,12 +1,14 @@
 {
+  "_hlc": "2026-05-19T12:34:39.767Z/0000/",
   "_table": "rules",
-  "_v": 1,
+  "_v": 2,
   "activation": "always",
   "applies_to_description": null,
   "archived_at": null,
   "body": "service-worker.js and content.js must stay UNHASHED in apps/chrome-ext/vite.config.ts entryFileNames (~lines 52-55) — manifest.json references them by exact name. All other JS may hash as assets/[name]-[hash].js. Renaming one requires renaming both vite.config + manifest.json.",
   "confidence": null,
   "created_at": "2026-05-19T12:34:39.767535000Z",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
   "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
   "globs": null,
   "id": "rul_019e403b2a177831a923d3508d018310",
@@ -18,5 +20,6 @@
   "source_ref": null,
   "superseded_by_id": null,
   "trust_score": 0.5,
-  "updated_at": "2026-05-19T12:34:39.767535000Z"
+  "updated_at": "2026-05-19T12:34:39.767535000Z",
+  "updated_by": "act_019e402e2ce77af4ace526a9fec42002"
 }

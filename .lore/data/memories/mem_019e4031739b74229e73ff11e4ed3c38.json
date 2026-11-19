@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:03.227Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nMindMap was originally shipped as a JSX wrapper around a nested markdown list:\n\n```md\n<MindMap title=\"…\">\n\n- Filemark\n  - Visual\n    - Chart\n\n</MindMap>\n```\n\nIn real use this rendered the empty-state message (\"needs a nested unordered list inside\") even with a perfectly valid list inside. Investigation traced the bug to a fundamental clash between two requirements that filemark already documents as Rule 1 and Rule 7-of-CommonMark:\n\n1. **Rule 1** — a blank line between the opening tag and the body is required so the body is parsed as markdown rather than raw HTML.\n2. **CommonMark HTML block type 7** — for any non-standard tag (`<MindMap>`, `<RFC>`, etc.), the block **ends at the next blank line**.\n\nThese requirements collide. The blank line that switches on markdown parsing is the same blank line that closes the `<MindMap>` HTML block. After parsing, the document tree contains three sibling blocks: `<MindMap>` (empty), the rendered `<ul>`, and the bare `</MindMap>`. rehype-raw re-stitches them via parse5 but the nesting outcome is whitespace- and context-dependent — sometimes the `<ul>` ends up inside the wrapper, sometimes alongside it.\n\nFor wrapper components like PRFAQ / RFC / Pitch / ADR / MeetingNotes the visual outcome is fine because they render `{props.children}` verbatim — the markdown renders correctly even when the parser splits the body off. But MindMap needs to **programmatically walk the children** to find the `<ul>` and extract a node tree. When the list is a sibling instead of a child, the walker returns empty and the component renders the fallback.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:03.227252000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e4031739b74229e73ff11e4ed3c38",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:03.227252000Z",
   "updated_at": "2026-05-19T12:24:03.227252000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

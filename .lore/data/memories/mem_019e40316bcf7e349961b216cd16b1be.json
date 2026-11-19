@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:01.231Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n| Author writes | Parsed by | Renders |\n|---|---|---|\n| ` ```csv <flags> ` fence | `MDXViewer.components.code` → `DataBlock` → `DataGridFromText` → `DataGrid` | interactive grid |\n| ` ```tsv <flags> ` fence | same path, tab delimiter default | same |\n| ` ```datagrid <flags> ` fence | same path, explicit opt-in | same |\n| `<Datagrid src=\"…\" meta=\"…\" … />` | `MDXViewer.components.datagrid` → `DataBlock` | same, src-only (no inline data) |\n\nA tiny remark plugin `remarkCodeMeta` copies `node.meta` onto hast as\n`data-meta`, so the fence's info-string survives to the React layer.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:01.231917000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316bcf7e349961b216cd16b1be",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:01.231918000Z",
   "updated_at": "2026-05-19T12:24:01.231917000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

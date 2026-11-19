@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:05.172Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\nDefault `import(\"shiki\")` → Rollup traces all dynamic imports statically and bundles every grammar and theme. 3+ MB extension. Unacceptable.\n\nFix: import `shiki/core` + `shiki/engine/javascript` + per-language `shiki/langs/<name>.mjs` explicitly. Rollup code-splits each language into its own lazy chunk. The `shiki/engine/javascript` engine avoids the WASM Oniguruma regex engine (~600 KB). Main bundle drops to ~260 KB gzipped, and the 35 supported languages sit in their own chunks loaded on first render of a block in that language.\n\nTradeoff: JavaScript regex engine is slightly slower than WASM Oniguruma and drops support for a handful of grammars we don't care about.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:05.172171000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40317b3472dea1a6eed52195bf75",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:05.172171000Z",
   "updated_at": "2026-05-19T12:24:05.172171000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null
