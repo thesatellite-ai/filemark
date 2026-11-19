@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:01.119Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n```\nfilemark/\n├── apps/\n│   └── chrome-ext/                 MV3 host (App.tsx, Shell, TopBar, Sidebar, Viewer, …)\n│       ├── public/manifest.json    MV3 manifest (storage + <all_urls> + file:// intercept)\n│       └── src/app/adapters/       Chrome-specific StorageAdapter, AssetResolver, …\n├── packages/\n│   ├── viewer-core/                @filemark/core  — shared types + ThemeProvider\n│   ├── mdx-viewer/                 @filemark/mdx   — `react-markdown` pipeline + Datagrid wiring\n│   ├── json-viewer/                @filemark/json  — tree viewer\n│   ├── schema-viewer/              @filemark/schema — SQL/Prisma/DBML → Mermaid ER\n│   └── datagrid/                   @filemark/datagrid — TanStack-based grid (centerpiece)\n├── examples/                       live-test markdown: datagrid.md, datagrid-full.md, sales.csv\n├── CLAUDE.md                       repolink symlink → private-repo\n├── docsi/                          repolink symlink → private-repo (planning docs + this file)\n├── README.md                       public-facing\n├── Taskfile.yml                    task runner\n└── pnpm-workspace.yaml\n```\n\n---\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:01.119437000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316b5f76ddbd6070cc32c43a54",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:01.119437000Z",
   "updated_at": "2026-05-19T12:24:01.119437000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

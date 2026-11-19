@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:21:36.046Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **Always invoke the `/filemark` skill** before writing or editing any brainstorm, plan, problem, roadmap, ADR, or component-spec doc inside `docsi/` (private-repo). These files are read in filemark, so they must use the correct component grammar (`<Callout>`, `<Tabs>`, `<Details>`, `<Stats>`, `<ADR>`, `<Datagrid>`, `<Chart>`, `<Kanban>`, `<TaskList>`, `<TaskStats>`, `<TaskTimeline>`, sigil task bullets, filter DSL) and observe the two HTML-in-markdown survival rules.\n- Applies to **every file under `docsi/`** — `ARCHITECTURE.md`, `PROBLEM.md`, `TASKS.md`, `ROADMAP.md`, `*_PLAN.md`, `*_ADR.md`, future docs.\n- **Does NOT apply to public docs inside the filemark repo itself** — `filemark/README.md`, future `filemark/docs/**`, package READMEs, and any `*.md` checked into the public git history. Those are GitHub-rendered and must stay portable plain-markdown (no filemark-specific components).\n- If `/filemark` skill not loaded in the session, load it first before drafting; do not freehand filemark components from memory.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:21:36.046829000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e402f34ae7cf49243a8ffa8c7345a",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:21:36.046830000Z",
   "updated_at": "2026-05-19T12:21:36.046830000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

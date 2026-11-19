@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:00.977Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n- **Project:** filemark — a Chrome extension (MV3) that renders\n  `.md`, `.mdx`, `.json`, `.jsonc`, `.sql`, `.prisma`, `.dbml` locally\n  with first-class interactive features.\n- **Scope framing:** personal power-tool for the author. Not a\n  collaboration platform; not a cloud product. Local-first, MV3-native,\n  zero tracking.\n- **Unique selling point:** markdown is programmable — fenced `csv`\n  blocks become sortable/filterable/groupable/exportable datagrids;\n  task checkboxes persist; ER diagrams render inline; all without any\n  JavaScript evaluation (MV3 CSP compliant).\n\n---\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:00.977309000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e40316ad174f18b9c770820f610e4",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:00.977309000Z",
   "updated_at": "2026-05-19T12:24:00.977309000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

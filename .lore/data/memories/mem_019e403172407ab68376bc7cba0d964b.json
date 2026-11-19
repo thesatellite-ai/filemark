@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-05-19T12:24:02.880Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "\n`RawView.tsx` shows the file source exactly as it sits on disk:\n\n- Runs the same `highlight()` from `@file-viewer/mdx`'s Shiki pipeline\n  (same grammars + themes the MDX code blocks use). Read-only — Monaco\n  is deferred to a later milestone (MV3 CSP + bundle cost).\n- `ext → lang` mapping in `extToLang()` so `.md` uses `markdown`, `.tsx`\n  uses `tsx`, etc.\n- Wrap toggle (session-only): `whitespace-pre-wrap break-words` when\n  on, `overflow-x-auto` + `whitespace-pre` when off.\n- Copy button copies the raw content to the clipboard.\n- Reached via the `R` shortcut or FileActions menu.\n\n",
   "confidence": null,
   "created_at": "2026-05-19T12:24:02.880684000Z",
+  "created_by": "act_00000000000070008000000000000000",
   "created_by_actor_id": null,
   "id": "mem_019e403172407ab68376bc7cba0d964b",
   "kind": "retrieved",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-05-19T12:24:02.880684000Z",
   "updated_at": "2026-05-19T12:24:02.880684000Z",
+  "updated_by": "act_00000000000070008000000000000000",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null

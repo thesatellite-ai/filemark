@@ -1,10 +1,12 @@
 {
+  "_hlc": "2026-08-09T14:10:19.203Z/0000/",
   "_table": "memories",
-  "_v": 1,
+  "_v": 2,
   "archived_at": null,
   "body": "Build: `pnpm --filter <pkgname> build` (@filemark/mdx, @filemark/csv, @filemark/chart, chrome-ext...); root Taskfile has `task build`/`build:ext`/`zip`. Typecheck: `cd <dir> && pnpm run typecheck` (tsc --noEmit; vscode runs BOTH tsconfig.json + tsconfig.webview.json). Tests: `cd <dir> && pnpm test` (vitest run); build dependency packages first before a consumer bundle picks them up.\nName<->directory mismatches (bit me): @filemark/csv lives in packages/csv-viewer/; the website package is @filemark/website-new (NOT \"website\" — `pnpm --filter website` finds nothing); apps/vscode name is `filemark`, apps/chrome-ext is `chrome-ext`.\nTest conventions: default vitest env is NODE (fast, no DOM/vscode); files src/**/*.test.ts; DOM suites opt into jsdom via `// @vitest-environment jsdom`. React component rendering is verified by BUILD/typecheck, NOT by component tests — so extract pure logic (pickPreviewRenderer, buildFolderHandleMap, parseVideo) and unit-test that; don't render components in vitest. Chart package has no test script (typecheck+build is its gate). Debug via src/, never the minified bundle.",
   "confidence": null,
   "created_at": "2026-08-09T14:10:19.203337000Z",
+  "created_by": "act_019e402e2ce77af4ace526a9fec42002",
   "created_by_actor_id": "act_019e402e2ce77af4ace526a9fec42002",
   "id": "mem_019fe6dc35c3752c964f991914aad93a",
   "kind": "procedural",
@@ -17,6 +19,7 @@
   "trust_score": 0.5,
   "tx_at": "2026-08-09T14:10:19.203337000Z",
   "updated_at": "2026-08-09T14:10:19.203337000Z",
+  "updated_by": "act_019e402e2ce77af4ace526a9fec42002",
   "valid_at": null,
   "valid_until": null,
   "validated_by_actor_id": null
