@@ -255,3 +255,8 @@ tasks:
       - task: zip:verify
       - task: cws:publish
       - 'V=$(jq -r ".version" {{.MANIFEST}}); echo "✓ Filemark v$V submitted for Web Store review"'
+
+  names:
+    desc: Check tracked files for private names (needs the local word list; skips without it)
+    cmds:
+      - ./scripts/check-names.sh --all
